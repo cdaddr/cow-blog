@@ -90,8 +90,7 @@
   [id]
   (if-logged-in
    (let [comment (merge (get-comment (bigint id))
-                        (assoc global/*param*
-                          :markdown (:markdown global/*param*)))
+                        global/*param*)
          post (get-post (:post_id comment))]
      (edit-comment comment)
      (message "Comment edited")

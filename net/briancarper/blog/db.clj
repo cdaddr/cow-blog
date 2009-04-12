@@ -134,6 +134,7 @@
 
 (defmethod before-save ::posts [post]
   (assoc post
+    :id (bigint (:id post))
     :html (markdown-to-html (:markdown post) false)
     :parent_id (if-let [post (get-post (:parent_id post))]
                  (:id post))))
@@ -174,6 +175,7 @@
 
 (defmethod before-save ::comments [c]
   (assoc c
+    :id (bigint (:id c))
     :post_id (bigint (:post_id c))
     :html (markdown-to-html (:markdown c) true)
     :homepage (normalize-homepage (escape-html (:homepage c)))
