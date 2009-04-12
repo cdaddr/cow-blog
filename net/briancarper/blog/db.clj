@@ -55,7 +55,11 @@
          ~(str "Fetches a " singular " from the dataref if it exists; otherwise adds it to the dataref and DB.")
          [~obj]
          (or (~(symbol (str "get-" singular)) ~obj)
-             @(~(symbol (str "add-" singular)) ~obj))))))
+             @(~(symbol (str "add-" singular)) ~obj)))
+       (defn ~(symbol (str "refresh-" singular))
+         ~(str "Refreshes a " singular " by calling the after-db-read hook on it.")
+         [~obj]
+         (refresh data ~obj db ~table)))))
 
 (deftable "post" "posts")
 (deftable "comment" "comments")
@@ -98,7 +102,7 @@
 (defn all-posts-with-tag
   "Returns a seq of all posts with some tag."
   [tag]
-  (all-posts #(some #{tag} (post-tags %))))
+  (all-posts #(some #{tag} (:tags %))))
 
 (defn all-posts-with-category
   "Returns a seq of all posts belonging to some category."
@@ -139,11 +143,15 @@
 
 (defmethod after-db-read ::posts [post]
   (assoc post
+    :comments (post-comments post)
+    :comments-count (count (post-comments post))
+    :tags (post-tags post)
+    :category (post-category post)
     :url (make-url post)
     :parent (if-let [id (:parent_id post)] (get-post id))))
 
 (defmethod after-delete ::posts [post]
-  (dorun (map remove-comment (post-comments post)))
+  (dorun (map remove-comment (:comments post)))
   (dorun (map remove-post_tag (post-post_tags post))))
 
 ;; COMMENTS
@@ -170,12 +178,22 @@
     (assoc c
       :avatar gravatar)))
 
+(defmethod after-change ::comments [c]
+  (if-let [post (get-post (:post_id c))]
+    (refresh-post post))
+  c)
+
 ;; POST_TAGS
 
 (defmethod after-delete ::post_tags [pt]
   (let [tag (get-tag (:tag_id pt))]
     (if (empty? (all-posts-with-tag tag))
       (remove-tag tag))))
+
+(defmethod after-change ::post_tags [pt]
+  (if-let [post (get-post (:post_id pt))]
+    (refresh-post post))
+  pt)
 
 ;; TAGS
 
@@ -192,6 +210,10 @@
 
 (defmethod after-db-read ::categories [cat]
   (assoc cat :url (make-url cat)))
+
+(defmethod after-change ::categories [cat]
+  (dorun (map refresh-post (all-posts-with-category cat)))
+  cat)
 
 ;; Additional public accessor functions
 
@@ -234,7 +256,7 @@
   "Returns a seq of two-item pairs: a count of posts for a tag, and the tag itself."
   []
   (loop [counts {}
-         tags (mapcat post-tags (all-posts))]
+         tags (mapcat :tags (all-posts))]
     (if (seq tags)
       (let [tag (first tags)
             c (or (counts tag) 0)]
@@ -259,7 +281,7 @@
   "Given a post, and a list of tag names (seq of Strings), synchronizes the post to have exactly those tags, adding or removing as needed."
   [post taglist]
   (let [new-tags (into #{} (map #(get-or-add-tag {:name %}) taglist))
-        old-tags (into #{} (post-tags post))
+        old-tags (into #{} (:tags post))
         tags-to-add (clojure.set/difference new-tags old-tags)
         tags-to-delete (clojure.set/difference old-tags new-tags)]
     (comment (dorun (map pprint [new-tags
@@ -328,15 +350,4 @@
   (create {:name username
            :password (sha-256 (str *password-salt* password))}
           db ::users))
-
-(comment
- (defn- refresh-html
-   "Brute-force refresh of the Markdown-generated HTML for a list of objects."  
-   [objs]
-   (dorun (map #(update (assoc % :html (markdown-to-html (:markdown %) false)))
-               objs)))
-
- (defn- refresh-html-all []
-   "Brute-force refresh of the Markdown-generated HTML for all posts and comments."  
-   (dorun (map refresh-markdown [(fetch-all ::posts) (fetch-all ::comments)]))))
 

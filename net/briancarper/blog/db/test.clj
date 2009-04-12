@@ -56,8 +56,8 @@
                        :tag_id 888}))))
 
 (deftest test-normalize-tagname
-  (is (= (normalize-tagname "foo") "foo"))
-  (is (= (normalize-tagname "foo bar") "foo-bar")))
+  (is (= (tagname-to-permalink "foo") "foo"))
+  (is (= (tagname-to-permalink "foo bar") "foo-bar")))
 
 (deftest test-normalize-homepage
   (is (= (normalize-homepage "") nil))
