@@ -11,6 +11,13 @@
 
 (declare message error-message)
 
+(defn markdown-text-area [name value]
+  [:textarea {:id name
+              :name name
+              :class "resizable markdown"
+              :rows 15
+              :cols 70} value])
+
 (defn form-row
   ([label field] (form-row label field nil))
   ([label field name]
@@ -42,7 +49,7 @@
        (field text-field "email" "Email" (:email comment))
        (field text-field "homepage" "URL" (:homepage comment))
        (form-row "IP" (:ip comment))
-       (field text-area "markdown" "Comment" (:markdown comment))
+       (field markdown-text-area "markdown" "Comment" (:markdown comment))
        (form-row
         (label "approved" "Approved")
         (drop-down "approved"
@@ -71,7 +78,7 @@
          (field text-field "parent_id" "Parent" (if-let [parent (get-post (:parent_id post))]
                                                      (:permalink parent)))
          (field text-field "all-tags" "Tags" (str-join ", " (map :name (:tags post))))
-         (field text-area "markdown" "Content" (:markdown post))
+         (field markdown-text-area "markdown" "Content" (:markdown post))
          (submit "Submit"))
        [:h2 "Preview"]
        [:div#preview]])))
@@ -163,10 +170,8 @@
 
 
 (defn do-logout []
-  (if-logged-in
-   (dosync
-    (alter *session* dissoc :username)
-    (redirect-to "/"))))
+  [(session-dissoc :username)
+   (redirect-to "/")])
 
 (defn do-login [params]
   (dosync
@@ -174,7 +179,6 @@
      (redirect-to "/")
      (if (get-user {:name (:name global/*param*)
                     :password (sha-256 (str *password-salt* (:password global/*param*)))})
-       (do
-         (alter *session* assoc :username (:name params))
-         (redirect-to "/"))
+       [(session-assoc :username (:name params))
+        (redirect-to "/")]
        (error "Login failed!")))))

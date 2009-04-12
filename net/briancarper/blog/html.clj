@@ -5,11 +5,16 @@
                                    [error-pages :as error-pages]
                                    [feed :as feed])
         (net.briancarper util)
-        (net.briancarper.util html)
         compojure
         (compojure.http request)
         (clojure.contrib str-utils seq-utils java-utils))
   (:import (java.util Calendar)))
+
+
+(defn image [url & args]
+  (let [args (apply hash-map args)]
+    [:img (merge {:src url :alt url}
+                 args)]))
 
 ;; Combine CSS and JS files to avoid hammering the server with requests for them
 
