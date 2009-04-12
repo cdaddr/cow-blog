@@ -256,8 +256,8 @@
   (dosync
    (if (:logged-in *session*)
      (redirect-to "/")
-     (if (get-user {:name (:name *params*)
-                    :password (sha-256 (str *password-salt* (:password *params*)))})
+     (if (get-user {:name (:name *param*)
+                    :password (sha-256 (str *password-salt* (:password *param*)))})
        (do
          (alter *session* assoc :username (:name params))
          (redirect-to "/"))
@@ -312,8 +312,7 @@
   "Returns HTML for the comments section of a single post page, including the list of user comments for this post and a place for users to add new comments."
   [post]
   [:div#comments
-   (when (> (count (:comments post))
-            0)
+   (when (> (count (:comments post)) 0)
      (block nil
             [:div
              [:h2 (count (:comments post)) " Comments"]
@@ -392,8 +391,8 @@
   [id]
   (if-logged-in
    (let [comment (merge (get-comment (bigint id))
-                        (assoc *params*
-                          :markdown (:markdown *params*)))
+                        (assoc *param*
+                          :markdown (:markdown *param*)))
          post (get-post (:post_id comment))]
      (edit-comment comment)
      (message "Comment edited")
@@ -406,11 +405,11 @@
     (bigint x)))
 
 (defn paginate
-  "Returns a certain number of elements of coll based on *posts-per-page* and the current *params*."
+  "Returns a certain number of elements of coll based on *posts-per-page* and the current *param*."
   [coll]
-  (let [start (or (and (:p *params*)
-                       (re-matches #"^\d+$" (:p *params*))
-                       (* *posts-per-page* (dec (bigint (:p *params*)))))
+  (let [start (or (and (:p *param*)
+                       (re-matches #"^\d+$" (:p *param*))
+                       (* *posts-per-page* (dec (bigint (:p *param*)))))
                   0)]
     (take *posts-per-page* (drop start coll))))
 
@@ -422,7 +421,7 @@
   ([coll]
      (pagenav coll param-string))
   ([coll f]
-     (let [curr (or (to-int (:p *params*)) 1)
+     (let [curr (or (to-int (:p *param*)) 1)
            last-page (inc (bigint (/ (count coll) *posts-per-page*)))]
        (block nil
               [:div.pagenav
@@ -607,7 +606,7 @@
 (defn search-results
   "Returns HTML for a page displaying search results for some query."
   []
-  (let [terms (*params* :q)
+  (let [terms (*param* :q)
         all-results (search-posts terms)
         results (paginate all-results)]
     (page "Search Results"
@@ -688,17 +687,17 @@
 
 (defn do-add-post []
   (if-logged-in
-   (let [post (add-post *params*)]
-     (sync-tags post (re-split #"\s*,\s*" (:all-tags *params*)))
+   (let [post (add-post *param*)]
+     (sync-tags post (re-split #"\s*,\s*" (:all-tags *param*)))
      (redirect-to "/"))))
 
 (defn do-edit-post [id]
   (if-logged-in
    (let [post (merge (get-post (bigint id))
-                     (assoc *params*
+                     (assoc *param*
                        :edited (.getTime (Calendar/getInstance))))]
      (edit-post post)
-     (sync-tags post (re-split #"\s*,\s*" (:all-tags *params*)))
+     (sync-tags post (re-split #"\s*,\s*" (:all-tags *param*)))
      (message "Post Edited")
      (redirect-to (:url post)))))
 
@@ -710,24 +709,24 @@
   "Handles a POST request to add a comment.  (note: no login required.)"
   [id]
   (let [post (get-post (bigint id))]
-    (if (and (empty? (:referer *params*))
-             (not (empty? (:test *params*)))
-             (re-find #"(?i)cows" (:test *params*)))
+    (if (and (empty? (:referer *param*))
+             (not (empty? (:test *param*)))
+             (re-find #"(?i)cows" (:test *param*)))
       ; Spam test passed
-      (if (not (empty? (:markdown *params*)))
+      (if (not (empty? (:markdown *param*)))
         ;; WIN: Post comment, everything OK.
         (do
-          (add-comment post {
-                             :email (:email *params*)
-                             :markdown (:markdown *params*)
-                             :author (if (empty? (:author *params*))
-                                       "Anonymous Cow"
-                                       (:author *params*))
-                             :homepage (:homepage *params*)
-                             :post_id (:post_id *params*)
-                             :ip (or (:x-forwarded-for (:headers *request*))
-                                     (.getRemoteAddr *request*))
-                             :approved 1})
+          (add-comment {
+                        :email (:email *param*)
+                        :markdown (:markdown *param*)
+                        :author (if (empty? (:author *param*))
+                                  "Anonymous Cow"
+                                  (:author *param*))
+                        :homepage (:homepage *param*)
+                        :post_id (:post_id *param*)
+                        :ip (or (:x-forwarded-for (:headers *request*))
+                                (:remote-addr *request*))
+                        :approved 1})
           (message "Comment added")
           (redirect-to (:url post)))
         ;; FAIL: 
@@ -737,7 +736,7 @@
       ;; FAIL: Spam test failed, either CAPTCHA or honeypot field.
       (do
         (try
-         (add-spam (assoc *params*
+         (add-spam (assoc *param*
                      :post_id (:id post)
                      :ip (or (:x-forwarded-for (:headers *request*))
                              (.getRemoteAddr *request*))))

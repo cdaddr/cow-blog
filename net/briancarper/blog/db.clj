@@ -138,8 +138,11 @@
     :parent_id (if-let [post (get-post (:parent_id post))]
                  (:id post))))
 
+(defmethod before-create ::posts [post]
+  (assoc post :created (now)))
+
 (defmethod before-update ::posts [post]
-  (assoc post :edited (.getTime (Calendar/getInstance))))
+  (assoc post :edited (now)))
 
 (defmethod after-db-read ::posts [post]
   (assoc post
@@ -164,8 +167,13 @@
        (re-find #"(?i)^http://" s) s
        :else (str "http://" s)))))
 
+(defmethod before-create ::comments [c]
+  (assoc c
+    :created (now)))
+
 (defmethod before-save ::comments [c]
   (assoc c
+    :post_id (bigint (:post_id c))
     :html (markdown-to-html (:markdown c) true)
     :homepage (normalize-homepage (escape-html (:homepage c)))
     :email (escape-html (:email c))

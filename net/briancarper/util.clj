@@ -38,3 +38,6 @@
     (str-join ""
               (mapcat #(Integer/toHexString (bit-and 0xff %))
                       (into [] (.digest md))))))
+
+(defn now []
+  (.getTime (Calendar/getInstance)))
