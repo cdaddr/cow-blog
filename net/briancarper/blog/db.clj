@@ -180,6 +180,11 @@
   (assoc c
     :created (now)))
 
+(defn- comment-gravatar [c]
+  (let [gravatar-hash (.asHex (doto (com.twmacinta.util.MD5.)
+                                (.Update (or (:email c) (:ip c)) nil)))]
+    (str "http://gravatar.com/avatar/" gravatar-hash ".jpg?d=identicon")))
+
 (defmethod before-save ::comments [c]
   (assoc c
     :id (bigint (:id c))
@@ -187,19 +192,15 @@
     :html (markdown-to-html (:markdown c) true)
     :homepage (normalize-homepage (escape-html (:homepage c)))
     :email (escape-html (:email c))
+    :avatar (comment-gravatar c)
     :author (escape-html (:author c))))
 
 (defmethod after-db-read ::comments [c]
-  (let [gravatar-hash (.asHex (doto (com.twmacinta.util.MD5.)
-                                (.Update (or (:email c) (:ip c)) nil)))
-        gravatar (str "http://gravatar.com/avatar/" gravatar-hash ".jpg?d=identicon")]
-    (assoc c
-      :avatar gravatar)))
+  (assoc c :avatar (comment-gravatar) c))
 
 (defmethod after-change ::comments [c]
   (if-let [post (get-post (:post_id c))]
-    (refresh-post post))
-  c)
+    (refresh-post post)))
 
 ;; POST_TAGS
 
