@@ -140,12 +140,11 @@
                         :ip (or (:x-forwarded-for (:headers *request*))
                                 (:remote-addr *request*))
                         :approved 1})
-          (message "Comment added")
-          (redirect-to (:url post)))
+          [(message "Comment added")
+           (redirect-to (:url post))])
         ;; FAIL: 
-        (do
-          (error-message "Comment failed.  You left your message blank.  :(")
-          (redirect-to (:url post))))
+        [(error-message "Comment failed.  You left your message blank.  :(")
+         (redirect-to (:url post))])
       ;; FAIL: Spam test failed, either CAPTCHA or honeypot field.
       (do
         (try
@@ -154,8 +153,8 @@
                      :ip (or (:x-forwarded-for (:headers *request*))
                              (.getRemoteAddr *request*))))
          (catch Exception e))
-        (error-message "Comment failed.  You didn't type the magic word.  :(")
-        (redirect-to (:url post))))))
+        [(error-message "Comment failed.  You didn't type the magic word.  :(")
+         (redirect-to (:url post))]))))
 
 (defn do-remove-comment [id]
   (if-logged-in

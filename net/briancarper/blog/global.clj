@@ -6,6 +6,7 @@
 (def *session* nil)
 (def *param* nil)
 (def *request* nil)
+(def *flash* nil)
 
 (defmacro if-logged-in
   "If the user is logged in, executes 'rest'.  Otherwise silently does nothing.  NOTE: if you're using if-logged-in to display HTML, make sure there's a single form for 'rest'.  e.g. do this:
@@ -20,7 +21,7 @@
      (try ~@rest)))
 
 (defn message [text]
-  (flash-assoc  :message text))
+  (session-assoc :message text))
 
 (defn error-message [text]
-  (flash-assoc :error-message text))
+  (session-assoc :error-message text))

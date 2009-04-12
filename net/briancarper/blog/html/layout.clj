@@ -68,28 +68,35 @@
 (defmacro page
   "Returns top-level HTML for the layout skeleton (main <html> tag, navbar etc.) surrounding `rest."
   [title & rest]
-  [{:headers {"Content-Type" "text/html;charset=UTF-8"}}
-   `(try
-     (str (doctype :xhtml-strict)
-          (html [:html {:xmlns "http://www.w3.org/1999/xhtml"}
-                 [:head
-                  [:title (str ~config/*site-name* (when ~title (str " :: "  ~title)))]
-                  (include-css "/combined.css")
-                  (include-js "/combined.js")
-                  [:meta {:http-equiv "Content-Type"
-                          :content "text/html;charset=utf-8"}]
-                  [:link {:rel "alternate" :type "application/rss+xml" :href "/feed"}]
-                  ]
-                 [:body
-                  [:div#doc4.yui-t5
-                   [:div#hd]
-                   [:div#bd
-                    [:div#yui-main
-                     [:div#main.yui-b.main
-                      ~@rest]]
-                    [:div#navbar.yui-b
-                     (navbar)]]
-                   [:div#ft (footer)]]]])))])
+  `(let [msg# (global/*session* :message)
+         emsg# (global/*session* :error-message)]
+     [(session-dissoc :message :error-message)
+      {:headers {"Content-Type" "text/html;charset=UTF-8"}}
+      (try
+       (str (doctype :xhtml-strict)
+            (html [:html {:xmlns "http://www.w3.org/1999/xhtml"}
+                   [:head
+                    [:title (str ~config/*site-name* (when ~title (str " :: "  ~title)))]
+                    (include-css "/combined.css")
+                    (include-js "/combined.js")
+                    [:meta {:http-equiv "Content-Type"
+                            :content "text/html;charset=utf-8"}]
+                    [:link {:rel "alternate" :type "application/rss+xml" :href "/feed"}]
+                    ]
+                   [:body
+                    (if msg#
+                      [:div#message msg#])
+                    (if emsg#
+                      [:div#error-message emsg#])
+                    [:div#doc4.yui-t5
+                     [:div#hd]
+                     [:div#bd
+                      [:div#yui-main
+                       [:div#main.yui-b.main
+                        ~@rest]]
+                      [:div#navbar.yui-b
+                       (navbar)]]
+                     [:div#ft (footer)]]]])))]))
 
 
 (defn to-int [x]
