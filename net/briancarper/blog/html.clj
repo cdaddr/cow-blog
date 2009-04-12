@@ -190,7 +190,7 @@
 (defmacro page
   "Returns top-level HTML for the layout skeleton (main <html> tag, navbar etc.) surrounding `rest."
   [title & rest]
-  [{"Content-Type" "text/html;charset=UTF-8"}
+  [{:headers {"Content-Type" "text/html;charset=UTF-8"}}
    `(try
      (str (doctype :xhtml-strict)
           (html [:html {:xmlns "http://www.w3.org/1999/xhtml"}
@@ -198,8 +198,6 @@
                   [:title (str ~*site-name* (when ~title (str " :: "  ~title)))]
                   (include-css "/combined.css")
                   (include-js "/combined.js")
-                  [:script {:type "text/javascript"}
-                   ]
                   [:meta {:http-equiv "Content-Type"
                           :content "text/html;charset=utf-8"}]
                   [:link {:rel "alternate" :type "application/rss+xml" :href "/feed"}]
@@ -302,7 +300,7 @@
     (field text-field "homepage" "URL")
     ;;NOTE: referer is a honeypot.  Only used for anti-spam.
     (field text-field "referer" "How did you find this site?")
-    (field text-area "markdown" "Comment")
+    (field markdown-text-area "markdown" "Comment")
     [:div.test-block
      [:div.test
       (image "/img/test.jpg") " "
@@ -481,10 +479,10 @@
     (if (and (.exists f)
              (.isFile f))
       (if (re-find #"\.txt$" filename)
-        [{"Content-Type" "text/plain"}
+        [{:headers {"Content-Type" "text/plain"}}
          f]
-        [{"Cache-Control" "max-age=3600;must-revalidate"
-          "Expires" (http-date date)}
+        [{:headers {"Cache-Control" "max-age=3600;must-revalidate"
+           "Expires" (http-date date)}}
          f])
       (error-404))))
 
@@ -763,7 +761,7 @@
 ;; RSS
 
 (defmacro rss [title site-url description & body]
-  [{"Content-Type" "text/xml;charset=UTF-8"}
+  [{:headers {"Content-Type" "text/xml;charset=UTF-8"}}
    `(html "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
           [:rss {:version "2.0"
                  :xmlns:content "http://purl.org/rss/1.0/modules/content/"
