@@ -21,11 +21,17 @@
                 ::posts))
 
 (defn- csort
+  "Sort a coll by creation date"
+  [coll]
+  (sort-by :created coll))
+
+(defn- csort-r
   "Reverse-sort a coll by creation date"
   [coll]
-  (reverse (sort-by :created coll)))
+  (reverse (csort coll)))
 
-(defmacro deftable [singular plural]
+(defmacro deftable
+  [singular plural sortfn]
   (let [conditions 'conditions
         obj (symbol singular)
         table (keyword (name (ns-name *ns*)) plural)]
@@ -36,9 +42,10 @@
          (fetch data ~table ~conditions))
        (defn ~(symbol (str "all-" plural))
          ~(str "Returns all " plural " matching some conditions.  If no conditions are given, returns all " plural ".")
-         ([] (csort (fetch-all data ~table)))
+         ([]
+            (~sortfn (fetch-all data ~table)))
          ([~conditions]
-            (csort (fetch-all data ~table ~conditions))))
+            (~sortfn (fetch-all data ~table ~conditions))))
        (defn ~(symbol (str "add-" singular))
          ~(str "Adds a " singular " to the dataref and DB.")
          [~obj]
@@ -61,23 +68,23 @@
          [~obj]
          (dosync (refresh data ~obj db ~table))))))
 
-(deftable "post" "posts")
-(deftable "comment" "comments")
-(deftable "tag" "tags")
-(deftable "user" "users")
-(deftable "post_tag" "post_tags")
-(deftable "category" "categories")
-(deftable "spam" "spam")
+(deftable "post" "posts" csort-r)
+(deftable "comment" "comments" csort)
+(deftable "tag" "tags" #(sort-by :name %))
+(deftable "user" "users" identity)
+(deftable "post_tag" "post_tags" identity)
+(deftable "category" "categories" #(sort-by :name %))
+(deftable "spam" "spam" identity)
 
 (defn all-blog-posts
   "Returns a seq of all posts with type 'page'."
    []
-  (csort (all-posts {:type "blog"})))
+  (csort-r (all-posts {:type "blog"})))
 
 (defn all-pages
   "Returns a seq of all posts with type 'post'."
   []
-  (csort (all-posts {:type "page"})))
+  (csort-r (all-posts {:type "page"})))
 
 (defn post-comments [post]
   (all-comments {:post_id (:id post)}))
