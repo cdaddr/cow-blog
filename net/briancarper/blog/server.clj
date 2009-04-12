@@ -1,12 +1,17 @@
 (ns net.briancarper.blog.server
   (:use compojure
-        (net.briancarper.blog [global :as global] html)))
+        (net.briancarper.blog [global :as global]
+                              html)
+        (net.briancarper.blog.html [forms :as forms]
+                                   [feed :as feed]
+                                   [admin :as admin]
+                                   [error-pages :as error-pages])))
 
 (defmacro p
   "Makes the session, params, headers and request hash globally available (via thread-specific bindings)."
   [& rest]
   `(binding [global/*session* ~'session
-             global/*params* ~'params
+             global/*param* ~'params
              global/*request* ~'request]
      ~@rest))
 

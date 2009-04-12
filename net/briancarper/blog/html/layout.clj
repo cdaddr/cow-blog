@@ -11,6 +11,7 @@
   (let [cat (if post (:permalink (:category post)) "uncategorized")
         has-cat? (not (= cat "uncategorized"))]
     [:div {:class (str "block block-" cat)}
+     [:div.block-top]
      [:div.block-content
       [:div (when has-cat?
               {:class cat :style (str "background: url(/img/" cat "-bg.png) no-repeat top right")})
