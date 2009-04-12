@@ -63,6 +63,7 @@
 (deftable "user" "users")
 (deftable "post_tag" "post_tags")
 (deftable "category" "categories")
+(deftable "spam" "spam")
 
 (defn all-blog-posts
   "Returns a seq of all posts with type 'page'."
@@ -82,7 +83,7 @@
        (all-post_tags {:post_id (:id post)})))
 
 (defn post-category [post]
-  (get-category {:post_id (:id post)}))
+  (get-category (:category_id post)))
 
 (defn post-post_tags [post]
   (all-post_tags {:post_id (:id post)}))

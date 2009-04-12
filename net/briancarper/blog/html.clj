@@ -2,11 +2,8 @@
   (:use (net.briancarper.blog db config)
         (net.briancarper util)
         (net.briancarper.util html)
-        (compojure html file-utils)
-        (compojure.html page-helpers)
-        [compojure.html.form-helpers :only (form-to drop-down text-field label submit-button hidden-field password-field)]
-        (compojure.http helpers)
-        (clojure.contrib str-utils seq-utils))
+        compojure
+        (clojure.contrib str-utils seq-utils java-utils))
   (:import (java.util Calendar)))
 
 (declare navbar error submit)
@@ -14,8 +11,7 @@
 ;; server.clj will bind these (thread-locally) to give us global access to
 ;; various things we'd otherwise have to constantly pass around between functions.
 (def *session* nil)
-(def *params* nil)
-(def *headers* nil)
+(def *param* nil)
 (def *request* nil)
 
 (defn- die [something]
@@ -23,25 +19,6 @@
 
 ;; These functions implement a rudimentary Rails-like "flash" system
 ;; to add a message into a session and delete it as soon as it's looked at.
-
-(defn message [s]
-  (dosync
-   (alter *session* assoc :message s)))
-
-(defn error-message [s]
-  (dosync
-   (alter *session* assoc :error-message s)))
-
-(defn unread-message [sym]
-  (and *session*
-       (sym @*session*)))
-
-(defn show-and-clear [sym]
-  (if (unread-message sym)
-    (let [message [:div {:id (name sym)} (sym @*session*)]]
-     (dosync
-      (alter *session* dissoc sym)
-      message))))
 
 (defn expire-date
   "Returns a date one week in the future."
@@ -60,7 +37,7 @@
   (if-logged-in [:p] [:p])"
   [& rest]
   `(if (and *session*
-            (:username @*session*))
+            (:username *session*))
      (try ~@rest)))
 
 
@@ -105,7 +82,7 @@
 (defn block
   "Wraps some forms in HTML for a 'block', which is a series of div that can be used to display a box around some content given a proper CSS setup.  If post is non-nil, the category of the post is used to style the block."
   [post & content]
-  (let [cat (if post (:permalink (:category post)) "uncategorized")
+  (let [cat (if post (:permalink (post-category post)) "uncategorized")
         has-cat? (not (= cat "uncategorized"))]
     [:div {:class (str "block block-" cat)}
      [:div.block-top
@@ -121,7 +98,7 @@
 (defn comments-link
   "Returns HTML for a link to the comments anchor on the post page for some post."
   [post]
-  (let [c (count (:comments post))]
+  (let [c (count (post-comments post))]
     [:span.comment-link
      (link-to (str (:url post) "#comments")
               (str c
@@ -145,8 +122,8 @@
             [:div.meta
              [:div.meta-row
               (if (= "blog" (:type post))
-                [:span "Posted into " (link-to (:url (:category post))
-                                               (:name (:category post)))]
+                [:span "Posted into " (link-to (:url (post-category post))
+                                               (:name (post-category post)))]
                 "Posted")
               " on " (format-date (:created post))]
              (when (:edited post)
@@ -160,7 +137,7 @@
               (if (not (:single-page opts))
                 (comments-link post))]
              [:div.meta-row
-              "Tags: " (map #(vector :a.tag {:href (:url %)} (:name %)) (:tags post))]]])))
+              "Tags: " (map #(vector :a.tag {:href (:url %)} (:name %)) (post-tags post))]]])))
 
 (defn navbar
   "Returns HTML for the navbar (floating side navigation area)."
@@ -225,10 +202,6 @@
                   [:link {:rel "alternate" :type "application/rss+xml" :href "/feed"}]
                   ]
                  [:body
-
-                  (show-and-clear :message)
-                  (show-and-clear :error-message)
-
                   [:div#doc4.yui-t5
                    [:div#hd]
                    [:div#bd
@@ -237,9 +210,7 @@
                       ~@rest]]
                     [:div#navbar.yui-b
                      (navbar)]]
-                   [:div#ft (footer)]]]]))
-     (catch Exception e#
-       "Sorry, the server just barfed.  :("))])
+                   [:div#ft (footer)]]]])))])
 
 ;; Error pages
 
@@ -282,7 +253,7 @@
 
 (defn do-login [params]
   (dosync
-   (if (:logged-in @*session*)
+   (if (:logged-in *session*)
      (redirect-to "/")
      (if (get-user {:name (:name *params*)
                     :password (sha-256 (str *password-salt* (:password *params*)))})
@@ -315,7 +286,7 @@
 (defn comment-list
   "Returns HTML for a list of user comments for a post."
   [post]
-  (map comment-line (:comments post) (interleave (repeat "even")
+  (map comment-line (post-comments post) (interleave (repeat "even")
                                                  (repeat "odd"))))
 
 (defn comment-form
@@ -340,11 +311,11 @@
   "Returns HTML for the comments section of a single post page, including the list of user comments for this post and a place for users to add new comments."
   [post]
   [:div#comments
-   (when (> (count (:comments post))
+   (when (> (count (post-comments post))
             0)
      (block nil
             [:div
-             [:h2 (count (:comments post)) " Comments"]
+             [:h2 (count (post-comments post)) " Comments"]
              (comment-list post)]))
    (block nil
           [:h2 "Speak Your Mind"]
@@ -542,7 +513,7 @@
   "Returns HTML for a page that lists all posts with a certain tag."
   [name]
   (let [tag (get-tag name)
-        tag-posts (all-posts-with-tag name)
+        tag-posts (all-posts-with-tag tag)
         posts (paginate tag-posts)]
     (if posts
       (page (str "Tag: " (:name tag))
@@ -600,7 +571,7 @@
                   [:td.nowrap (format-date (:created post))]
                   [:td (link-to (:url post) (:title post))]
                   [:td (if (= "blog" (:type post))
-                         (link-to (:url (:category post)) (:name (:category post)))
+                         (link-to (:url (post-category post)) (:name (post-category post)))
                          "Static page")]
                   [:td.nowrap (comments-link post)]
                   (if-logged-in
@@ -620,8 +591,13 @@
   []
   (block nil
          [:h2 "Most Discussed"]
-         (post-table (take 15 (reverse (sort-by #(count (:comments %))
-                                                (all-posts)))))))
+         (post-table
+          (map first
+               (take 15
+                 (reverse
+                  (sort-by second
+                           (map #(vector % (count (post-comments %)))
+                                (all-posts)))))))))
 
 (defn archives-page
   "Returns HTML for a page that displays archives (tag cloud and table lists of posts and pages)."
@@ -702,10 +678,10 @@
           (drop-down "category_id"
                      (map #(vector (:name %) (:id %))
                           (all-categories))
-                     (:id (:category post))))
+                     (:id (post-category post))))
          (field text-field "parent_id" "Parent" (if-let [parent (get-post (:parent_id post))]
                                                      (:permalink parent)))
-         (field text-field "all-tags" "Tags" (str-join ", " (map :name (:tags post))))
+         (field text-field "all-tags" "Tags" (str-join ", " (map :name (post-tags post))))
          (field text-area "markdown" "Content" (:markdown post))
          (submit "Submit"))
        [:h2 "Preview"]
@@ -752,7 +728,7 @@
                                        (:author *params*))
                              :homepage (:homepage *params*)
                              :post_id (:post_id *params*)
-                             :ip (or (:x-forwarded-for *headers*)
+                             :ip (or (:x-forwarded-for (:headers *request*))
                                      (.getRemoteAddr *request*))
                              :approved 1})
           (message "Comment added")
@@ -766,7 +742,7 @@
         (try
          (add-spam (assoc *params*
                      :post_id (:id post)
-                     :ip (or (:x-forwarded-for *headers*)
+                     :ip (or (:x-forwarded-for (:headers *request*))
                              (.getRemoteAddr *request*))))
          (catch Exception e))
         (error-message "Comment failed.  You didn't type the magic word.  :(")
@@ -823,7 +799,7 @@
         *site-name*
         (str *site-url* (:url post) "#comments")
         *site-name* " Comment Feed for Post " (:title post)
-      (map rss-item (:comments post)))
+      (map rss-item (post-comments post)))
     (error-404 )))
 
 (defn tag-rss [tagname]
