@@ -12,7 +12,7 @@
   []
   (if-logged-in
    (page "New Post"
-         (layout/block nil
+         (block nil
                 [:h2 "New Post"]
                 (post-form "/add")))))
 
@@ -22,7 +22,7 @@
   (if-logged-in
    (let [post (get-post (bigint id))]
      (page "Edit Post"
-           (layout/block nil
+           (block nil
                   [:h2 "Edit Post"]
                   (post-form (str "/edit/" (:id post)) post)
                   (form-to [POST (str "/delete/" (:id post))]
@@ -36,7 +36,7 @@
   (if-logged-in
    (let [comment (get-comment (bigint id))]
      (page "Edit Comment"
-           (layout/block nil
+           (block nil
                   (edit-comment-form comment)
                   [:div#preview]
                   (form-to [POST (str "/remove-comment/" (:id comment))]
@@ -67,10 +67,10 @@
   []
   (if-logged-in
    (page "Moderate Comments"
-         (layout/block nil
+         (block nil
                 [:h2 "Moderate Comments"]
                 (map #(vector :div (edit-comment-form %) [:hr])
                      (all-unapproved-comments)))
-         (layout/block nil
+         (block nil
                 [:h2 "Last 30 Comments"]
                 (map moderate-comment-line (take 30 (all-comments)))))))

@@ -34,7 +34,7 @@
   "Given a post, returns HTML for the contents of that post (its title, post text, meta-data (date, category, tags etc.).  opts is a series of key/value pairs.  Currently one option is accepted, :single-page; if true, suppresses display of the 'comments' link."
   [post & opts]
   (let [opts (apply hash-map opts)]
-    (layout/block post
+    (block post
            [:h2
             (link-to (:url post) (:title post))]
            (if-let [parent (:parent post)]
@@ -67,7 +67,7 @@
 
 (defn login-page []
   (page "Login"
-        (layout/block nil
+        (block nil
          (form-to [POST "/login"]
            (field text-field "name" "Username")
            (form-row
@@ -136,11 +136,11 @@
   [post]
   [:div#comments
    (when (> (count (:comments post)) 0)
-     (layout/block nil
+     (block nil
             [:div
              [:h2 (count (:comments post)) " Comments"]
              (comment-list post)]))
-   (layout/block nil
+   (block nil
           [:h2 "Speak Your Mind"]
           [:div.form.clear (comment-form post)]
           [:h2 "Preview"]
@@ -184,7 +184,7 @@
         posts (paginate cat-posts)]
     (if posts
       (page (str "Category " (:name cat))
-            (layout/block nil
+            (block nil
                    [:h2 (count cat-posts) " Posts in Category \"" (link-to (:url cat) (:name cat)) "\""]
                    [:h4
                     (image "/img/rss.png" :class "rss")
@@ -241,7 +241,7 @@
         posts (paginate tag-posts)]
     (if posts
       (page (str "Tag: " (:name tag))
-            (layout/block nil
+            (block nil
                    [:h2 (str (count tag-posts) " Posts Tagged \"" (html (link-to (:url tag) (:name tag))) "\"")]
                    [:h4 (image "/img/rss.png" :class "rss")
                     (link-to (str "/feed/tag/" (:permalink tag)) "RSS Feed for \"" (:name tag) "\" Tag")])
@@ -255,7 +255,7 @@
 (defn tag-cloud
   "Returns HTML for a tag cloud (logarithmically scaled)."
   []
-  (layout/block nil
+  (block nil
          [:h2 "Tags"]
          (let [tags-with-counts (all-tags-with-counts)]
            (when (not (empty? tags-with-counts))
@@ -309,14 +309,14 @@
 (defn archives-all
   "Returns HTML for a block containing a table list of all posts and pages."
   []
-  (layout/block nil
+  (block nil
          [:h2 "Everything"]
          (post-table (all-posts))))
 
 (defn archives-most-discussed
   "Returns HTML for a block containing a table list of the top 15 most discussed posts and pages."
   []
-  (layout/block nil
+  (block nil
          [:h2 "Most Discussed"]
          (post-table
           (take 15
@@ -339,7 +339,7 @@
         all-results (search-posts terms)
         results (paginate all-results)]
     (page "Search Results"
-          (layout/block nil
+          (block nil
                  [:h2 (str (count all-results) " Results for Search: \"") terms "\""])
           (map post-block results)
           (pagenav all-results (fn [x] (str "?q=" terms "&" x))))))

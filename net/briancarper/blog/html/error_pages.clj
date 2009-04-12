@@ -10,7 +10,7 @@
      [code (error msg)])
   ([msg]
      (page "Error!"
-           (layout/block nil
+           (block nil
                   [:h3 (str "ERROR: " msg)]
                   [:p "Sorry, something broke."]
                   [:p "Do you want to go back to the " (link-to "/" "front page") "?"]
