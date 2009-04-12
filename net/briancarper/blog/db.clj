@@ -42,24 +42,24 @@
        (defn ~(symbol (str "add-" singular))
          ~(str "Adds a " singular " to the dataref and DB.")
          [~obj]
-         (create data ~obj db ~table))
+         (dosync (create data ~obj db ~table)))
        (defn ~(symbol (str "remove-" singular))
          ~(str "Removes a " singular " from the dataref and DB.")
          [~obj]
-         (delete data ~obj db ~table))
+         (dosync (delete data ~obj db ~table)))
        (defn ~(symbol (str "edit-" singular))
          ~(str "Updates a " singular " in the dataref and DB.")
          [~obj]
-         (update data ~obj db ~table))
+         (dosync (update data ~obj db ~table)))
        (defn ~(symbol (str "get-or-add-" singular))
          ~(str "Fetches a " singular " from the dataref if it exists; otherwise adds it to the dataref and DB.")
          [~obj]
-         (or (~(symbol (str "get-" singular)) ~obj)
-             @(~(symbol (str "add-" singular)) ~obj)))
+         (dosync (or (~(symbol (str "get-" singular)) ~obj)
+                     @(~(symbol (str "add-" singular)) ~obj))))
        (defn ~(symbol (str "refresh-" singular))
          ~(str "Refreshes a " singular " by calling the after-db-read hook on it.")
          [~obj]
-         (refresh data ~obj db ~table)))))
+         (dosync (refresh data ~obj db ~table))))))
 
 (deftable "post" "posts")
 (deftable "comment" "comments")
@@ -154,8 +154,9 @@
     :parent (if-let [id (:parent_id post)] (get-post id))))
 
 (defmethod after-delete ::posts [post]
-  (dorun (map remove-comment (:comments post)))
-  (dorun (map remove-post_tag (post-post_tags post))))
+  (dosync
+   (dorun (map remove-comment (:comments post)))
+   (dorun (map remove-post_tag (post-post_tags post)))))
 
 ;; COMMENTS
 
@@ -196,7 +197,8 @@
 (defmethod after-delete ::post_tags [pt]
   (let [tag (get-tag (:tag_id pt))]
     (if (empty? (all-posts-with-tag tag))
-      (remove-tag tag))))
+      (remove-tag tag)))
+  pt)
 
 (defmethod after-change ::post_tags [pt]
   (if-let [post (get-post (:post_id pt))]

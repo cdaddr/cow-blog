@@ -113,8 +113,8 @@
   (t
    (is (= (count (post-tags (get-post 555))) 1))
    (remove-tag-from-post (get-post 555) (:name (get-tag 888)))
-   (is (= (count (all-tags)) 0))
-   (is (= (count (post-tags (get-post 555))) 0))))
+   (is (= (count (post-tags (get-post 555))) 0))
+   (is (= (count (all-tags)) 0))))
 
 (deftest test-get-or-add-tag
   (t
