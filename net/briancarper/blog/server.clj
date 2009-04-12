@@ -1,13 +1,13 @@
 (ns net.briancarper.blog.server
   (:use compojure
-        (net.briancarper.blog html)))
+        (net.briancarper.blog [global :as global] html)))
 
 (defmacro p
   "Makes the session, params, headers and request hash globally available (via thread-specific bindings)."
   [& rest]
-  `(binding [net.briancarper.blog.html/*session* ~'session
-             net.briancarper.blog.html/*param* ~'params
-             net.briancarper.blog.html/*request* ~'request]
+  `(binding [global/*session* ~'session
+             global/*params* ~'params
+             global/*request* ~'request]
      ~@rest))
 
 (defroutes blog

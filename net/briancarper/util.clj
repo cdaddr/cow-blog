@@ -16,6 +16,14 @@
 (defn glob [dirname]
   (into [] (.list (java.io.File. dirname))))
 
+(defn expire-date
+  "Returns a date one week in the future."
+  []
+  (let [cal (doto (Calendar/getInstance)
+              (.add Calendar/WEEK_OF_MONTH 1))
+        date (.getTime cal)]
+    date))
+
 (defn rfc822-date [date]
   (let [f (java.text.SimpleDateFormat. "EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z")]
     (.format f date)))
@@ -41,3 +49,8 @@
 
 (defn now []
   (.getTime (Calendar/getInstance)))
+
+
+(defn- die [something]
+  (throw (Exception. (str "--->" something "<---"))))
+
