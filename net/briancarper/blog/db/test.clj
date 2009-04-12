@@ -11,8 +11,7 @@
 
 (defn init-test-db []
   (let [id [:id :int "AUTO_INCREMENT" "NOT NULL" "PRIMARY KEY"]]
-    (with-crud
-     (with-db
+    (with-connection db
       (apply do-commands
              (doall (map #(str "DROP TABLE IF EXISTS " %)
                          ["posts" "comments" "categories" "tags" "post_tags" "spam" "users"])))
@@ -54,7 +53,7 @@
                        :permalink "blarg"})
       (insert-records ::post_tags
                       {:post_id 555
-                       :tag_id 888})))))
+                       :tag_id 888}))))
 
 (deftest test-normalize-tagname
   (is (= (normalize-tagname "foo") "foo"))
@@ -67,11 +66,11 @@
   (is (= (normalize-homepage "foo.com") "http://foo.com")))
 
 (defmacro t [& rest]
-  `(with-crud
-    (with-db
-     (init-test-db)
-     (with-out-str (init-all))
-     ~@rest)))
+  `(binding [clojure.contrib.test-is/*stack-trace-depth* 5]
+     (with-connection db
+      (init-test-db)
+      (with-out-str (init-all))
+      ~@rest)))
 
 (deftest test-all-posts
   (t
@@ -81,12 +80,12 @@
 (deftest test-post-init
   (t
    (let [post (get-post 777)]
-     (is (= (count (:comments post)) 1))
-     (is (= (count (:tags post)) 0))
+     (is (= (count (post-comments post)) 1))
+     (is (= (count (post-tags post)) 0))
      (is (= (:url post) "/page/bar")))
    (let [post (get-post 555)]
-     (is (= (count (:comments post)) 0))
-     (is (= (count (:tags post)) 1))
+     (is (= (count (post-comments post)) 0))
+     (is (= (count (post-tags post)) 1))
      (is (= (:url post) "/blog/foo")))))
 
 (deftest test-post-delete
@@ -105,43 +104,43 @@
 (deftest test-comment-delete
   (t
    (is (= (count (all-comments)) 1))
-   (is (= (count (:comments (get-post 777))) 1))
+   (is (= (count (post-comments (get-post 777))) 1))
    (remove-comment (get-comment 123))
    (is (= (count (all-comments)) 0))
-   (is (= (count (:comments (get-post 777))) 0))))
+   (is (= (count (post-comments (get-post 777))) 0))))
 
 (deftest test-tag-delete-from-post
   (t
-   (is (= (count (:tags (get-post 555))) 1))
-   (remove-tag-from-post (get-post 555) (get-tag 888))
+   (is (= (count (post-tags (get-post 555))) 1))
+   (remove-tag-from-post (get-post 555) (:name (get-tag 888)))
    (is (= (count (all-tags)) 0))
-   (is (= (count (:tags (get-post 555))) 0))))
+   (is (= (count (post-tags (get-post 555))) 0))))
 
 (deftest test-get-or-add-tag
   (t
-   (is (= (:id (get-or-add-tag "blarg")) 888))
-   (is (= (:name (get-or-add-tag "FooBar")) "FooBar"))))
+   (is (= (:id (get-or-add-tag {:name "Blarg"})) 888))
+   (is (= (:name (get-or-add-tag {:name "FooBar"})) "FooBar"))))
 
 (deftest test-add-tag-to-post
   (t
-   (is (= (count (:tags (get-post 555))) 1))
-   (is (add-tag-to-post (get-post 555) "blarg"))
-   (is (= (count (:tags (get-post 555))) 1))
-   (is (add-tag-to-post (get-post 555) "foobar"))
-   (is (= (count (:tags (get-post 555))) 2))))
+   (is (= (count (post-tags (get-post 555))) 1))
+   (is (add-tag-to-post (get-post 555) "Blarg"))
+   (is (= (count (post-tags (get-post 555))) 1))
+   (is (add-tag-to-post (get-post 555) "FooBar"))
+   (is (= (count (post-tags (get-post 555))) 2))))
 
 (deftest test-sync-tags
   (t
-   (sync-tags (get-post 555) ["a" "b" "c"])
-   (is (= (count (:tags (get-post 555))) 3))
+   (sync-tags (get-post 555) ["A" "B" "C"])
+   (is (= (count (post-tags (get-post 555))) 3))
    (is (nil? (get-tag 888))))
   
   (t
-   (add-tag-to-post (get-post 777) "blarg")
-   (is (= (count (all-posts-with-tag "blarg")) 2))
+   (add-tag-to-post (get-post 777) "Blarg")
+   (is (= (count (all-posts-with-tag (get-tag "blarg"))) 2))
    (is (= (count (all-tags)) 1))
-   (sync-tags (get-post 555) ["a" "b" "c"])
-   (is (= (count (all-posts-with-tag "blarg")) 1))
+   (sync-tags (get-post 555) ["A" "B" "c"])
+   (is (= (count (all-posts-with-tag (get-tag "blarg"))) 1))
    (is (= (count (all-tags)) 4))))
 
 (deftest test-edit-post
@@ -154,11 +153,11 @@
 
 (deftest test-edit-comment
   (t
-   (is (= (:author (first (:comments (get-post 777))))
+   (is (= (:author (first (post-comments (get-post 777))))
           "cows"))   
    (edit-comment (assoc (get-comment 123) :author "BLARG"))
    (is (= (:author (get-comment 123)) "BLARG"))
-   (is (= (:author (first (:comments (get-post 777))))
+   (is (= (:author (first (post-comments (get-post 777))))
           "BLARG"))))
 
 (deftest test-urls
