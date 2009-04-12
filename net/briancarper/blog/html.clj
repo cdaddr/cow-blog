@@ -118,24 +118,6 @@
   (map comment-line (:comments post) (interleave (repeat "even")
                                                  (repeat "odd"))))
 
-(defn comment-form
-  "Returns HTML for a form that a user can use to post a comment."
-  [post]
-  (form-to [POST (str "/add-comment/" (:id post))]
-    (hidden-field "post_id" (:id post))
-    (field text-field "author" "Name")
-    (field text-field "email" "Email")
-    (field text-field "homepage" "URL")
-    ;;NOTE: referer is a honeypot.  Only used for anti-spam.
-    (field text-field "referer" "How did you find this site?")
-    (field markdown-text-area "markdown" "Comment")
-    [:div.test-block
-     [:div.test
-      (image "/img/test.jpg") " "
-      [:input {:type "text" :name "test" :id "test" :value "<= Type this word"}]]]
-    [:div.clear]
-    (submit "Comment")))
-
 (defn comment-block
   "Returns HTML for the comments section of a single post page, including the list of user comments for this post and a place for users to add new comments."
   [post]

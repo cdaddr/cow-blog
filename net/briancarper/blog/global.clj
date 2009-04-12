@@ -1,4 +1,5 @@
-(ns net.briancarper.blog.global)
+(ns net.briancarper.blog.global
+  (:use compojure))
 
 ;; server.clj will bind these (thread-locally) to give us global access to
 ;; various things we'd otherwise have to constantly pass around between functions.
@@ -18,3 +19,8 @@
             (:username *session*))
      (try ~@rest)))
 
+(defn message [text]
+  (flash-assoc  :message text))
+
+(defn error-message [text]
+  (flash-assoc :error-message text))

@@ -9,8 +9,6 @@
 
 ;; Form helpers
 
-(declare message error-message)
-
 (defn markdown-text-area [name value]
   [:textarea {:id name
               :name name
@@ -39,6 +37,24 @@
     (submit-button name)]])
 
 ;; Forms
+
+(defn comment-form
+  "Returns HTML for a form that a user can use to post a comment."
+  [post]
+  (form-to [POST (str "/add-comment/" (:id post))]
+    (hidden-field "post_id" (:id post))
+    (field text-field "author" "Name")
+    (field text-field "email" "Email")
+    (field text-field "homepage" "URL")
+    ;;NOTE: referer is a honeypot.  Only used for anti-spam.
+    (field text-field "referer" "How did you find this site?")
+    (field markdown-text-area "markdown" "Comment")
+    [:div.test-block
+     [:div.test
+      [:img {:src "/img/test.jpg" :alt " "}]
+      [:input {:type "text" :name "test" :id "test" :value "<= Type this word"}]]]
+    [:div.clear]
+    (submit "Comment")))
 
 (defn edit-comment-form [comment]
   (if-logged-in
@@ -83,7 +99,9 @@
        [:h2 "Preview"]
        [:div#preview]])))
 
-;; POST handlers
+;;;; POST handlers
+
+;; Comments
 
 (defn do-edit-comment
   "POST handler for editing a comment.  Login required."
@@ -93,23 +111,8 @@
                         global/*param*)
          post (get-post (:post_id comment))]
      (edit-comment comment)
-     (message "Comment edited")
-     (redirect-to (:url post)))))
-
-(defn do-add-post []
-  (if-logged-in
-   (let [post (add-post global/*param*)]
-     (sync-tags post (re-split #"\s*,\s*" (:all-tags global/*param*)))
-     (redirect-to "/"))))
-
-(defn do-edit-post [id]
-  (if-logged-in
-   (let [post (merge (get-post (bigint id))
-                     (global/*param*))]
-     (edit-post post)
-     (sync-tags post (re-split #"\s*,\s*" (:all-tags global/*param*)))
-     (message "Post Edited")
-     (redirect-to (:url post)))))
+     [(message "Comment edited")
+      (redirect-to (:url post))])))
 
 ;; Note, there's some very rudimentary spam filtering here.
 ;;   1. A honeypot field which is display:hidden from the user; if that field
@@ -154,12 +157,6 @@
         (error-message "Comment failed.  You didn't type the magic word.  :(")
         (redirect-to (:url post))))))
 
-(defn do-remove-post [id]
-  (if-logged-in
-   (let [post (get-post (bigint id))]
-     (remove-post post)))
-  (redirect-to "/"))
-
 (defn do-remove-comment [id]
   (if-logged-in
    (let [comment (get-comment (bigint id))
@@ -167,6 +164,30 @@
      (remove-comment comment)
      (redirect-to (:url post)))))
 
+;; Posts
+
+(defn do-add-post []
+  (if-logged-in
+   (let [post (add-post global/*param*)]
+     (sync-tags post (re-split #"\s*,\s*" (:all-tags global/*param*)))
+     (redirect-to "/"))))
+
+(defn do-edit-post [id]
+  (if-logged-in
+   (let [post (merge (get-post (bigint id))
+                     (global/*param*))]
+     (edit-post post)
+     (sync-tags post (re-split #"\s*,\s*" (:all-tags global/*param*)))
+     (message "Post Edited")
+     (redirect-to (:url post)))))
+
+(defn do-remove-post [id]
+  (if-logged-in
+   (let [post (get-post (bigint id))]
+     (remove-post post)))
+  (redirect-to "/"))
+
+;; Login / logout
 
 (defn do-logout []
   [(session-dissoc :username)
@@ -180,4 +201,4 @@
                     :password (sha-256 (str *password-salt* (:password global/*param*)))})
        [(session-assoc :username (:name params))
         (redirect-to "/")]
-       (error "Login failed!")))))
+       (error (sha-256 (str *password-salt* (:password global/*param*))))))))
