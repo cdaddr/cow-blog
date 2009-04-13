@@ -20,71 +20,27 @@
                 ::posts
                 ::posts))
 
-(defn- csort
-  "Sort a coll by creation date"
-  [coll]
-  (sort-by :created coll))
+(deftable db data "post" "posts")
+(deftable db data "comment" "comments")
+(deftable db data "tag" "tags")
+(deftable db data "user" "users")
+(deftable db data "post_tag" "post_tags")
+(deftable db data "category" "categories")
+(deftable db data "spam" "spam")
 
-(defn- csort-r
-  "Reverse-sort a coll by creation date"
-  [coll]
-  (reverse (csort coll)))
-
-(defmacro deftable
-  [singular plural sortfn]
-  (let [conditions 'conditions
-        obj (symbol singular)
-        table (keyword (name (ns-name *ns*)) plural)]
-    `(do
-       (defn ~(symbol (str "get-" singular))
-         ~(str "Returns a single " singular " matching some conditions.  Throws an exception if more than one matching record is found.")
-         [~conditions]
-         (fetch data ~table ~conditions))
-       (defn ~(symbol (str "all-" plural))
-         ~(str "Returns all " plural " matching some conditions.  If no conditions are given, returns all " plural ".")
-         ([]
-            (~sortfn (fetch-all data ~table)))
-         ([~conditions]
-            (~sortfn (fetch-all data ~table ~conditions))))
-       (defn ~(symbol (str "add-" singular))
-         ~(str "Adds a " singular " to the dataref and DB.")
-         [~obj]
-         (dosync (create data ~obj db ~table)))
-       (defn ~(symbol (str "remove-" singular))
-         ~(str "Removes a " singular " from the dataref and DB.")
-         [~obj]
-         (dosync (delete data ~obj db ~table)))
-       (defn ~(symbol (str "edit-" singular))
-         ~(str "Updates a " singular " in the dataref and DB.")
-         [~obj]
-         (dosync (update data ~obj db ~table)))
-       (defn ~(symbol (str "get-or-add-" singular))
-         ~(str "Fetches a " singular " from the dataref if it exists; otherwise adds it to the dataref and DB.")
-         [~obj]
-         (dosync (or (~(symbol (str "get-" singular)) ~obj)
-                     @(~(symbol (str "add-" singular)) ~obj))))
-       (defn ~(symbol (str "refresh-" singular))
-         ~(str "Refreshes a " singular " by calling the after-db-read hook on it.")
-         [~obj]
-         (dosync (refresh data ~obj db ~table))))))
-
-(deftable "post" "posts" csort-r)
-(deftable "comment" "comments" csort)
-(deftable "tag" "tags" #(sort-by :name %))
-(deftable "user" "users" identity)
-(deftable "post_tag" "post_tags" identity)
-(deftable "category" "categories" #(sort-by :name %))
-(deftable "spam" "spam" identity)
+(defmethod crud/fetch-all-wrapper ::posts [_] #(reverse (sort-by :created %)))
+(defmethod crud/fetch-all-wrapper ::tags [_] #(sort-by :name %))
+(defmethod crud/fetch-all-wrapper ::categories [_] #(sort-by :name %))
 
 (defn all-blog-posts
   "Returns a seq of all posts with type 'page'."
    []
-  (csort-r (all-posts {:type "blog"})))
+   (all-posts {:type "blog"}))
 
 (defn all-pages
   "Returns a seq of all posts with type 'post'."
   []
-  (csort-r (all-posts {:type "page"})))
+  (all-posts {:type "page"}))
 
 (defn post-comments [post]
   (all-comments {:post_id (:id post)}))
