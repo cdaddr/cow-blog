@@ -81,7 +81,7 @@
        (form-to [POST url]
          (field text-field "title" "Title" (:title post))
          (field text-field "permalink" "Permalink" (:permalink post))
-         (field text-field "created" "Created" (:created post))
+         (field text-field "created" "Created" (form-date (:created post)))
          (form-row
           (label "type" "Type:")
           (drop-down "type" ["blog" "page"] (:type post)))
@@ -111,7 +111,7 @@
                         global/*param*)
          post (get-post (:post_id comment))]
      (edit-comment comment)
-     [(message "Comment edited")
+     [(message "Comment edited.")
       (redirect-to (:url post))])))
 
 ;; Note, there's some very rudimentary spam filtering here.
@@ -140,7 +140,7 @@
                         :ip (or (:x-forwarded-for (:headers *request*))
                                 (:remote-addr *request*))
                         :approved 1})
-          [(message "Comment added")
+          [(message "Comment added.")
            (redirect-to (:url post))])
         ;; FAIL: 
         [(error-message "Comment failed.  You left your message blank.  :(")
@@ -161,24 +161,28 @@
    (let [comment (get-comment (bigint id))
          post (get-post (:post_id comment))]
      (remove-comment comment)
-     (redirect-to (:url post)))))
+     [(message "Comment deleted.")
+      (redirect-to (:url post))])))
 
 ;; Posts
 
 (defn do-add-post []
   (if-logged-in
-   (let [post (add-post global/*param*)]
-     (sync-tags post (re-split #"\s*,\s*" (:all-tags global/*param*)))
-     (redirect-to "/"))))
+   (let [post @(add-post (dissoc global/*param* :all-tags))]
+     (if (not (empty? (:all-tags global/*param*)))
+      (sync-tags post (re-split #"\s*,\s*" (:all-tags global/*param*))))
+     [(message "Post added.")
+      (redirect-to "/")])))
 
 (defn do-edit-post [id]
   (if-logged-in
    (let [post (merge (get-post (bigint id))
-                     (global/*param*))]
+                     global/*param*)]
      (edit-post post)
-     (sync-tags post (re-split #"\s*,\s*" (:all-tags global/*param*)))
-     (message "Post Edited")
-     (redirect-to (:url post)))))
+     (if (not (empty? (:all-tags global/*param*)))
+       (sync-tags post (re-split #"\s*,\s*" (:all-tags global/*param*))))
+     [(message "Post Edited")
+      (redirect-to (:url post))])))
 
 (defn do-remove-post [id]
   (if-logged-in

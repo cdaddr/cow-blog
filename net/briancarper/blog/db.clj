@@ -140,11 +140,18 @@
 ;; POSTS
 
 (defmethod before-save ::posts [post]
-  (assoc post
-    :id (bigint (:id post))
-    :html (markdown-to-html (:markdown post) false)
-    :parent_id (if-let [post (get-post (:parent_id post))]
-                 (:id post))))
+  (if-let [other-post (get-post (:permalink post))]
+    (if (not (= (bigint (:id other-post))
+                (bigint (:id post))))
+      (throw (Exception. (str "A post with that permalink already exists.  " (:id post) " " (:id other-post) "  Try another.")))))
+  (after-db-read
+   (assoc post
+     :id (bigint (:id post))
+     :created (as-date (:created post))
+     :category_id (bigint (:category_id post))
+     :html (markdown-to-html (:markdown post) false)
+     :parent_id (if-let [post (get-post (:parent_id post))]
+                  (:id post)))))
 
 (defmethod before-create ::posts [post]
   (assoc post :created (now)))
@@ -196,7 +203,7 @@
     :author (escape-html (:author c))))
 
 (defmethod after-db-read ::comments [c]
-  (assoc c :avatar (comment-gravatar) c))
+  (assoc c :avatar (comment-gravatar c)))
 
 (defmethod after-change ::comments [c]
   (if-let [post (get-post (:post_id c))]
@@ -221,7 +228,8 @@
   (.toLowerCase (re-gsub #"\s" "-" name)))
 
 (defmethod before-save ::tags [tag]
-  (assoc tag :permalink (tagname-to-permalink (:name tag))))
+  (after-db-read
+   (assoc tag :permalink (tagname-to-permalink (:name tag)))))
 
 (defmethod after-db-read ::tags [tag]
   (assoc tag :url (make-url tag)))

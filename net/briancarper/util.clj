@@ -40,6 +40,10 @@
   (let [f (java.text.SimpleDateFormat. "MMM dd, yyyy KK:mm a zz")]
     (.format f date)))
 
+(defn form-date [date]
+  (let [f (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm:ss")]
+    (.format f date)))
+
 (defn sha-256 [s]
   (let [md (java.security.MessageDigest/getInstance "SHA-256")]
     (.update md (.getBytes s))
@@ -54,3 +58,7 @@
 (defn- die [something]
   (throw (Exception. (str "--->" something "<---"))))
 
+(defn as-date [s]
+  (if (string? s)
+    (.parse (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm:ss") s)
+    s))
