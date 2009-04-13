@@ -29,7 +29,15 @@ Are you looking for a Lisp-driven sparsely-documented cludged-together hobby exp
 
 * Cows.
 
+## Changelog
+
+* April 12, 2009 - Updated to work on Compojure's bleeding-edge "ring" branch.  Complete rewrite of the CRUD library.  Overhauled mostly everything.
+
+* March 27, 2009 - Initial release.
+
 ## Dependencies
+
+* My [clj-crud library](http://github.com/briancarper/clj-crud/tree/master)
 
 * Latest bleeding-edge [clojure](http://clojure.org/), post lazy-branch at least.
 
@@ -37,7 +45,7 @@ Are you looking for a Lisp-driven sparsely-documented cludged-together hobby exp
 
 * Tested with MySQL (you'll need the [JDBC connector for MySQL](http://dev.mysql.com/usingmysql/java/)).  May or may not work with other databases via JDBC; known NOT to work with SQLite3.
 
-* [Compojure STABLE 0.1 tag](http://github.com/weavejester/compojure/downloads) and its deps.  Compojure has recently been branched to include *ring*; this will not yet work with that bleeding edge version.
+* [Compojure bleeding edge "ring" branch](http://github.com/weavejester/compojure) and its deps.  
 
 * [Fast-MD5](http://www.twmacinta.com/myjava/fast_md5.php)  (included in /deps)
 
@@ -81,7 +89,7 @@ Unit tests are included for a few of the libraries; more are in progress.  Run t
 
 ## TODO
 
-1. Port to the bleeding-edge ring branch of Compojure.
+1. Done: <s>Port to the bleeding-edge ring branch of Compojure.</s> 
 
 2. There's no web interface to do certain things like add or edit categories; you must do it from the REPL.
 
@@ -89,7 +97,7 @@ Unit tests are included for a few of the libraries; more are in progress.  Run t
 
 4. HTML generation is way slower than it could be.  There are HTML libraries that compile HTML rather than constantly re-generate it.  Might be nice to use those one day.
 
-5. MIME type detection for statically served text files are currently not working.  Text files are served as binary downloads instead of displayed in-browser.
+5. Done: <s>MIME type detection for statically served text files are currently not working.  Text files are served as binary downloads instead of displayed in-browser.</s>
 
 6. The CRUD library is a work in progress and I'm uncertain it's entirely thread-safe under heavy load.  Fun times.
 
