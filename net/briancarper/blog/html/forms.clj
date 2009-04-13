@@ -81,7 +81,7 @@
        (form-to [POST url]
          (field text-field "title" "Title" (:title post))
          (field text-field "permalink" "Permalink" (:permalink post))
-         (field text-field "created" "Created" (form-date (:created post)))
+         (field text-field "created" "Created" (when (:created post) (form-date (:created post))))
          (form-row
           (label "type" "Type:")
           (drop-down "type" ["blog" "page"] (:type post)))
@@ -148,10 +148,10 @@
       ;; FAIL: Spam test failed, either CAPTCHA or honeypot field.
       (do
         (try
-         (add-spam (assoc global/*param*
+         (add-spam (assoc (dissoc global/*param* :id)
                      :post_id (:id post)
                      :ip (or (:x-forwarded-for (:headers *request*))
-                             (.getRemoteAddr *request*))))
+                             (:remote-addr *request*))))
          (catch Exception e))
         [(error-message "Comment failed.  You didn't type the magic word.  :(")
          (redirect-to (:url post))]))))
@@ -176,9 +176,8 @@
 
 (defn do-edit-post [id]
   (if-logged-in
-   (let [post (merge (get-post (bigint id))
-                     global/*param*)]
-     (edit-post post)
+   (let [post @(edit-post (merge (get-post (bigint id))
+                                 global/*param*))]
      (if (not (empty? (:all-tags global/*param*)))
        (sync-tags post (re-split #"\s*,\s*" (:all-tags global/*param*))))
      [(message "Post Edited")

@@ -1,6 +1,7 @@
 (ns net.briancarper.blog.html.layout
   (:use compojure
-        net.briancarper.blog.global)
+        net.briancarper.blog.global
+        (clojure.contrib java-utils))
   (:require (net.briancarper.blog [global :as global]
                                   [config :as config]
                                   [db :as db])))
@@ -53,7 +54,9 @@
        [:ul
         [:li (link-to "/add" "Add post")]
         [:li (link-to "/moderate-comments" "Moderate")]
-        [:li (link-to "/logout" "Logout")]]))]]
+        [:li (link-to "/logout" "Logout")]
+        (if (.exists (file "ERRORS.log"))
+          [:li "Check ERRORS.log!"])]))]]
    [:div.navbar-bottom]])
 
 

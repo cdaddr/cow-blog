@@ -144,6 +144,11 @@
     (if (not (= (bigint (:id other-post))
                 (bigint (:id post))))
       (throw (Exception. (str "A post with that permalink already exists.  " (:id post) " " (:id other-post) "  Try another.")))))
+  (if (empty? (:permalink post))
+    (throw (Exception. "Permalink can't be empty.")))
+  (if (and (string? (:created post))
+           (empty? (:created post)))
+    (throw (Exception. "Creation date can't be empty.")))
   (after-db-read
    (assoc post
      :id (bigint (:id post))
