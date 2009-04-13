@@ -58,8 +58,8 @@
   (POST "/edit-comment/:id" (p (do-edit-comment (params :id))))
   (POST "/remove-comment/:id" (p (do-remove-comment (params :id))))
   
-  (GET "/*" (static-file (params :*)))
-  (ANY "/*" (error-404)))
+  (GET "/*" (p (static-file (params :*))))
+  (ANY "/*" (p (error-404))))
 
 (defserver blog-server
   {:port 8080}

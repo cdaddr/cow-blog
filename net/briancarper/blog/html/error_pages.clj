@@ -1,5 +1,6 @@
 (ns net.briancarper.blog.html.error-pages
   (use compojure
+       (net.briancarper.blog [global :as global])
        (net.briancarper.blog.html [layout :as layout])))
 
 ;; Error pages

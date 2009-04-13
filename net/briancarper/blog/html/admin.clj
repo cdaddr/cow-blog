@@ -73,4 +73,4 @@
                      (all-unapproved-comments)))
          (block nil
                 [:h2 "Last 30 Comments"]
-                (map moderate-comment-line (take 30 (all-comments)))))))
+                (map moderate-comment-line (take 30 (reverse (all-comments))))))))

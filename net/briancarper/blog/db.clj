@@ -31,6 +31,7 @@
 (defmethod crud/fetch-all-wrapper ::posts [_] #(reverse (sort-by :created %)))
 (defmethod crud/fetch-all-wrapper ::tags [_] #(sort-by :name %))
 (defmethod crud/fetch-all-wrapper ::categories [_] #(sort-by :name %))
+(defmethod crud/fetch-all-wrapper ::comments [_] #(sort-by :created %))
 
 (defn all-blog-posts
   "Returns a seq of all posts with type 'page'."
