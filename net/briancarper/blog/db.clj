@@ -335,8 +335,7 @@
                    [:permalink string "NOT NULL"]
                    [:name string]))))
 
-(defn- add-user [username password]
-  (create {:name username
-           :password (sha-256 (str *password-salt* password))}
-          db ::users))
+(defn- new-user [username password]
+  (add-user {:name username
+             :password (sha-256 (str *password-salt* password))}))
 
