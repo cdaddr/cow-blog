@@ -322,7 +322,7 @@
 (defn search-results
   "Returns HTML for a page displaying search results for some query."
   []
-  (let [terms ((get-params) :q)
+  (let [terms (*param* :q)
         all-results (search-posts terms)
         results (paginate all-results)]
     (page "Search Results"
