@@ -20,17 +20,17 @@
 
 (defn combined-css []
   (let [date (expire-date)]
-    [{"Cache-Control" "max-age=3600;must-revalidate"
-      "Expires" (http-date date)}
+    [{:headers {"Cache-Control" "max-age=3600;must-revalidate"
+                "Expires" (http-date date)}}
      (mapcat #(slurp (str "static-blog/css/" % ".css"))
                ["reset-fonts-grids" "style" "zenburn"])]))
 
 (defn combined-js []
   (let [date (expire-date)]
-    [{"Cache-Control" "max-age=3600;must-revalidate"
-      "Expires" (http-date date)}]
-    (apply str (concat (map #(slurp (str "static-blog/js/" % ".js"))
-                            ["jquery" "typewatch" "jquery.textarearesizer.compressed" "highlight" "languages/lisp" "languages/ruby" "showdown" "editor"])))))
+    [{:headers {"Cache-Control" "max-age=3600;must-revalidate"
+                "Expires" (http-date date)}}
+     (apply str (concat (map #(slurp (str "static-blog/js/" % ".js"))
+                             ["jquery" "typewatch" "jquery.textarearesizer.compressed" "highlight" "languages/lisp" "languages/ruby" "showdown" "editor"])))]))
 
 ;; Post block - the guts of all pages that show a blog post or static page
 
