@@ -203,4 +203,4 @@
                     :password (sha-256 (str *password-salt* (:password global/*param*)))})
        [(session-assoc :username (:name params))
         (redirect-to "/")]
-       (error (sha-256 (str *password-salt* (:password global/*param*))))))))
+       (error "Login failed!")))))
