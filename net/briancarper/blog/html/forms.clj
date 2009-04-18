@@ -19,7 +19,7 @@
 (defn form-row
   ([label field] (form-row label field nil))
   ([label field name]
-     [:div {:class "form-row" :id name}
+     [:div {:class "form-row" :id (str name "-row")}
       [:div.form-label label]
       [:div.form-field field]]))
 

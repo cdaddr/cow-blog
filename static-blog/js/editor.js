@@ -6,6 +6,16 @@ function updatePreview() {
     $("div#preview").html(htmltext);
 }
 
+function updatePermalink() {
+    var title = $("input#title").val();
+    $("input#permalink").val(title
+                             .toLowerCase()
+                             .replace(/\s/g, '-')
+                             .replace(/[^-A-Za-z0-9_]/g, '')
+                            );
+}
+
+
 var hidden = true;
 $(document).ready(function() {
         var options = {
@@ -18,6 +28,15 @@ $(document).ready(function() {
         
         updatePreview();
 
+        options = {
+            callback: updatePermalink,
+            wait: 250,
+            highlight: false,
+            enterkey: false,
+        };
+
+        $("input#title").typeWatch(options);
+        
         $('textarea.resizable').TextAreaResizer();
 
         $("div.hide").hide();
