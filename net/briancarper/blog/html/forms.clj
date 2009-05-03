@@ -137,7 +137,7 @@
                                   (:author global/*param*))
                         :homepage (:homepage global/*param*)
                         :post_id (:post_id global/*param*)
-                        :ip (or (:x-forwarded-for (:headers *request*))
+                        :ip (or ((:headers global/*request*) "x-forwarded-for")
                                 (:remote-addr *request*))
                         :approved 1})
           [(message "Comment added.")
@@ -150,7 +150,7 @@
         (try
          (add-spam (assoc (dissoc global/*param* :id)
                      :post_id (:id post)
-                     :ip (or (:x-forwarded-for (:headers *request*))
+                     :ip (or ((:headers global/*request*) "x-forwarded-for")
                              (:remote-addr *request*))))
          (catch Exception e))
         [(error-message "Comment failed.  You didn't type the magic word.  :(")
