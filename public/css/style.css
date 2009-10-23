@@ -1,0 +1,117 @@
+
+body {
+    font-family: Verdana;
+}
+
+#page {
+    width: 605px;
+    margin: auto;
+}
+
+#header {
+    text-align: center;
+    border-bottom: 1px grey dotted;    
+}
+
+#nav {
+    float: right;
+    width: 140px;
+
+}
+
+#nav ul {
+    font-size: 12pt;
+    font-weight: bold;
+    margin: 0;
+    padding: 10px 0;
+}
+
+#nav ul li {
+    font-size: 10pt;
+    font-weight: normal;
+    list-style-type: none;
+    padding: 5px 0 0 10px;
+}
+
+.body {
+    float: left;
+    width: 450px;
+    min-height: 400px;
+    border-right: 1px grey dotted;
+    padding-bottom: 20px;
+}
+
+.post {
+    clear: both;
+    padding-bottom: 20px;
+    padding-right: 10px;
+}
+
+.post-body {
+    padding: 20px;
+}
+
+.post-meta {
+    float: left;
+}
+.post-comments-link {
+    float: right;
+}
+
+
+label {
+    display: block;
+    float: left;
+    text-align: right;
+    width: 100px;
+    padding-right: 5px;
+}
+
+div.submit {
+    padding-left: 105px;
+}
+
+textarea {
+    width: 300px;
+    height: 200px;
+}
+
+div#preview {
+    background: #eee;
+    padding: 5px;
+    margin: 5px;
+    border: 1px dotted grey;
+} 
+
+#footer {
+    clear: both;
+    border-top: 1px grey dotted;
+    padding: 10px 0;
+    text-align: center;
+}
+
+.message {
+    color: green;
+}
+
+.error {
+    color: red;
+}
+
+div#comments {
+    border-top: 1px grey dotted;
+    clear: both;
+}
+
+div.comment-gravatar {
+    float: left;
+    width: 80px;
+}
+
+div.comment-content {
+    padding-left: 90px;
+}
+
+.admin {
+    border-top: 1px grey dotted;
+}
