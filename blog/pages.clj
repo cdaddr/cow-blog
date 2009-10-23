@@ -84,7 +84,7 @@
 (defn index-page [admin]
   {:title "Index"
    :body [:div
-          (or (map #(render-post admin % true) (all-posts))
+          (or (seq (map #(render-post admin % true) (all-posts)))
               [:h2 "No posts yet.  :("])]})
 
 (defn post-page [admin post-id]
