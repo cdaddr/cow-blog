@@ -65,3 +65,11 @@ For bug reports, feedback, or suggestions, please email me at brian@briancarper.
 ## LICENSE
 
 See the `LICENSE` file.
+
+## Changelog
+
+* October 22, 2009 - Rewrite from scratch.  No more CRUD.  Tokyo Cabinet.  Removed cows.
+
+* April 12, 2009 - Updated to work on Compojure's bleeding-edge "ring" branch.  Complete rewrite of the CRUD library.  Overhauled mostly everything.
+
+* March 27, 2009 - Initial release.
