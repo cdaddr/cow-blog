@@ -7,7 +7,7 @@
                         session
                         request
                         middleware)
-        (blog util layout pages user admin rss)))
+        (blog util layout pages admin rss)))
 
 (defn- admin [session]
   (:username session))
