@@ -23,7 +23,7 @@ Some effort has been made to make this a bit secure but **not much**.  Read and 
 
 ## Dependencies
 
-* [Clojure](http://clojure.org/), [clojure-contrib](http://code.google.com/p/clojure-contrib/), [Compojure](http://github.com/weavejester/compojure) (duh).
+* [Clojure](http://github.com/richhickey/clojure), [clojure-contrib](http://github.com/richhickey/clojure-contrib), [Compojure](http://github.com/weavejester/compojure) (duh).
 
 * [Tokyo Cabinet](http://1978th.net/tokyocabinet/).  You must install the C library (compile it yourself, it's straightforward), then install the Java bindings.  Then you have to tell Java where to find everything via `$CLASSPATH` and possibly `LD_LIBRARY_PATH`.  Follow the [directions](http://1978th.net/tokyocabinet/javadoc/) closely.
 
