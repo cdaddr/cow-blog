@@ -1,86 +1,87 @@
 (ns blog.layout
-  (:use (compojure.html gen page-helpers form-helpers)
-        (clojure.contrib pprint)
-        (blog config db util)))
+  (:require (blog [config :as config]
+                  [util :as util]
+                  [db :as db]
+                  [link :as link]))
+  (:use (hiccup [core :only [html]]
+                [page-helpers :only [link-to include-css include-js]]
+                [form-helpers :only [form-to submit-button label]])))
+
+(defn- nav [admin]
+  [:ul
+   [:li "Categories"
+    [:ul
+     (map #(vector :li (link/link %)) (db/categories))]]
+   [:li "Tags"
+    [:ul
+     (map #(vector :li (link/link %)) (db/tags))]]
+   [:li "Meta"
+    [:ul
+     [:li (link-to "/rss.xml" "RSS")]]]
+   (if admin
+     [:li "admin"
+      [:ul "Hello, " admin
+       [:li (link-to "/admin/add-post" "Add Post")]
+       [:li (form-to [:post "/admin/logout"]
+                     (submit-button "Log out"))]]
+      [:ul "Log in?"
+       [:li (link-to "/admin/login" "Log in")]]])])
+
+(defn wrap-in-layout [response]
+  (html
+   [:html
+    [:head
+     [:title config/SITE-TITLE " - " (response :title)]
+     (include-css "/css/style.css")
+     (include-js "/js/combined.js")] ;; magic
+    [:body
+     [:div#rap
+      [:div#headwrap
+       [:div#header (link-to config/SITE-URL config/SITE-TITLE)]
+       [:div#desc (link-to config/SITE-URL config/SITE-DESCRIPTION)]]
+      [:div#sidebar (nav false)]
+      [:div#content.body
+       [:div#storycontent
+        #_"FIXME FLASH"
+        (response :body)]]
+      [:div.credit
+       [:div
+        "Powered by "
+        (link-to "http://clojure.org" "Clojure") " and "
+        (link-to "http://github.com/weavejester/compojure" "Compojure") " and "
+        (link-to "http://briancarper.net" "Cows") "; "
+        "using " (link-to "http://shaheeilyas.com/" "Barecity")" theme."]]]]]))
 
 (defn preview-div []
   [:div
    [:h4 "Preview"]
    [:div#preview]])
 
-(defmulti url type)
+(defn form-row
+  ([f name lab] (form-row f name lab nil))
+  ([f name lab val]
+     [:div
+      (label name (str lab ":"))
+      (f name val)]))
 
-(defmethod url :tag [tag]
-  (str "/tag/" (tag :id)))
+(defn submit-row [lab]
+  [:div.submit
+   (submit-button lab)])
 
-(defmethod url :category [cat]
-  (str "/category/" (cat :id)))
+(comment
 
-(defmethod url :post [post]
-  (str "/post/" (post :id)))
 
-(defmethod url :default [x]
-  (die "Don't know how to make a url out of a " (type x)))
 
-(defn link [x]
-  (link-to {:class (str (type x) "-link")}
-           (url x)
-           (x :title)))
 
-(defn post-comments-link [post]
-  (when post
-    (link-to (str "/post/" (post :id) "#comments")
-             (cl-format nil "~a Comment~:*~[s~;~:;s~]"
-                        (count (post :comments))))))
 
-(defn- nav [admin]
-  [:div.navigation
-   [:ul "Categories"
-    (map #(vector :li (link %)) (all-categories))]
-   [:ul "Tags"
-    (map #(vector :li (link %)) (all-tags))]
-   [:ul "Meta"
-    (comment "TODO"
-      [:li (link-to "/archives" "Archives")]
-      [:li (link-to "/tag-cloud" "Tag Cloud")])
-    [:li (link-to "/rss.xml" "RSS")]]
-   (if admin
-     [:div.admin
-      [:ul "Hello, " admin
-       [:li (link-to "/admin/add-post" "Add Post")]
-       [:li (form-to [:post "/admin/logout"]
-              (submit-button "Log out"))]]
-      [:ul "DB Status: "
-       [:li [:strong (if-let [errors (db-watcher-status)]
-                       [:div [:span.error "ERROR!"]
-                        [:div errors]]
-                       [:span.message "OK"])]]]]
-     [:ul "Log in?"
-      [:li (link-to "/admin/login" "Log in")]])])
+ 
 
-(defn messages [flash]
-  (list
-   (when-let [e (:error flash)]
-     [:div.error e])
-   (when-let [m (:message flash)]
-     [:div.message m])))
+ (defn messages [flash]
+   (list
+    (when-let [e (:error flash)]
+      [:div.error e])
+    (when-let [m (:message flash)]
+      [:div.message m])))
 
-(defn page [admin title flash session & body]
-  (html
-   [:html
-    [:head
-     [:title SITE-TITLE " - " title]
-     (include-css "/css/style.css")
-     (include-js "/js/combined.js")] ;; magic
-    [:body
-     [:div#page
-      [:div#header [:h1 (link-to SITE-URL SITE-TITLE)]]
-      [:div#nav (nav admin)]
-      [:div#body.body
-       (messages flash)
-       body]
-      [:div#footer
-       "Powered by "
-       (link-to "http://clojure.org" "Clojure") " and "
-       (link-to "http://github.com/weavejester/compojure" "Compojure") " and "
-       (link-to "http://briancarper.net" "Cows") "."]]]]))
+
+)

@@ -9,7 +9,7 @@
           varchar "varchar(255) not null"
           nullchar "varchar(255)"
           text "text not null"
-          desc [:name varchar]
+          desc [:title varchar]
           url [:url  varchar]
           tables [[:categories id desc url]
                   [:tags id desc url]
@@ -43,6 +43,8 @@
       (doseq [[table & specs] tables]
         (apply sql/create-table table specs)
         (println "Created" table)))
+    (doseq [table [:posts :categories :tags]]
+      (sql/do-commands (str "alter table " (name table) " add constraint " (name table) "_url unique (url)")))
     (doseq [[table & cols] [[:posts :category_id :status_id :type_id]
                             [:post_tags :post_id :tag_id]
                             [:comments :post_id :status_id]]
@@ -53,8 +55,8 @@
     (doseq [[table vals] [[:types ["Blog" "Page" "Toplevel"]]
                           [:statuses ["Public" "Draft" "Spam"]]]]
       (apply sql/insert-records table
-             (map #(hash-map :name %) vals))
+             (map #(hash-map :title %) vals))
       (println "Initialized" table))
-    (sql/insert-records :categories {:id 1 :name "Uncategorized" :url "uncategorized"})
+    (sql/insert-records :categories {:id 1 :title "Uncategorized" :url "uncategorized"})
     (println "Initialized" :categories)))
 

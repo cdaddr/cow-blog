@@ -1,0 +1,22 @@
+(ns blog.link
+  (require (blog [util :as util])))
+
+(defmulti url #(:table (meta %)))
+
+(defmethod url :tags [tag]
+  (str "/tag/" (tag :url)))
+
+(defmethod url :categories [cat]
+  (str "/category/" (cat :url)))
+
+(defmethod url :posts [post]
+  (str "/post/" (post :url)))
+
+(defmethod url :default [x]
+  (util/die "Don't know how to make a url out of a " (:table (meta x))))
+
+(defn link [x]
+  [:a 
+   {:class (str (:table (meta x)) "-link")
+    :href (url x)}
+   (x :title)])

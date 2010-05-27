@@ -1,63 +1,405 @@
+/*
+Theme Name: Barecity
+Theme URI: http://shaheeilyas.com/
+Description: Minimal theme with bare essentials
+Version: 1.5
+Author: Shahee Ilyas
+Date: February 2008
+Based on the Classic WordPress by Dave Shea || http://mezzoblue.com & Matthew Mullenweg || http://photomatt.net
+Modified & completely redesigned by Shahee Ilyas || http://shaheeilyas.com
+
+	The CSS, XHTML and design is released under GPL:
+	http://www.opensource.org/licenses/gpl-license.php
+
+*/
+
+/* Some modifications by Brian Carper for cow-blog. */
+
+a {
+	text-decoration: none; 
+	color: #000;
+
+}
+
+a:active {
+	text-decoration: none;
+	color: #000;
+}
+
+a:visited {
+	text-decoration: none;
+	color: #000;
+}
+
+a:hover {
+	text-decoration: none; 
+	color: #000;
+}
+
+a img {
+	border: none;
+}
+
+
+acronym, abbr {
+
+}
+
+acronym, abbr, span.caps {
+	font-size: 11px;
+
+}
+
+acronym, abbr {
+	cursor: help;
+	border:none;
+}
+
+blockquote {
+	border-left: 5px solid #ccc;
+	margin-left: 18px
+	padding-left: 5px;
+}
 
 body {
-    font-family: Verdana;
+	background: #fff;
+	color: #000;
+	font-family:  Verdana, Arial, Helvetica, sans-serif;
+	margin: 0;
+	padding: 0;
+	font-size: 12px;
 }
 
-#page {
-    width: 605px;
-    margin: auto;
+cite {
+	font-size: 11px;
+	font-style: normal;
+	color:#666;
 }
+
+h2 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	margin: 15px 0 2px 0;
+	padding-bottom: 2px;
+}
+
+h3 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	margin-top: 0;
+	font-size: 13px;
+}
+
+ol#comments li p {
+}
+
+#commentlist li{
+	margin-left:-22px;
+}
+
+p, li, .feedback {
+	font: 11px Verdana, Arial, Helvetica, sans-serif;
+	
+}
+
+/* classes used by the_meta() */
+ul.post-meta {
+	list-style: none;
+}
+
+ul.post-meta span.post-meta-key {
+	font-weight: bold;
+}
+
+.credit {
+	clear:both;
+	color: #666;
+	font-size: 10px;
+	padding: 50px 0 0 0;
+	margin: 0 0 20px 0;
+	text-align: left;
+}
+
+.credit a:hover {
+	color: #666;
+}
+
+.feedback {
+	color: #666;
+	text-align: right;
+	font-size:10px;
+	clear: both;
+}
+
+.meta {
+	font-size: 10px;
+}
+
+.meta li, ul.post-meta li {
+	display: inline;
+}
+
+.meta ul {
+	display: inline;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+
+#comments{
+
+	padding-top:18px;
+
+}
+
+.commentby {
+	padding-bottom:8px;
+}
+
+#postcomment{
+	margin-top:24px;
+
+}
+
+.meta {
+	color: #808080;
+	font-weight: normal;
+	letter-spacing: 0;
+}
+
+.meta a {
+    color: #000000;
+}
+
+.storytitle {
+	margin: 0;
+}
+
+.storytitle a {
+	text-decoration: none;
+}
+
+.storycontent a {
+	text-decoration: none;
+	border-bottom: 1px dotted #888;
+}
+
+.storycontent a:hover {
+	text-decoration: none;
+	border-bottom: 1px dashed #888;
+}
+
+.storycontent {
+	margin-bottom:-10px;
+}
+.post {
+	margin-bottom:18px;
+}
+
+
+#commentform #author, #commentform #email, #commentform #url, #commentform textarea {
+	background: #fff;
+	border: 1px solid #333;
+	padding: 3px;
+}
+
+#commentform textarea {
+	width: 100%;
+}
+
+#commentlist li ul {
+	font-size: 12px;
+	list-style-type: none;
+	color: #666;
+}
+
+
+
+
+#content {
+	float: left;
+	width:500px;
+}
+
+
 
 #header {
-    text-align: center;
-    border-bottom: 1px grey dotted;    
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 34px;
+	color: black;
+	font-weight: normal;	
 }
 
-#nav {
-    float: right;
-    width: 140px;
+#headwrap {
+	padding:12px 0 16px 0;
+	margin:24px 0 48px 0;
+}
+
+
+#header a {
+	color: black;
+	text-decoration: none;
+}
+
+#header a:hover {
+	text-decoration: none;
+}
+
+#sidebar {
+	background: #fff;
+	border-left: 1px dotted #ccc;
+	padding: 0px 0 10px 20px;
+	float: right;
+	width: 144px;
+}
+
+#sidebar form {
+	margin: 0 0 0 0px;
+}
+
+#sidebar input#s {
+	width: 60%;
+	background: #eee;
+	border: 1px solid #999;
+	color: #000;
+	
+}
+
+#sidebar ul {
+	color: #ccc;
+	list-style-type: none;
+	margin: 0;
+	padding-left: 3px;
+	text-transform: lowercase;
+}
+
+#sidebar h2 {
+	font-weight: normal;
+	margin:0;
+	padding:0;
+	font-size: 12px;
+	
+}
+
+#sidebar ul li {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	margin-top: 10px;
+	padding-bottom: 2px;
+}
+
+#sidebar ul ul {
+	font-variant: normal;
+	font-weight: normal;
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	text-align: left;
+}
+
+#sidebar ul ul li {
+	border: 0;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	letter-spacing: 0;
+	margin-top: 0;
+	padding: 0;
+	padding-left: 3px;
+}
+
+#sidebar ul ul li a {
+	color: #000;
+	text-decoration: none;
+}
+
+#sidebar ul ul li a:hover {
+	border-bottom: 1px solid #809080;
+}
+
+#sidebar ul ul ul.children {
+	font-size: 17px;
+	padding-left: 4px;
+}
+
+#wp-calendar {
+	empty-cells: show;
+	font-size: 11px;
+	margin: 0;
+	width: 90%;	
+}
+
+#wp-calendar #next a {
+	padding-right: 10px;
+	text-align: right;
+}
+
+#wp-calendar #prev a {
+	padding-left: 10px;
+	text-align: left;
+}
+
+#wp-calendar a {
+	display: block;
+	text-decoration: none;
+}
+
+#wp-calendar a:hover {
+	background: #ccc;
+	color: #333;
+}
+
+#wp-calendar caption {
+	color: #000;
+	text-align: left;
+	font-weight: normal;
 
 }
 
-#nav ul {
-    font-size: 12pt;
-    font-weight: bold;
-    margin: 0;
-    padding: 10px 0;
+#wp-calendar td {
+	color: #999;
+	padding: 2px 0;
+	text-align: center;
 }
 
-#nav ul li {
-    font-size: 10pt;
-    font-weight: normal;
-    list-style-type: none;
-    padding: 5px 0 0 10px;
+#wp-calendar td.pad:hover {
+	background: #fff;
 }
 
-.body {
-    float: left;
-    width: 450px;
-    min-height: 400px;
-    border-right: 1px grey dotted;
-    padding-bottom: 20px;
+#wp-calendar td:hover, #wp-calendar #today {
+	background: #eee;
+	color: #666;
 }
 
-.post {
-    clear: both;
-    padding-bottom: 20px;
-    padding-right: 10px;
+#wp-calendar th {
+	font-weight: normal;
+	text-transform: capitalize;
+	color: #999;
+		
 }
 
-.post-body {
-    padding: 20px;
+#rap {
+	background-color: #FFFFFF;
+	margin-right:auto;
+	margin-left:auto;
+	width:700px;
+	padding: 6px;
 }
 
-.post-meta {
-    float: left;
-}
-.post-comments-link {
-    float: right;
+#desc {
+	float:left;
+	font-size: 12px;
+	margin-top:3px;	
 }
 
+#desc a:hover {
+	background-color: #eee;
+	color: #666;
+}
+#desc a:active {
+	background-color: #fff;
+}
+#himage {
+	border:0;
+	margin:0;
+	padding:0 0 0 8px;
+}
 
 label {
     display: block;
@@ -82,36 +424,3 @@ div#preview {
     margin: 5px;
     border: 1px dotted grey;
 } 
-
-#footer {
-    clear: both;
-    border-top: 1px grey dotted;
-    padding: 10px 0;
-    text-align: center;
-}
-
-.message {
-    color: green;
-}
-
-.error {
-    color: red;
-}
-
-div#comments {
-    border-top: 1px grey dotted;
-    clear: both;
-}
-
-div.comment-gravatar {
-    float: left;
-    width: 80px;
-}
-
-div.comment-content {
-    padding-left: 90px;
-}
-
-.admin {
-    border-top: 1px grey dotted;
-}

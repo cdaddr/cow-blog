@@ -1,4 +1,5 @@
-(ns blog.config)
+(ns blog.config
+  (:require (net.briancarper [postgres-pool :as pg])))
 
 (def SITE-TITLE "A Clojure Blog (\u03bb)")
 (def SITE-URL "http://localhost:8080")
@@ -14,10 +15,17 @@
 (def ADMIN-USER {:username "foo"
                  :password "4bdec02a2dd5e6b6e28935bccf9bf4e7e5becce96b7845bee692768f4e4a810"})
 
+(def TIME-ZONE "Canada/Pacific")
+(def TIME-FORMAT "MMMM dd, yyyy @ h:mm a z")
+
 ;; Change this.
 (def PASSWORD-SALT "K@#$J@$#(FJ@#!$M@#n1NELKDwdjf9wef123krJ@!FKnjef2i#JR@R")
 
 (def DB nil)
+
+(def DB (pg/postgres-pool {:database "blogtest"
+                           :username "blogtest"
+                           :password "blogtest"}))
 
 ;; Pick a DB...
 (comment

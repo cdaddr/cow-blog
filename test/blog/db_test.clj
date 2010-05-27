@@ -11,12 +11,18 @@
 
 (def test-data
      {:tags
-      [{:id 1 :name "Tag1" :url "tag1"}
-       {:id 2 :name "Tag2" :url "tag2"}]
+      [{:id 1 :title "Tag1" :url "tag1"}
+       {:id 2 :title "Tag2" :url "tag2"}]
       :posts
-      [{:id 1 :title "foo" :url "foo" :author "Brian"
-        :markdown "This is some text" :html "This is some text"
-        :status_id 1 :type_id 1}]
+      [{:id 1 :title "A Sample Post Title" :url "a-sample-post-title" :author "Brian"
+        :markdown "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+        :html "<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p><p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>"
+        :status_id 1 :type_id 1 :date_created (time/str-to-dbdate :edit "2010-05-27 15:01:00 -07:00")}
+       {:id 2 :title "bar" :url "bar" :author "Brian"
+        :markdown "This is some text" :html "<p>This is some text</p>"
+        :status_id 1 :type_id 1 :date_created (time/str-to-dbdate :edit "2010-05-26 12:23:00 -07:00")}]
       :comments
       [{:id 1 :post_id 1 :status_id 1 :author "Someone" :markdown "Blah" :html "Blah"}]
       :post_tags
@@ -47,8 +53,8 @@
 
 (deftest test-posts
   (with-test-db
-    (is (= (map :id (posts))
-           (map :id (:posts test-data))))
+    (is (= (set (map :id (posts)))
+           (set (map :id (:posts test-data)))))
 
     (is (= 1 (:id (post 1))))))
 

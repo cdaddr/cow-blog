@@ -2,10 +2,8 @@
   (:require (clojure.contrib [sql :as sql])
             (net.briancarper [oyako :as oyako])
             (blog [config :as config]
-                  [util :as util])))
-
-(use '(clojure.pprint))
-(defmacro p [x] `(pprint (macroexpand ~x)))
+                  [util :as util]
+                  [time :as time])))
 
 (def schema
      (oyako/make-datamap
@@ -28,14 +26,15 @@
 (defn posts []
   (with-db
     (oyako/fetch-all :posts
-                     includes [:tags :category :comments :status :type])))
+                     includes [:tags :category :comments :status :type]
+                     :order :date_created)))
 
 
-(defn post [id]
+(defn post [url]
   (with-db
     (oyako/fetch-one :posts
                      includes [:tags :category :comments]
-                     where ["id = ?" id]
+                     where ["url = ?" url]
                      limit 1)))
 
 (defn comments []
@@ -47,14 +46,14 @@
 (defn categories []
   (with-db
     (oyako/fetch-all :categories
-                     includes :post
-                     order :name)))
+                     includes :posts
+                     order :title)))
 
 (defn tags []
   (with-db
     (oyako/fetch-all :tags
                      includes :posts
-                     order :name)))
+                     order :title)))
 
 (defn tag [id]
   (with-db
