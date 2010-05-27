@@ -1,114 +1,85 @@
 (ns blog.db
-  (:use (clojure.contrib def str-utils)
-        (blog util tokyocabinet markdown)))
+  (:require (clojure.contrib [sql :as sql])
+            (net.briancarper [oyako :as oyako])
+            (blog [config :as config]
+                  [util :as util])))
 
-(defonce posts (make-dataref "posts.db"))
+(use '(clojure.pprint))
+(defmacro p [x] `(pprint (macroexpand ~x)))
 
-(defn- uuid []
-  (str (java.util.UUID/randomUUID)))
+(def schema
+     (oyako/make-datamap
+      [:posts
+       [belongs-to :categories as :category]
+       [belongs-to :statuses as :status]
+       [belongs-to :types as :type]
+       [has-many :comments]
+       [habtm :tags via :post_tags]]
+      [:comments
+       [belongs-to :posts as :post]
+       [belongs-to :statuses as :status]]
+      [:categories [has-many :posts]]
+      [:tags [habtm :posts via :post_tags]]
+      [:types [has-many :posts]]
+      [:statuses [has-many :posts]]))
 
-(defn title-to-id [s]
-  (when s
-   (->> s
-       (re-gsub #"\s" "-")
-       (re-gsub #"[^-A-Za-z0-9_]" "")
-       .toLowerCase)))
+(oyako/def-helper with-db #'config/DB #'schema)
 
-(defn- with-type [type x]
-  (with-meta x {:type type}))
+(defn posts []
+  (with-db
+    (oyako/fetch-all :posts
+                     includes [:tags :category :comments :status :type])))
 
-(defn- valid-id? [id]
-  (re-matches #"^[-A-Za-z0-9_]+$" id))
 
-(defn make-post [post]
-  (if (and (valid-id? (post :id))
-           (not (empty? (post :markdown))))
-    (with-type :post
-      (assoc post
-        :date (or (post :date) (now))
-        :html (markdown-to-html (post :markdown) false)))
-    (die "Invalid post data.  You left something blank:  " post)))
+(defn post [id]
+  (with-db
+    (oyako/fetch-one :posts
+                     includes [:tags :category :comments]
+                     where ["id = ?" id]
+                     limit 1)))
 
-(defn make-comment [post c]
-  (with-type :comment
-    (assoc c
-      :id (uuid)
-      :post-id (post :id)
-      :date (or (c :date) (now))
-      :html (markdown-to-html (:markdown c) true))))
+(defn comments []
+  (with-db
+    (oyako/fetch-all :comments
+                     includes [:post :statuses]
+                     order :date_created)))
 
-(defn make-category [cat]
-  (when cat
-   (with-type :category
-     (assoc cat
-       :id (title-to-id (:title cat))))))
+(defn categories []
+  (with-db
+    (oyako/fetch-all :categories
+                     includes :post
+                     order :name)))
 
-(defn make-tag [tag]
-  (when tag
-   (with-type :tag
-     (assoc tag
-       :id (title-to-id (:title tag))))))
+(defn tags []
+  (with-db
+    (oyako/fetch-all :tags
+                     includes :posts
+                     order :name)))
 
-(defn all-posts []
-  (reverse (sort-by :date (vals @posts))))
+(defn tag [id]
+  (with-db
+    (oyako/fetch-one :tags
+                     includes :posts
+                     where ["id = ?" id])))
 
-(defn get-post [id]
-  (posts id))
+(defmacro with-table [[table x] & body]
+  `(with-db
+     (let [x# ~x]
+       (if-let [~table (:table (meta x#))]
+         (do ~@body)
+         (util/die "Can't determine the table for " x#)))))
 
-(defn- store-post [post]
-  (dosync (alter posts assoc (post :id) (make-post post))))
+(defn- where-id [x]
+  ["where id = ?" (:id x)])
 
-(defn add-post [post]
-  (when (get-post (:id post))
-    (die "A post with that ID already exists."))
-  (store-post post))
+(defn- save [x]
+  (with-table [table x]
+    (sql/update-values table (where-id x) x)))
 
-(defn remove-post [id]
-  (dosync (alter posts dissoc id)))
+(defn- delete [x]
+  (with-table [table x]
+    (sql/delete-rows table (where-id x) x)))
 
-(defn edit-post [old-id post]
-  (dosync
-   (when (not= old-id (:id post))
-     (remove-post old-id))
-   (store-post post)))
-
-(defn all-categories []
-  (sort-by :name
-           (set (filter identity
-                        (map :category (all-posts))))))
-
-(defn get-category [cat]
-  (first (filter #(= (:id %) cat)
-                 (all-categories))))
-
-(defn all-tags []
-  (sort-by :name
-           (set (filter identity
-                        (mapcat :tags (all-posts))))))
-
-(defn get-tag [tag]
-  (first (filter #(= (:id %) tag)
-                 (all-tags))))
-
-(defn all-posts-with-category [category]
-  (filter #(= (:category %) category)
-          (all-posts)))
-
-(defn all-posts-with-tag [tag]
-  (filter #(some #{tag} (:tags %))
-          (all-posts)))
-
-(defn get-comments [post]
-  (sort-by :date (post :comments)))
-
-(defn add-comment [post comment]
-  (dosync
-   (let [id (:id post)
-         post-in-ref (get-post id)]
-    (alter posts assoc id
-           (assoc post-in-ref :comments
-                  (conj (:comments post-in-ref)
-                        (make-comment post comment)))))))
-
-(defn db-watcher-status []
-  (agent-errors (:watcher ^posts)))
+(defn- update [x]
+  (with-table [table x]
+    (sql/update-values table (where-id x) x)))

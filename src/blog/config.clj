@@ -16,3 +16,24 @@
 
 ;; Change this.
 (def PASSWORD-SALT "K@#$J@$#(FJ@#!$M@#n1NELKDwdjf9wef123krJ@!FKnjef2i#JR@R")
+
+(def DB nil)
+
+;; Pick a DB...
+(comment
+  ;;Postgres pool, uses net.briancarper.postgres-pool from Clojars
+  (def DB (pg/postgres-pool {:database "blogtest"
+                             :username "blogtest"
+                             :password "blogtest"}))
+
+  ;; Normal single-connection postgres
+  (def DB {:classname "org.postgresql.Driver"
+           :subprotocol "postgresql"
+           :subname "//localhost/blogtest"
+           :username "blogtest"
+           :password "blogtest"})
+
+  ;; MySQL
+  (def DB {:classname "com.mysql.jdbc.Driver"
+           :subprotocol "mysql"
+           :subname "//localhost/origami?user=blogtest&password=blogtest"}))
