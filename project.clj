@@ -10,4 +10,5 @@
                  [ring/ring-devel "0.2.0"]
                  [oyako "0.1.0-SNAPSHOT"]
                  [postgres-pool "1.1.0"]
-                 [joda-time "1.6"]])
+                 [joda-time "1.6"]
+                 [rhino/js "1.7R2"]])

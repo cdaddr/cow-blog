@@ -1,5 +1,6 @@
 (ns blog.link
-  (require (blog [util :as util])))
+  (:require (blog [util :as util])
+            (clojure [pprint :as pprint])))
 
 (defmulti url #(:table (meta %)))
 
@@ -20,3 +21,8 @@
    {:class (str (:table (meta x)) "-link")
     :href (url x)}
    (x :title)])
+
+(defn comments-link [post]
+  [:a {:href (str (url post) "#comments")}
+   (pprint/cl-format nil "~a Comment~:*~[s~;~:;s~]"
+                     (count (post :comments)))])

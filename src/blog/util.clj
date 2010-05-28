@@ -37,11 +37,6 @@
                (mapcat #(Integer/toHexString (bit-and 0xff %))
                        (.digest md)))))
 
- (defn md5sum [s]
-   (let [md5 (doto (java.security.MessageDigest/getInstance "MD5")
-               (.update (.getBytes (str s))))]
-     (apply str (map #(Integer/toHexString (bit-and 0xFF %))
-                     (.digest md5)))))
 
  (defn img
    ([src] [:img {:src src :alt src}])

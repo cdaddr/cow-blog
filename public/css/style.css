@@ -13,7 +13,7 @@ Modified & completely redesigned by Shahee Ilyas || http://shaheeilyas.com
 
 */
 
-/* Some modifications by Brian Carper for cow-blog. */
+/* With some minor modifications by Brian Carper for cow-blog. */
 
 a {
 	text-decoration: none; 
@@ -152,7 +152,9 @@ ul.post-meta span.post-meta-key {
 }
 
 .commentby {
-	padding-bottom:8px;
+    font-size: 10px;
+    padding-bottom:8px;
+    color: #808080;
 }
 
 #postcomment{
@@ -265,7 +267,7 @@ ul.post-meta span.post-meta-key {
 }
 
 #sidebar ul {
-	color: #ccc;
+	color: #808080;
 	list-style-type: none;
 	margin: 0;
 	padding-left: 3px;
@@ -424,3 +426,26 @@ div#preview {
     margin: 5px;
     border: 1px dotted grey;
 } 
+
+pre, code {
+    background: #ddd;
+    font-family: DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+}
+
+.comment {
+}
+
+.gravatar {
+    float: left;
+    padding-bottom: 8px;
+    padding-right: 8px;
+}
+
+.clear {
+    clear: both;
+}
+
+.author {
+    color: black;
+    font-weight: bold;
+}

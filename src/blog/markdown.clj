@@ -2,6 +2,9 @@
   (:use (clojure.contrib str-utils shell-out))
   (:import (org.mozilla.javascript Context ScriptableObject)))
 
+(defn- tempfile []
+  (java.io.File/createTempFile "cowblog" ""))
+
 (defmacro with-tmp-file [[file text] & rest]
   `(let [tmp# (tempfile)]
      (try
@@ -18,7 +21,7 @@
   (let [cx (Context/enter)
         scope (.initStandardObjects cx)
         input (Context/javaToJS txt scope)
-        script (str (slurp "deps/showdown.js")
+        script (str (slurp "public/js/showdown.js")
                     "new Showdown.converter().makeHtml(input, " (if safe "true" "false") ");")]
     (try
      (ScriptableObject/putProperty scope "input" input)

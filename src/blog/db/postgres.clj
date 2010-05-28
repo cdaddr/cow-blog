@@ -5,38 +5,38 @@
 
 (defn init-db-postgres []
   (db/with-db
-    (let [id [:id "serial primary key"]
+    (let [id [:id "bigserial primary key"]
           varchar "varchar(255) not null"
           nullchar "varchar(255)"
           text "text not null"
           desc [:title varchar]
           url [:url  varchar]
+          timestamp [:date_created "timestamp default localtimestamp"]
           tables [[:categories id desc url]
                   [:tags id desc url]
                   [:statuses id desc]
                   [:types id desc]
-                  [:posts id url
-                   [:category_id "integer default 1 references categories (id) on delete set default"]
-                   [:status_id "integer references statuses (id)"]
-                   [:type_id "integer references types (id)"]
+                  [:posts id url timestamp
+                   [:category_id "bigint default 1 references categories (id) on delete set default"]
+                   [:status_id "bigint references statuses (id)"]
+                   [:type_id "bigint references types (id)"]
                    [:title varchar]
                    [:author varchar]
-                   [:date_created "timestamp"]
-                   [:parent "integer references posts (id)"]
+                   [:parent "bigint references posts (id)"]
                    [:markdown text]
                    [:html text]]
-                  [:comments id
-                   [:post_id "integer references posts (id) on delete cascade"]
-                   [:status_id "integer references statuses (id)"]
-                   [:date_created "timestamp"]
+                  [:comments id timestamp
+                   [:post_id "bigint references posts (id) on delete cascade"]
+                   [:status_id "bigint references statuses (id)"]
+                   [:author varchar]
                    [:email nullchar]
                    [:homepage nullchar]
-                   [:author varchar]
+                   [:ip varchar]
                    [:markdown text]
                    [:html text]]
                   [:post_tags id
-                   [:post_id "integer references posts (id) on delete cascade"]
-                   [:tag_id "integer references tags (id) on delete cascade"]]]]
+                   [:post_id "bigint references posts (id) on delete cascade"]
+                   [:tag_id "bigint references tags (id) on delete cascade"]]]]
       (doseq [[table & _] (reverse tables)]
         (sql/do-commands (str "drop table if exists " (name table)))
         (println "Dropped" table "(if it existed)."))

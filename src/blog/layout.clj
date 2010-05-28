@@ -27,30 +27,30 @@
       [:ul "Log in?"
        [:li (link-to "/admin/login" "Log in")]]])])
 
-(defn wrap-in-layout [response]
+(defn wrap-in-layout [title body message error]
   (html
    [:html
     [:head
-     [:title config/SITE-TITLE " - " (response :title)]
+     [:title config/SITE-TITLE " - " title]
      (include-css "/css/style.css")
-     (include-js "/js/combined.js")] ;; magic
+     #_(include-js "/js/combined.js")] ;; magic
     [:body
      [:div#rap
+      (when message [:div.message message])
+      (when error [:div.error error])
       [:div#headwrap
        [:div#header (link-to config/SITE-URL config/SITE-TITLE)]
        [:div#desc (link-to config/SITE-URL config/SITE-DESCRIPTION)]]
       [:div#sidebar (nav false)]
       [:div#content.body
-       [:div#storycontent
-        #_"FIXME FLASH"
-        (response :body)]]
+       [:div#storycontent body]]
       [:div.credit
        [:div
         "Powered by "
         (link-to "http://clojure.org" "Clojure") " and "
         (link-to "http://github.com/weavejester/compojure" "Compojure") " and "
         (link-to "http://briancarper.net" "Cows") "; "
-        "using " (link-to "http://shaheeilyas.com/" "Barecity")" theme."]]]]]))
+        "theme based on " (link-to "http://shaheeilyas.com/" "Barecity")"."]]]]]))
 
 (defn preview-div []
   [:div
