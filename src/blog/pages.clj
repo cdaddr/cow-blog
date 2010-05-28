@@ -49,7 +49,7 @@
 
 (defn- comment-form [post]
   [:div.comment-form
-   [:h2 "Add Comment"]
+   [:h3 "Add Comment"]
    [:div#add-comment
     (form-to [:post (str "/comment")]
              (hidden-field "post-id" (:id post))
@@ -57,6 +57,7 @@
              (layout/form-row text-field "email" "Email")
              (layout/form-row text-field "homepage" "URL")
              (layout/form-row text-area "markdown" "Comment")
+             [:div.feedback "You can use " [:a {:href "http://daringfireball.net/projects/markdown/"} "Markdown"] " in your comment."]
              (layout/submit-row "Submit"))
     (layout/preview-div)]])
 
@@ -97,24 +98,34 @@
     (post-list-page false title header (db/posts-with-category (:url category)))))
 
 (defn combined-js []
-  (apply str (mapcat #(slurp (s/join "/" [config/PUBLIC-DIR "js" (str % ".js")]))
-                     ["jquery" "typewatch" "showdown" "editor"])))
+  {:headers {"Content-Type" "text/javascript;charset=UTF-8"}
+   :body (apply str (mapcat #(slurp (s/join "/" [config/PUBLIC-DIR "js" (str % ".js")]))
+                            ["jquery" "typewatch" "showdown" "editor"]))})
 
-(defn do-add-comment [post-id ip author email homepage markdown]
+(defn- redirect-and-error [uri txt]
+  (merge (response/redirect (or uri "/"))
+         (flash/error txt)))
+
+(defn do-add-comment [post-id ip author email homepage markdown uri]
   (let [post-id (db/safe-int post-id)]
-   (if-let [post (db/bare :posts post-id)]
-     (do
-       (db/insert
-        (db/in-table :comments
-                     {:post_id post-id
-                      :status_id 1
-                      :author (escape-html author)
-                      :email (escape-html email)
-                      :homepage (escape-html homepage)
-                      :markdown markdown
-                      :ip ip}))
-       (merge (response/redirect "/")
-              (flash/message "Comment added.")))
-     (merge (response/redirect "/") (flash/error "Error adding comment.")))))
+    (if-let [post (db/bare :posts post-id)]
+      (cond
+       (not post)        (redirect-and-error uri "Tried to add a comment for a post that doesn't exist.")
+       (empty? ip)       (redirect-and-error uri "Missing IP?  That shouldn't happen.")
+       (empty? markdown) (redirect-and-error uri "You forgot to type words in your comment.  Please type some words.")
+       :else (try
+               (db/insert
+                (db/in-table :comments
+                             {:post_id post-id
+                              :status_id 1
+                              :author (or (escape-html author) config/DEFAULT-COMMENT-AUTHOR)
+                              :email (escape-html email)
+                              :homepage (escape-html homepage)
+                              :markdown markdown
+                              :ip ip}))
+               (merge (response/redirect uri)
+                      (flash/message "Comment added."))
+               (catch Exception e
+                 (redirect-and-error uri "There was some kind of database error and the computer ate your comment.  Sorry.  :(")))))))
 
 

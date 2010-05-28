@@ -21,6 +21,8 @@
 ;; Change this.
 (def PASSWORD-SALT "K@#$J@$#(FJ@#!$M@#n1NELKDwdjf9wef123krJ@!FKnjef2i#JR@R")
 
+(def DEFAULT-COMMENT-AUTHOR "Anonymous Cow")
+
 (def DB nil)
 
 (def DB (pg/postgres-pool {:database "blogtest"

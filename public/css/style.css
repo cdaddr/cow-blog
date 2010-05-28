@@ -16,24 +16,19 @@ Modified & completely redesigned by Shahee Ilyas || http://shaheeilyas.com
 /* With some minor modifications by Brian Carper for cow-blog. */
 
 a {
-	text-decoration: none; 
-	color: #000;
+	text-decoration: underline; 
+	color: #333;
 
 }
 
 a:active {
-	text-decoration: none;
-	color: #000;
 }
 
 a:visited {
-	text-decoration: none;
-	color: #000;
 }
 
 a:hover {
 	text-decoration: none; 
-	color: #000;
 }
 
 a img {
@@ -115,7 +110,7 @@ ul.post-meta span.post-meta-key {
 	font-size: 10px;
 	padding: 50px 0 0 0;
 	margin: 0 0 20px 0;
-	text-align: left;
+	text-align: center;
 }
 
 .credit a:hover {
@@ -146,8 +141,10 @@ ul.post-meta span.post-meta-key {
 
 
 #comments{
-
-	padding-top:18px;
+    border-bottom: 1px #ccc dotted;
+    border-top: 1px #ccc dotted;
+    padding-top:18px;
+    padding-bottom: 18px;
 
 }
 
@@ -169,7 +166,6 @@ ul.post-meta span.post-meta-key {
 }
 
 .meta a {
-    color: #000000;
 }
 
 .storytitle {
@@ -390,6 +386,11 @@ ul.post-meta span.post-meta-key {
 	margin-top:3px;	
 }
 
+#desc a {
+    font-style: italic;
+    text-decoration: none;
+}
+
 #desc a:hover {
 	background-color: #eee;
 	color: #666;
@@ -416,7 +417,7 @@ div.submit {
 }
 
 textarea {
-    width: 300px;
+    width: 390px;
     height: 200px;
 }
 
@@ -427,10 +428,27 @@ div#preview {
     border: 1px dotted grey;
 } 
 
-pre, code {
+pre {
     background: #ddd;
     font-family: DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+
+    margin: 15px 20px;
+    padding: 5px 5px;
+    border: 1px grey solid;
+    border-left: 10px grey solid;
+    overflow: auto;
 }
+    
+code {
+    border: 1px #999 dotted;
+    background: #ddd;
+    color: #000;
+    padding: 0 2px;
+}
+
+pre code {
+    border: none;
+}    
 
 .comment {
 }
@@ -443,9 +461,47 @@ pre, code {
 
 .clear {
     clear: both;
+    margin-bottom: 4px;
 }
 
 .author {
     color: black;
     font-weight: bold;
+}
+
+.message {
+    background: #93d983;
+    color: black;
+    border: 1px #3c5935 solid;
+    text-align: center;
+    padding: 5px 0;
+    margin: auto;
+    font-weight: bold;
+}
+
+.error {
+    background: #d99383;
+    color: black;
+    border: 1px #593c35 solid;
+    text-align: center;
+    padding: 5px 0;
+    margin: 10px auto;
+    font-weight: bold;
+}
+
+div#preview {
+    border: 1px grey dashed;
+    background: #eee;
+    font-size: 93%;
+    min-height: 25px;
+    padding: 5px;
+}
+
+div#preview blockquote {
+    background: #ddd;
+}
+
+input[type=text], textarea {
+    font-size: 100%;
+    font-family: "Bitstream Vera Sans Mono", "Courier Sans", monospace;
 }

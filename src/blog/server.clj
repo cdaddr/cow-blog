@@ -8,7 +8,7 @@
                   [config :as config])
             (ring.adapter [jetty :as jetty])
             (ring.util [response :as response])
-            (ring.middleware cookies session flash)
+            (ring.middleware cookies session flash file-info)
             (hiccup [core :as hiccup]))
   (:use (compojure [core :only [defroutes GET POST ANY wrap!]])))
 
@@ -22,17 +22,17 @@
   (GET "/" [paginate] (pages/index-page paginate))
   (GET ["/post/:title"] [title] (pages/post-page title))
   (GET ["/category/:title"] [title] (pages/category-page title))
-  (GET ["/tag/:title"] [title] (pages/tag-page title))
-  (GET "/set" [] {:body "Set session" :session {:foo :bar}})
-  (GET "/get" {s :session} {:body (str "SESSION: " s)}))
+  (GET ["/tag/:title"] [title] (pages/tag-page title)))
 
 (defroutes form-routes
   (POST "/post/:id" [id])
   (POST "/comment" {{:strs [post-id author email homepage markdown]} :form-params
+                    {referer "referer"} :headers
                     :as request}
-        (pages/do-add-comment post-id (ip request) author email homepage markdown)))
+        (pages/do-add-comment post-id (ip request) author email homepage markdown referer)))
 
 (defroutes static-routes
+  (GET "/js/combined.js" [] (pages/combined-js))
   (GET ["/:filename" :filename #".*"] [filename]
        (response/file-response filename {:root config/PUBLIC-DIR})))
 
@@ -45,7 +45,7 @@
   (let [newlines-to-br #(s/replace-re #"\n" "<br/>" %)
         pr-map #(vector :ul
                         (for [[k v] (sort %)]
-                          [:li [:pre [:strong k] " " (hiccup/escape-html (pr-str v))]]))]
+                          [:li [:strong k] " " (hiccup/escape-html (pr-str v))]))]
    (fn [request]
      (try (handler request)
           (catch Exception e
@@ -105,6 +105,9 @@
        wrap-flash-saver
        wrap-flash
        ring.middleware.session/wrap-session)
+
+(wrap! static-routes
+       ring.middleware.file-info/wrap-file-info)
 
 (defroutes all-routes
   static-routes dynamic-routes)

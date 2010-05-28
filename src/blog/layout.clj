@@ -33,7 +33,7 @@
     [:head
      [:title config/SITE-TITLE " - " title]
      (include-css "/css/style.css")
-     #_(include-js "/js/combined.js")] ;; magic
+     (include-js "/js/combined.js")] ;; magic
     [:body
      [:div#rap
       (when message [:div.message message])
