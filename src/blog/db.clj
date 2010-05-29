@@ -137,9 +137,5 @@
   (with-table [table x]
     (sql/delete-rows table (where-id x) x)))
 
-(defn update [x]
-  (with-table [table x]
-    (sql/update-values table (where-id x) x)))
-
 (defn safe-int [x]
   (when x (Integer/parseInt x)))

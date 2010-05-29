@@ -83,6 +83,11 @@ h3 {
 	font-size: 13px;
 }
 
+h3.info {
+    color: #808080;
+    font-style: italic;
+}
+
 ol#comments li p {
 }
 

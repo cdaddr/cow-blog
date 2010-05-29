@@ -82,7 +82,7 @@
      {:title title
       :body [:div
              (when subtitle
-               [:h2 subtitle])
+               [:h3.info subtitle])
              (map (partial render-post admin) posts)]}))
 
 (defn tag-page [tag]
@@ -126,6 +126,7 @@
                (merge (response/redirect uri)
                       (flash/message "Comment added."))
                (catch Exception e
-                 (redirect-and-error uri "There was some kind of database error and the computer ate your comment.  Sorry.  :(")))))))
+                 (redirect-and-error uri "There was some kind of database error and
+                                          the computer ate your comment.  Sorry.  :(")))))))
 
 

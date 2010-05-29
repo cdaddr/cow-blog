@@ -31,7 +31,7 @@
   (html
    [:html
     [:head
-     [:title config/SITE-TITLE " - " title]
+     [:title config/SITE-TITLE (when title (str " - " title))]
      (include-css "/css/style.css")
      (include-js "/js/combined.js")] ;; magic
     [:body
@@ -68,20 +68,3 @@
   [:div.submit
    (submit-button lab)])
 
-(comment
-
-
-
-
-
- 
-
- (defn messages [flash]
-   (list
-    (when-let [e (:error flash)]
-      [:div.error e])
-    (when-let [m (:message flash)]
-      [:div.message m])))
-
-
-)
