@@ -133,13 +133,6 @@
    :body (apply str (mapcat #(slurp (s/join "/" [config/PUBLIC-DIR "js" (str % ".js")]))
                             ["jquery" "typewatch" "showdown" "editor"]))})
 
-(defn- redirect-and-error
-  "Return a response map suitable to redirect the user to some URI
-  with a given error message text in the flash."
-  [uri txt]
-  (merge (response/redirect (or uri "/"))
-         (flash/error txt)))
-
 (defn do-add-comment
   "Handles POST request to add a new comment.  This is suitable for public /
    anonymous users to use."
@@ -147,13 +140,13 @@
   (let [post-id (util/safe-int post-id)]
     (if-let [post (db/bare :posts post-id)]
       (cond
-       (not post)        (redirect-and-error uri "Tried to add a comment for a post that doesn't exist.")
-       (empty? ip)       (redirect-and-error uri "Missing IP?  That shouldn't happen.")
-       (empty? markdown) (redirect-and-error uri "You forgot to type words in your comment.  Please type some words.")
+       (not post)        (error/redirect-and-error uri "Tried to add a comment for a post that doesn't exist.")
+       (empty? ip)       (error/redirect-and-error uri "Missing IP?  That shouldn't happen.")
+       (empty? markdown) (error/redirect-and-error uri "You forgot to type words in your comment.  Please type some words.")
        (and (not (empty? homepage))
             (try (java.net.URL. homepage) nil
                  (catch java.net.MalformedURLException _ :failed)))
-       (redirect-and-error uri "Invalid homepage.  Please provide a URL starting with 'http[s]://'.  Or leave it blank.")
+       (error/redirect-and-error uri "Invalid homepage.  Please provide a URL starting with 'http[s]://'.  Or leave it blank.")
        :else (try
                (db/insert
                 (db/in-table :comments
@@ -168,7 +161,7 @@
                (merge (response/redirect uri)
                       (flash/message "Comment added."))
                (catch Exception e
-                 (redirect-and-error uri "There was some kind of database error and
+                 (error/redirect-and-error uri "There was some kind of database error and
                                           the computer ate your comment.  Sorry.  :(")))))))
 
 

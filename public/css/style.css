@@ -83,9 +83,15 @@ h3 {
 	font-size: 13px;
 }
 
+h4 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	margin-top: 0;
+	font-size: 11px;
+        margin: 0 0 5px 0;
+        padding: 0;
+}    
+
 h3.info {
-    color: #808080;
-    font-style: italic;
 }
 
 ol#comments li p {
@@ -122,7 +128,7 @@ ul.post-meta span.post-meta-key {
 	color: #666;
 }
 
-.feedback {
+.feedback, .info {
 	color: #666;
 	text-align: right;
 	font-size:10px;
@@ -188,12 +194,27 @@ ul.post-meta span.post-meta-key {
 
 .storycontent a:hover {
 	text-decoration: none;
-	border-bottom: 1px dashed #888;
+	border-bottom: 1px solid #888;
+}
+
+.storycontent h3 a {
+    text-decoration: none;
+    border: none;
 }
 
 .storycontent {
 	margin-bottom:-10px;
 }
+
+.storycontent ul {
+    list-style-type: circle;
+}
+
+.storycontent li {
+    list-style-type: circle;
+}
+
+
 .post {
 	margin-bottom:18px;
 }
@@ -445,8 +466,8 @@ pre {
 }
     
 code {
-    border: 1px #999 dotted;
-    background: #ddd;
+    /* border: 1px #999 dotted; */
+    background: #eee;
     color: #000;
     padding: 0 2px;
 }
@@ -508,6 +529,7 @@ div#preview blockquote {
 
 input[type=text], textarea {
     font-size: 100%;
+    min-width: 250px;
     font-family: "Bitstream Vera Sans Mono", "Courier Sans", monospace;
 }
 

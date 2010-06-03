@@ -22,19 +22,11 @@
      [:li (link-to "/rss.xml" "RSS")]]]
    [:li
     (if user
-      [:ul "Hello," (:username user)
-       [:li (link-to "/admin/cp" "Control Panel")]
+      [:ul "Hello, " (:username user)
+       [:li (link-to "/admin" "Control Panel")]
        [:li (link-to "/logout" "Log out")]]
       [:ul "Log in"
-       [:li (link-to "/login" "Log in")]])]
-   #_(if admin
-     [:li "admin"
-      [:ul "Hello, " admin
-       [:li (link-to "/admin/add-post" "Add Post")]
-       [:li (form-to [:post "/admin/logout"]
-                     (submit-button "Log out"))]]
-      [:ul "Log in?"
-       [:li (link-to "/admin/login" "Log in")]]])])
+       [:li (link-to "/login" "Log in")]])]])
 
 (defn wrap-in-layout [title body user message error]
   (html
@@ -45,7 +37,6 @@
      (include-js "/js/combined.js")] ;; magic
     [:body
      [:div#rap
-      (pr-str @session/*sandbar-session*)
       (when message [:div.message message])
       (when error [:div.error error])
       [:div#headwrap
@@ -53,7 +44,7 @@
        [:div#desc (link-to config/SITE-URL config/SITE-DESCRIPTION)]]
       [:div#sidebar (nav user)]
       [:div#content.body
-       [:div#storycontent body]]
+       [:div.storycontent body]]
       [:div.credit
        [:div
         "Powered by "
@@ -72,7 +63,11 @@
   ([f name lab val]
      [:div
       (label name (str lab ":"))
-      (f name val)]))
+      (f name val)])
+  ([f name lab val args]
+     [:div
+      (label name (str lab ":"))
+      (f name args val)]))
 
 (defn submit-row [lab]
   [:div.submit

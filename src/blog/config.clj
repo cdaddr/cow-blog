@@ -27,6 +27,8 @@
 
 (def POSTS-PER-PAGE 10)
 
+(def VALID-TAG-REGEX #"^[-A-Za-z0-9_. ]+$")
+
 (def DB nil)
 
 (def DB (pg/postgres-pool {:database "blogtest"

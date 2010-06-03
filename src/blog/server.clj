@@ -22,8 +22,9 @@
   (GET ["/post/:title"] [title]      (pages/post-page title))
   (GET ["/category/:title"] [title]  (pages/category-page title :page-number layout/PAGE-NUMBER))
   (GET ["/tag/:title"] [title]       (pages/tag-page title :page-number layout/PAGE-NUMBER))
-  (GET "/login" [] (admin/login-page))
-  (GET "/session" [] {:body (pr-str (session/session-get :user)) #_(pr-str @session/*sandbar-session*)}))
+  (GET "/login" []                   (admin/login-page))
+  (GET "/logout" []                  (admin/do-logout))
+  #_(GET "/session" [] {:body (pr-str (session/session-get :user)) #_(pr-str @session/*sandbar-session*)}))
 
 (defroutes form-routes
   (POST "/post/:id" [id])
@@ -33,10 +34,28 @@
         (pages/do-add-comment post-id (ip request) author email homepage markdown referer))
   (POST ["/login"] {{:strs [username password]} :form-params}
         (admin/do-login username password))
-  (POST ["/logout"] [] (admin/do-logout)))
+  )
 
 (defroutes admin-routes
-  (GET "/admin/cp" [] (admin/cp-page))
+  (GET "/admin" [] (admin/admin-page))
+  
+  (GET "/admin/add-post" [] (admin/add-post-page))
+  
+  (POST "/admin/add-post" {{:strs [title url status_id
+                                   type_id category_id
+                                   tags markdown]} :form-params}
+        (admin/do-add-post (session/session-get :user)
+                           title url status_id
+                           type_id category_id
+                           tags markdown))
+
+  (GET "/admin/edit-posts" []      (admin/edit-posts-page :page-number layout/PAGE-NUMBER))
+  (GET "/admin/edit-post/:id" [id] (admin/edit-post-page id))
+  (POST "/admin/edit-post" {{removetags "removetags[]"
+                             :strs [id title url status_id type_id category_id tags markdown]} :form-params}
+        (admin/do-edit-post id (session/session-get :user)
+                            title url status_id type_id category_id tags removetags markdown))
+  (GET "/admin/*" [])
   )
 
 (defroutes static-routes
@@ -48,7 +67,7 @@
   (ANY "*" [] (error/error 404 "Page not found."
                            "You tried to access a page that doesn't exist.  One of us screwed up here.  Not pointing any fingers, but, well, it was probably you.")))
 
-;;(wrap! admin-routes middleware/wrap-admin)
+(wrap! admin-routes middleware/wrap-admin)
 
 (defroutes dynamic-routes
   blog-routes form-routes admin-routes error-routes)
@@ -62,6 +81,7 @@
        )
 
 (wrap! static-routes
+       middleware/wrap-expires-header
        ring.middleware.file-info/wrap-file-info)
 
 (defroutes all-routes

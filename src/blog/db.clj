@@ -114,9 +114,19 @@
                      includes :posts
                      where ["url = ?" url])))
 
-(defn users []
+(defn post_tags [post_id tag_id]
   (with-db
-    (oyako/fetch-all :users)))
+    (oyako/fetch-all :post_tags
+                     where ["post_id = ? and tag_id = ?" [post_id tag_id]])))
+
+(defn users []
+  (with-db (oyako/fetch-all :users)))
+
+(defn statuses []
+  (with-db (oyako/fetch-all :statuses)))
+
+(defn types []
+  (with-db (oyako/fetch-all :types)))
 
 (defn user [username password]
   (first
@@ -135,6 +145,13 @@
                      where ["id = ?" id]
                      limit 1)))
 
+(defn tag-from-title [title]
+  (let [s (map #(if (re-matches config/VALID-TAG-REGEX (str %))
+                  (str %) "-")
+               (seq title))
+        url (s/lower-case
+             (s/replace-re #"\s+" "-" (apply str s)))]
+    (in-table :tags {:title title :url url})))
 
 (def run-hooks nil)
 (defmulti run-hooks (fn [x] (table-meta x)))
@@ -154,6 +171,11 @@
   (with-table [table x]
     (sql/insert-records table (run-hooks x))))
 
+(defn insert-or-select [x where]
+  (or (oyako/fetch-one (table-meta x) :where where)
+      (do (insert (run-hooks x))
+          (oyako/fetch-one (table-meta x) :where where))))
+
 (defn update [x]
   (with-table [table x]
     (when-not (bare table (:id x))
@@ -162,7 +184,7 @@
 
 (defn delete [x]
   (with-table [table x]
-    (sql/delete-rows table (where-id x) x)))
+    (sql/delete-rows table (where-id x))))
 
 (defn create-user [username password]
   (let [salt (sha-256 (str (java.util.UUID/randomUUID)))
@@ -172,3 +194,19 @@
                        :password password
                        :salt salt}))
     ))
+
+(defn add-tags-to-post [post tag-titles] 
+  (doseq [tag-title tag-titles
+          :let [wanted-tag (tag-from-title tag-title)
+                tag (insert-or-select wanted-tag
+                                      ["url = ?" (:url wanted-tag)])]]
+    (insert-or-select (in-table :post_tags
+                                {:post_id (:id post)
+                                 :tag_id (:id tag)})
+                      ["post_id = ? and tag_id = ?" [(:id post) (:id tag)]])))
+
+(defn remove-tags-from-post [post tag-urls]
+  (doseq [tagname tag-urls
+          :let [tag (tag tagname)]
+          pt (post_tags (:id post) (:id tag))]
+    (delete pt)))

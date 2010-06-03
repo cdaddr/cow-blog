@@ -8,13 +8,25 @@
 (def UTC (tz "UTC"))
 (def TIME-ZONE (tz config/TIME-ZONE))
 
+(defmulti to-joda (fn [x] (class x)))
+(defmethod to-joda org.joda.time.DateTime [d] d)
+(defmethod to-joda java.sql.Timestamp [d]
+  (org.joda.time.DateTime. (.getTime d) TIME-ZONE))
+
 (defn- fmt [x]
   (.withZone (org.joda.time.format.DateTimeFormat/forPattern x)
              TIME-ZONE))
 
+(defn now []
+  (org.joda.time.DateTime.))
+
+(defn expire-date []
+  (.plusDays (now) 7))
+
 (def DATE-FORMATS
      {:pretty (fmt config/TIME-FORMAT)
-      :edit   (fmt "yyyy-MM-dd HH:mm:ss Z")})
+      :edit   (fmt "yyyy-MM-dd HH:mm:ss Z")
+      :http   (fmt "EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z")})
 
 (defn str-to-dbdate [format s]
   (if-let [f (DATE-FORMATS format)]
@@ -25,6 +37,6 @@
 
 (defn datestr [format d]
   (if-let [f (DATE-FORMATS format)]
-    (.print f (org.joda.time.DateTime. (.getTime d) TIME-ZONE))
+    (.print f (to-joda d))
     (util/die "Invalid date format " format)))
 

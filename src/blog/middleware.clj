@@ -2,7 +2,9 @@
   (:require (blog [config :as config]
                   [layout :as layout]
                   [flash :as flash]
-                  [util :as util])
+                  [util :as util]
+                  [error :as error]
+                  [time :as time])
             (clojure [stacktrace :as trace])
             (clojure.contrib [string :as s])
             (ring.util [response :as response])
@@ -56,13 +58,17 @@
           :status (or (response :status) 200)
           :body new-body)))))
 
+(defn wrap-expires-header [handler]
+  (fn [request]
+    (when-let [response (handler request)]
+      (assoc-in response [:headers] {"Cache-Control" "max-age=3600;must-revalidate"
+                                     "Expires" (time/datestr :http (time/expire-date))}))))
+
 (defn wrap-admin [handler]
   (fn [request]
-    (let [session (:session request)]
-      (if (:user session)
-        (handler request)
-        (merge (response/redirect "/")
-               (flash/error "Access denied."))))))
+    (if-let [user (session/session-get :user)]
+      (handler request)
+      (error/error 401 "Access Denied" "Access denied."))))
 
 (defn wrap-page-number [handler]
   (fn [request]
