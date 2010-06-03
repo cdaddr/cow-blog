@@ -510,3 +510,17 @@ input[type=text], textarea {
     font-size: 100%;
     font-family: "Bitstream Vera Sans Mono", "Courier Sans", monospace;
 }
+
+.pagenav {
+    font: 11px Verdana,Arial,Helvetica,sans-serif;
+    border-top: 1px dotted #ccc;
+}
+
+
+.pagenav a, .pagenav span, .pagenav .num {
+    display: block;
+    float: left;
+    padding: 3px;
+    margin: 2px;
+}
+

@@ -2,7 +2,8 @@
   (:require (blog [config :as config]
                   [util :as util]
                   [db :as db]
-                  [link :as link]))
+                  [link :as link])
+            (clojure.contrib [math :as math]))
   (:use (hiccup [core :only [html]]
                 [page-helpers :only [link-to include-css include-js]]
                 [form-helpers :only [form-to submit-button label]])))
@@ -68,3 +69,30 @@
   [:div.submit
    (submit-button lab)])
 
+
+(defn pagenav
+  ([xs page-number] (pagenav xs page-number (fn [p] (str "?p=" p))))
+  ([xs page-number f]
+     (let [last-page-number (math/ceil (/ (count xs)
+                                          config/POSTS-PER-PAGE))
+           page-range (filter #(and (> % 0) (<= % last-page-number))
+                              (range (- page-number 5)
+                                     (+ page-number 5)))]
+       [:div.pagenav
+        [:span "Page " page-number " of " last-page-number]
+        (if (> page-number 1)
+          (list
+           (link-to (f 1) "&laquo; First")
+           (link-to (f (dec page-number)) "&lt; Prev")))
+        (for [p page-range]
+          (if (= p page-number)
+            [:span.num p]
+            (link-to (f p) p)))
+        (if (< page-number last-page-number)
+          (list
+           (link-to (f (inc page-number)) "Next &raquo;")
+           (link-to (f last-page-number) "Last &gt;")))])))
+
+(defn paginate [xs page-number]
+  (take config/POSTS-PER-PAGE
+        (drop (* config/POSTS-PER-PAGE (dec page-number)) xs)))

@@ -25,6 +25,8 @@
 
 (def DEFAULT-COMMENT-AUTHOR "Anonymous Cow")
 
+(def POSTS-PER-PAGE 10)
+
 (def DB nil)
 
 (def DB (pg/postgres-pool {:database "blogtest"

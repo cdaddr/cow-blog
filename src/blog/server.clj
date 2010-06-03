@@ -4,7 +4,8 @@
                   [pages :as pages]
                   [layout :as layout]
                   [util :as util]
-                  [config :as config])
+                  [config :as config]
+                  [error :as error])
             (ring.adapter [jetty :as jetty])
             (ring.util [response :as response])
             (ring.middleware cookies session flash file-info))
@@ -15,7 +16,7 @@
       (request :remote-addr)))
 
 (defroutes blog-routes
-  (GET "/" [paginate] (pages/index-page paginate))
+  (GET "/" {{page-number "p"} :query-params} (pages/index-page page-number))
   (GET ["/post/:title"] [title] (pages/post-page title))
   (GET ["/category/:title"] [title] (pages/category-page title))
   (GET ["/tag/:title"] [title] (pages/tag-page title)))
@@ -33,9 +34,8 @@
        (response/file-response filename {:root config/PUBLIC-DIR})))
 
 (defroutes error-routes
-  (ANY "*" [] {:status 404
-               :body [:div [:h3 "404 - Page not found."]
-                      [:p "You tried to access a page that doesn't exist.  One of us screwed up here.  Not pointing any fingers, but, well, it was probably you."]]}))
+  (ANY "*" [] (error/error 404 "Page not found."
+                           "You tried to access a page that doesn't exist.  One of us screwed up here.  Not pointing any fingers, but, well, it was probably you.")))
 
 (defroutes dynamic-routes
   blog-routes form-routes error-routes)
@@ -53,6 +53,9 @@
 (defroutes all-routes
   static-routes dynamic-routes)
 
-(defn start []
+(defn start
+  "Start Jetty in a background thread.  Note there's currently no
+  way to stop Jetty once you start it."
+  []
   (future
    (jetty/run-jetty (var all-routes) {:port 8080})))

@@ -3,18 +3,19 @@
             (net.briancarper [oyako :as oyako])
             (blog [config :as config]
                   [util :as util]
+                  [gravatar :as gravatar]
                   [time :as time]
                   [markdown :as markdown]))
   (:refer-clojure :exclude [comment]))
 
-(defn table-meta [x]
+(defn- table-meta [x]
   (:table (meta x)))
 
 (defn in-table [table x]
   (with-meta x {:table table}))
 
 (def schema
-     (oyako/make-datamap
+     (oyako/make-datamap config/DB
       [:posts
        [belongs-to :categories as :category]
        [belongs-to :statuses as :status]
@@ -29,13 +30,13 @@
       [:types [has-many :posts]]
       [:statuses [has-many :posts]]))
 
-(oyako/def-helper with-db #'config/DB #'schema)
+(oyako/def-helper with-db #'schema)
 
 (defn posts []
   (with-db
     (oyako/fetch-all :posts
                      includes [:tags :category :comments :status :type]
-                     :order :date_created)))
+                     :order "date_created desc")))
 
 (defn posts-with-tag [title]
   (filter #(some #{title} (map :url (:tags %)))
@@ -67,6 +68,10 @@
                      includes [:post :status]
                      where ["id = ?" id]
                      limit 1)))
+
+(defn gravatar [comment]
+  (gravatar/gravatar (or (or (:email comment)
+                             (:ip comment)))))
 
 (defn categories []
   (with-db
