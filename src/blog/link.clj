@@ -10,6 +10,9 @@
 (defmethod url :categories [cat]
   (str "/category/" (cat :url)))
 
+(defmethod url :comments [comment]
+  (url (:post comment)))
+
 (defmethod url :posts [post]
   (str "/post/" (post :url)))
 

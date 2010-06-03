@@ -95,11 +95,13 @@
                      includes :posts
                      order :title)))
 
-(defn category [url]
+(defn category [x]
   (with-db
     (oyako/fetch-one :categories
                      includes :posts
-                     where ["url = ?" url]
+                     where (if (string? x)
+                             ["url = ?" x]
+                             ["id = ?" x])
                      limit 1)))
 
 (defn tags []
@@ -108,11 +110,13 @@
                      includes :posts
                      order :title)))
 
-(defn tag [url]
+(defn tag [x]
   (with-db
     (oyako/fetch-one :tags
                      includes :posts
-                     where ["url = ?" url])))
+                     where (if (string? x)
+                             ["url = ?" x]
+                             ["id = ?" x]))))
 
 (defn post_tags [post_id tag_id]
   (with-db
@@ -197,7 +201,8 @@
 
 (defn add-tags-to-post [post tag-titles] 
   (doseq [tag-title tag-titles
-          :let [wanted-tag (tag-from-title tag-title)
+          :let [wanted-tag (or (oyako/fetch-one :tags where ["title = ?" tag-title])
+                               (tag-from-title tag-title))
                 tag (insert-or-select wanted-tag
                                       ["url = ?" (:url wanted-tag)])]]
     (insert-or-select (in-table :post_tags

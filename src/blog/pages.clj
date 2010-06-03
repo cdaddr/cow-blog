@@ -79,7 +79,7 @@
      (let [posts (db/posts)]
        (if-not (empty? posts)
          {:body [:div
-                 (layout/render-paginated #(render-post % :front-page true)
+                 (layout/render-paginated #(render-post % :front-page? true)
                                           page-number posts)]}
          (error/error 404 "There's nothing here!"
                       "There are no posts that meet your search criteria.  :(")))))

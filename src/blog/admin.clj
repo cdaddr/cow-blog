@@ -75,7 +75,7 @@
                 (layout/form-row text-field "tags"
                                  (if (:tags post) "Add Tags" "Tags"))
                 [:div.info "Tags should be comma-separated and match /"
-                 [:code config/VALID-TAG-REGEX] "/"]
+                 [:code config/TAG-CATEGORY-REGEX] "/"]
                 (layout/form-row text-area "markdown" "Body" (:markdown post))
                 (layout/submit-row "Submit"))
        (layout/preview-div)])))
@@ -119,10 +119,11 @@
    uri
    (s/blank? (:title post)) "Title must not be blank."
    (s/blank? (:url post))   "Url must not be blank."
+   (db/post (:url post))    "Post with that URL already exists, can't add another."
    (s/blank? (:markdown post)) "You forgot to type a post body."
    (and (not (empty? tags))
-        (some #(not (re-matches config/VALID-TAG-REGEX %)) tags))
-   (str "Invalid tag in '" (escape-html (pr-str tags)) "'.  Tags should match /" config/VALID-TAG-REGEX "/.")))
+        (some #(not (re-matches config/TAG-CATEGORY-REGEX %)) tags))
+   (str "Invalid tag in '" (escape-html (pr-str tags)) "'.  Tags should match /" config/TAG-CATEGORY-REGEX "/.")))
 
 (defn split-tagstring [tagstring]
   (when (re-find #"[^\s]" tagstring)
@@ -136,7 +137,7 @@
                                                    status_id type_id category_id
                                                    markdown))
            tags (split-tagstring tags)]
-       (or (validate-post "/admin/add-post" new-post tags)
+       (or (validate-post "/admin" new-post tags)
            (do
              (try
               (error/with-err-str (db/insert new-post))
@@ -147,9 +148,6 @@
                        (flash/message "Post added.")))
               (catch java.sql.SQLException e
                 (error/redirect-and-error "/admin/add-post" (str e))))))))))
-
-(defn ensure-vec [x]
-  (if (vector? x) x [x]))
 
 (defn do-edit-post [id user title url status_id type_id category_id addtags removetags markdown]
   (db/with-db
@@ -163,50 +161,74 @@
            (do
              (error/with-err-str (db/update new-post))
              (when removetags
-               (db/remove-tags-from-post post (ensure-vec removetags)))
+               (db/remove-tags-from-post post (util/ensure-vec removetags)))
              (when addtags
                (db/add-tags-to-post post addtags))
              (merge (response/redirect (link/url post))
                     (flash/message "Post edited."))))))))
 
-(comment
 
- (defn add-post-page []
-   {:title "Add Post"
-    :body (post-form "/admin/do-add-post")})
+(defn edit-comments-page [& {:keys [page-number]}]
+  (let [render (fn [comment]
+                 [:li "#" (:id comment)
+                  "[" (link-to (link/url comment) "view") "]"
+                  "[" (link-to (str "/admin/edit-comment/" (:id comment)) "edit") "]"
+                  [:div "Posted by " (:author comment)
+                   " [" (:email comment) "]"
+                   " (" (:homepage comment) ")"
+                   " on " (time/datestr :pretty (:date_created comment))]
+                  [:p [:em (s/take 150 (:markdown comment))]]
+                  ])]
+   {:title "Edit Comments"
+    :body [:div
+           [:h3 "Edit Comments (sorted by date)"]
+           [:ul (layout/render-paginated render page-number (db/comments))]]}))
 
- (defn- validate* [arg]
-   `(when (empty? ~arg)
-      (die "You left '" (str '~arg) "' blank.  Try again.")))
 
- (defmacro validate [& args]
-   `(do ~@(map validate* args)))
+(defn edit-tags-categories-page [which & {:keys [page-number]}]
+  (let [[f uri title] (get {:tags [db/tags "/admin/edit-tag/" "Edit Tags"]
+                       :categories [db/categories "/admin/edit-category/" "Edit Categories"]}
+                            which)
+        xs (f)]
+    {:title title
+     :body [:div
+            [:h3 title]
+            [:ul
+             (for [x xs]
+               [:li (link-to (str uri (:id x))
+                             (str (:title x) "(" (:url x) ")"))])]]}))
 
- (defn- post-from-params [ip id title category tags markdown]
-   (validate ip id title category tags markdown)
-   {:id id
-    :title title
-    :markdown markdown
-    :ip ip
-    :category (make-category {:title category})
-    :tags (map #(make-tag {:title %})
-               (re-split  #"\s*,\s*" tags))})
+(defn edit-tag-category-page [which id]
+  (let [[f uri title] (get {:tag [db/tag "/admin/edit-tag" "Edit Tag"]
+                            :category [db/category "/admin/edit-category" "Edit Category"]}
+                          which)
+        x (f (util/safe-int id))]
+    {:title title
+     :body [:div
+            [:h3 title]
+            (form-to [:post uri]
+                     (hidden-field "xid" (:id x))
+                     (layout/form-row text-field "title" "Title" (:title x))
+                     (layout/form-row text-field "url" "URL" (:url x))
+                     (layout/submit-row "Submit"))]}))
 
- (defn do-add-post [& args]
-   (add-post (apply post-from-params args))
-   [(flash-assoc :message "Post added.")
-    (redirect-to "/")])
+(defn validate-tag-category [uri x]
+  (error/redirecting-to
+   uri
+   (not (re-matches config/TAG-CATEGORY-REGEX (:title x)))
+   (str "Title should match regex '" (str config/TAG-CATEGORY-REGEX) "'.")
 
- (defn edit-post-page [id]
-   (if-let [post (get-post id)]
-     {:title "Edit Post"
-      :body (post-form (str "/admin/do-edit-post/" id) post)}
-     [(flash-assoc :error "Post not found.")
-      (redirect-to "/")]))
+   (not (re-matches config/TAG-CATEGORY-URL-REGEX (:url x)))
+   (str "URL should match regex '" (str config/TAG-CATEGORY-URL-REGEX) "'.")))
 
- (defn do-edit-post [old-id & args]
-   (edit-post old-id (apply post-from-params args))
-   [(flash-assoc :message "Post edited.")
-    (redirect-to "/")])
-
-)
+(defn do-edit-tag-category [which id title url]
+  (let [[f] (get {:tag [:tags]
+                  :category [:categories]}
+                 which)
+        x (merge (db/bare f (util/safe-int id))
+                 {:title title :url url})]
+    (or (validate-tag-category "/admin" x)
+        (do
+          (error/with-err-str (db/update x))
+          (merge (response/redirect (link/url x))
+                 (flash/message "Edit successful."))))))

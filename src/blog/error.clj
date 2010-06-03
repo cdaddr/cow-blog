@@ -29,4 +29,4 @@
          p# (java.io.PrintWriter. s#)]
      (binding [*err* p#]
        (try ~@body (catch Exception e#
-                     (throw (Exception. (str s#))))))))
+                     (throw (Exception. (str s# e#))))))))

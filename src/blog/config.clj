@@ -27,7 +27,8 @@
 
 (def POSTS-PER-PAGE 10)
 
-(def VALID-TAG-REGEX #"^[-A-Za-z0-9_. ]+$")
+(def TAG-CATEGORY-REGEX #"^[-A-Za-z0-9_. ]+$")
+(def TAG-CATEGORY-URL-REGEX #"^[a-z0-9_-]+$")
 
 (def DB nil)
 

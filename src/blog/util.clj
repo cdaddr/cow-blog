@@ -47,3 +47,6 @@
    ([opts src] [:img (merge {:src src :alt src} opts)]))
 
 )
+
+(defn ensure-vec [x]
+  (if (vector? x) x [x]))

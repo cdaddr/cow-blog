@@ -23,8 +23,7 @@
   (GET ["/category/:title"] [title]  (pages/category-page title :page-number layout/PAGE-NUMBER))
   (GET ["/tag/:title"] [title]       (pages/tag-page title :page-number layout/PAGE-NUMBER))
   (GET "/login" []                   (admin/login-page))
-  (GET "/logout" []                  (admin/do-logout))
-  #_(GET "/session" [] {:body (pr-str (session/session-get :user)) #_(pr-str @session/*sandbar-session*)}))
+  (GET "/logout" []                  (admin/do-logout)))
 
 (defroutes form-routes
   (POST "/post/:id" [id])
@@ -55,6 +54,19 @@
                              :strs [id title url status_id type_id category_id tags markdown]} :form-params}
         (admin/do-edit-post id (session/session-get :user)
                             title url status_id type_id category_id tags removetags markdown))
+
+  (GET "/admin/edit-comments" [] (admin/edit-comments-page :page-number layout/PAGE-NUMBER))
+  #_(GET "/admin/edit-comment/:id" [id] (admin/edit-comment-page id))
+  #_(POST "/admin/edit-comment" {{:strs [id post_id status_id author email homepage ip markdown]} :form-params}
+        (admin/do-edit-comment id post_id status_id author email homepage ip markdown))
+
+  (GET ["/admin/edit-:xs" :xs #"tags|categories"] [xs]
+       (admin/edit-tags-categories-page (keyword xs) :page-number layout/PAGE-NUMBER))
+  (GET ["/admin/edit-:x/:id" :x #"tag|category"] [x id] (admin/edit-tag-category-page (keyword x) id))
+  (POST ["/admin/edit-:x" :x #"tag|category"] {{:strs [xid title url]} :form-params
+                                               {x "x"} :route-params}
+        (admin/do-edit-tag-category (keyword x) xid title url))
+
   (GET "/admin/*" [])
   )
 
