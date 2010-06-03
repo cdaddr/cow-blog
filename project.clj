@@ -11,4 +11,5 @@
                  [oyako "0.1.0-SNAPSHOT"]
                  [postgres-pool "1.1.0"]
                  [joda-time "1.6"]
-                 [rhino/js "1.7R2"]])
+                 [rhino/js "1.7R2"]
+                 [sandbar/sandbar "0.2.3"]])

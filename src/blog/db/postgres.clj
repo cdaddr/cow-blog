@@ -16,12 +16,16 @@
                   [:tags id desc url]
                   [:statuses id desc]
                   [:types id desc]
+                  [:users id
+                   [:username varchar]
+                   [:password varchar]
+                   [:salt varchar]]
                   [:posts id url timestamp
+                   [:user_id "bigint default 1 references users(id) on delete set default"]
                    [:category_id "bigint default 1 references categories (id) on delete set default"]
                    [:status_id "bigint references statuses (id)"]
                    [:type_id "bigint references types (id)"]
                    [:title varchar]
-                   [:author varchar]
                    [:parent "bigint references posts (id)"]
                    [:markdown text]
                    [:html text]]
@@ -57,6 +61,7 @@
       (apply sql/insert-records table
              (map #(hash-map :title %) vals))
       (println "Initialized" table))
-    (sql/insert-records :categories {:id 1 :title "Uncategorized" :url "uncategorized"})
+    (sql/insert-records :users {:username "Nobody" :password "" :salt ""})
+    (sql/insert-records :categories {:title "Uncategorized" :url "uncategorized"})
     (println "Initialized" :categories)))
 

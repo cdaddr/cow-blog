@@ -22,7 +22,7 @@
       [:h3.storytitle (link/link post)]
       [:div.meta
        [:div "Category: " (link/link (:category post))]
-       [:div "Posted " (time/datestr :pretty (post :date_created))]]
+       [:div "Posted by " (:username (:user post)) " on " (time/datestr :pretty (post :date_created))]]
       [:div.storycontent (post :html)]
       [:div.feedback
        (when (post :tags)
@@ -75,13 +75,12 @@
 (defn index-page
   "Main index page."
   ([] (index-page 1))
-  ([page-number]
-     (let [page-number (or (db/safe-int page-number) 1)
-           all-posts (db/posts)
-           posts (layout/paginate all-posts page-number)]
+  ([& {:keys [page-number]}]
+     (let [posts (db/posts)]
        (if-not (empty? posts)
-         {:body [:div (map #(render-post % :front-page? true) posts)
-                 (layout/pagenav all-posts page-number)]}
+         {:body [:div
+                 (layout/render-paginated #(render-post % :front-page true)
+                                          page-number posts)]}
          (error/error 404 "There's nothing here!"
                       "There are no posts that meet your search criteria.  :(")))))
 
@@ -94,33 +93,36 @@
             (render-post post :front-page? false)
             (render-comments false post)
             (comment-form post))}
-    :next))
+    (error/error 404 "No such post"
+                 (str "There's no post named '" (escape-html title) "'."))))
 
 (defn- post-list-page
   "Page to render a list of posts."
-  ([admin title posts] (post-list-page admin title nil posts))
-  ([admin title subtitle posts]
+  ([title subtitle posts page-number]
      {:title title
       :body [:div
-             (when subtitle
-               [:h3.info subtitle])
-             (map (partial render-post admin) posts)]}))
+             [:h3.info subtitle]
+             (layout/render-paginated render-post page-number posts)]}))
 
 (defn tag-page
   "Page to render all posts with some tag name."
-  [tag]
-  (let [tag (db/tag (escape-html tag))
-        title (str "All Posts Tagged '" (:title tag) "'")
-        header (html "All Posts Tagged '" (link/link tag) "'")]
-    (post-list-page false title header (db/posts-with-tag (:url tag)))))
+  [tag-name & {:keys [page-number]}]
+  (if-let [tag (db/tag (escape-html tag-name))]
+    (let [title (str "All Posts Tagged '" (:title tag) "'")
+          header (html "All Posts Tagged '" (link/link tag) "'")]
+      (post-list-page title header (db/posts-with-tag (:url tag)) page-number))
+    (error/error 404 "Invalid Tag"
+                 (str "There's no tag named '" (escape-html tag-name) "'."))))
 
 (defn category-page
   "Page to render all posts in category with some category name."
-  [category]
-  (let [category (db/category (escape-html category))
-        title (str "All Posts in Category '" (:title category) "'")
-        header (html "All Posts in Category '" (link/link category) "'")]
-    (post-list-page false title header (db/posts-with-category (:url category)))))
+  [category-name & {:keys [page-number] :or {page-number 1}}]
+  (if-let [category (db/category (escape-html category-name))]
+   (let [title (str "All Posts in Category '" (:title category) "'")
+         header (html "All Posts in Category '" (link/link category) "'")]
+     (post-list-page title header (db/posts-with-category (:url category)) page-number))
+   (error/error 404 "Invalid Category"
+                (str "There's no category named '" (escape-html category-name) "'."))))
 
 (defn combined-js
   "Render Javascript files by reading them from disk and concat'ing them
@@ -142,7 +144,7 @@
   "Handles POST request to add a new comment.  This is suitable for public /
    anonymous users to use."
   [post-id ip author email homepage markdown uri]
-  (let [post-id (db/safe-int post-id)]
+  (let [post-id (util/safe-int post-id)]
     (if-let [post (db/bare :posts post-id)]
       (cond
        (not post)        (redirect-and-error uri "Tried to add a comment for a post that doesn't exist.")

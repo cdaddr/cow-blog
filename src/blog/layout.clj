@@ -3,12 +3,13 @@
                   [util :as util]
                   [db :as db]
                   [link :as link])
-            (clojure.contrib [math :as math]))
+            (clojure.contrib [math :as math])
+            (sandbar [stateful-session :as session]))
   (:use (hiccup [core :only [html]]
                 [page-helpers :only [link-to include-css include-js]]
                 [form-helpers :only [form-to submit-button label]])))
 
-(defn- nav [admin]
+(defn- nav [user]
   [:ul
    [:li "Categories"
     [:ul
@@ -19,7 +20,14 @@
    [:li "Meta"
     [:ul
      [:li (link-to "/rss.xml" "RSS")]]]
-   (if admin
+   [:li
+    (if user
+      [:ul "Hello," (:username user)
+       [:li (link-to "/admin/cp" "Control Panel")]
+       [:li (link-to "/logout" "Log out")]]
+      [:ul "Log in"
+       [:li (link-to "/login" "Log in")]])]
+   #_(if admin
      [:li "admin"
       [:ul "Hello, " admin
        [:li (link-to "/admin/add-post" "Add Post")]
@@ -28,7 +36,7 @@
       [:ul "Log in?"
        [:li (link-to "/admin/login" "Log in")]]])])
 
-(defn wrap-in-layout [title body message error]
+(defn wrap-in-layout [title body user message error]
   (html
    [:html
     [:head
@@ -37,12 +45,13 @@
      (include-js "/js/combined.js")] ;; magic
     [:body
      [:div#rap
+      (pr-str @session/*sandbar-session*)
       (when message [:div.message message])
       (when error [:div.error error])
       [:div#headwrap
        [:div#header (link-to config/SITE-URL config/SITE-TITLE)]
        [:div#desc (link-to config/SITE-URL config/SITE-DESCRIPTION)]]
-      [:div#sidebar (nav false)]
+      [:div#sidebar (nav user)]
       [:div#content.body
        [:div#storycontent body]]
       [:div.credit
@@ -69,6 +78,7 @@
   [:div.submit
    (submit-button lab)])
 
+(declare PAGE-NUMBER)
 
 (defn pagenav
   ([xs page-number] (pagenav xs page-number (fn [p] (str "?p=" p))))
@@ -96,3 +106,9 @@
 (defn paginate [xs page-number]
   (take config/POSTS-PER-PAGE
         (drop (* config/POSTS-PER-PAGE (dec page-number)) xs)))
+
+(defn render-paginated [render-fn page-number xs & args]
+  (let [paginated-xs (paginate xs page-number)]
+    (list
+     (map #(apply render-fn % args) paginated-xs)
+     (pagenav xs page-number))))

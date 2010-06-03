@@ -4,6 +4,10 @@
 (defn die [& xs]
   (throw (Exception. (apply str xs))))
 
+(defn safe-int [x]
+  (when (not (empty? x))
+    (Integer/parseInt x)))
+
 (comment 
  (defn now []
    (.getTime (java.util.Calendar/getInstance)))

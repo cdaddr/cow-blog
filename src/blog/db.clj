@@ -1,5 +1,6 @@
 (ns blog.db
-  (:require (clojure.contrib [sql :as sql])
+  (:require (clojure.contrib [sql :as sql]
+                             [string :as s])
             (net.briancarper [oyako :as oyako])
             (blog [config :as config]
                   [util :as util]
@@ -14,12 +15,27 @@
 (defn in-table [table x]
   (with-meta x {:table table}))
 
+(defmacro with-table [[table x] & body]
+  `(with-db
+     (let [x# ~x]
+       (if-let [~table (:table (meta x#))]
+         (do ~@body)
+         (util/die "Can't determine the table for " x#)))))
+
+(defn sha-256 [s]
+  (let [md (java.security.MessageDigest/getInstance "SHA-256")]
+    (.update md (.getBytes s))
+    (s/join ""
+            (mapcat #(Integer/toHexString (bit-and 0xff %))
+                    (into [] (.digest md))))))
+
 (def schema
      (oyako/make-datamap config/DB
       [:posts
        [belongs-to :categories as :category]
        [belongs-to :statuses as :status]
        [belongs-to :types as :type]
+       [belongs-to :users as :user]
        [has-many :comments]
        [habtm :tags via :post_tags]]
       [:comments
@@ -35,7 +51,7 @@
 (defn posts []
   (with-db
     (oyako/fetch-all :posts
-                     includes [:tags :category :comments :status :type]
+                     includes [:tags :category :comments :status :type :user]
                      :order "date_created desc")))
 
 (defn posts-with-tag [title]
@@ -98,6 +114,18 @@
                      includes :posts
                      where ["url = ?" url])))
 
+(defn users []
+  (with-db
+    (oyako/fetch-all :users)))
+
+(defn user [username password]
+  (first
+   (filter
+    #(and (= username (:username %))
+          (= (:password %)
+             (sha-256 (str password (:salt %)))))
+    (users))))
+
 (defn bare
   "Returns an object from table without any `includes`, suitable
   for editing and DB-updating."
@@ -107,12 +135,6 @@
                      where ["id = ?" id]
                      limit 1)))
 
-(defmacro with-table [[table x] & body]
-  `(with-db
-     (let [x# ~x]
-       (if-let [~table (:table (meta x#))]
-         (do ~@body)
-         (util/die "Can't determine the table for " x#)))))
 
 (def run-hooks nil)
 (defmulti run-hooks (fn [x] (table-meta x)))
@@ -142,5 +164,11 @@
   (with-table [table x]
     (sql/delete-rows table (where-id x) x)))
 
-(defn safe-int [x]
-  (when x (Integer/parseInt x)))
+(defn create-user [username password]
+  (let [salt (sha-256 (str (java.util.UUID/randomUUID)))
+        password (sha-256 (str password salt))]
+    (insert (in-table :users
+                      {:username username
+                       :password password
+                       :salt salt}))
+    ))
