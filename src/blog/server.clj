@@ -21,10 +21,10 @@
 (defn user [] (session/session-get :user))
 
 (defroutes blog-routes
-  (GET "/" []                        (pages/index-page :page-number layout/PAGE-NUMBER))
-  (GET ["/post/:title"] [title]      (pages/post-page title))
-  (GET ["/category/:title"] [title]  (pages/category-page title :page-number layout/PAGE-NUMBER))
-  (GET ["/tag/:title"] [title]       (pages/tag-page title :page-number layout/PAGE-NUMBER))
+  (GET "/" []                        (pages/index-page :user (user) :page-number layout/PAGE-NUMBER))
+  (GET ["/post/:title"] [title]      (pages/post-page title :user (user)))
+  (GET ["/category/:title"] [title]  (pages/category-page title :user (user) :page-number layout/PAGE-NUMBER))
+  (GET ["/tag/:title"] [title]       (pages/tag-page title :user (user) :page-number layout/PAGE-NUMBER))
   (GET "/login" []                   (admin/login-page))
   (GET "/logout" []                  (admin/do-logout)))
 
@@ -82,8 +82,7 @@
                                                          {which "which"} :route-params}
         (admin/do-delete-tag-category (keyword which) xid))
 
-  ;; Catch all routes under /admin
-  (GET "/admin/*" []))
+  )
 
 (defroutes static-routes
   (GET "/js/combined.js" [] (pages/combined-js))

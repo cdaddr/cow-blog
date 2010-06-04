@@ -57,7 +57,7 @@
                             " on " (name table) "(" (name col) ")")))
     (println "Added indices")
     (doseq [[table vals] [[:types ["Blog" "Page" "Toplevel Page"]]
-                          [:statuses ["Draft" "Public" "Spam"]]]]
+                          [:statuses ["Hidden" "Public" "Spam"]]]]
       (apply sql/insert-records table
              (map #(hash-map :title %) vals))
       (println "Initialized" table))

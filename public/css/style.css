@@ -559,3 +559,21 @@ input#test {
     width: 150px;
     vertical-align: middle;
 }
+
+.Spam {
+    color: red;
+}
+
+.Hidden {
+    color: grey;
+}
+
+.Public {
+    font-weight: bold;
+    color: green;
+}
+
+.admin {
+    font-weight: normal;
+    font-size: 10px;
+}

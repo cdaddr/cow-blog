@@ -111,3 +111,7 @@
     (list
      (map #(apply render-fn % args) paginated-xs)
      (pagenav xs page-number))))
+
+(defn status-span [x]
+  (let [status (:title (:status x))]
+    [:span " [" [:span {:class status} status] "]"]))

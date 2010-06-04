@@ -48,34 +48,43 @@
 
 (oyako/def-helper with-db #'schema)
 
-(defn posts []
+(defn statuses []
+  (with-db (oyako/fetch-all :statuses)))
+
+(defn status [title]
+  (with-db (oyako/fetch-one :statuses where ["title = ?" title])))
+
+(def PUBLIC (:id (status "Public")))
+(def public-only ["status_id = ?" PUBLIC])
+
+(defn posts [& {:keys [include-hidden?]}]
   (with-db
     (oyako/fetch-all :posts
                      includes [:tags :category :comments :status :type :user]
+                     where (when-not include-hidden?
+                             {:posts public-only
+                              :comments public-only})
                      :order "date_created desc")))
 
-(defn posts-with-tag [title]
-  (filter #(some #{title} (map :url (:tags %)))
-          (posts)))
+(defn post [x & {:keys [include-hidden?]}]
+  (let [post (with-db
+               (oyako/fetch-one :posts
+                                includes [:tags :category {:comments :status} :status]
+                                where {:posts (if (string? x)
+                                                ["url = ?" x]
+                                                ["id = ?" x])
+                                       :comments (when-not include-hidden?
+                                                   public-only)}
+                                limit 1))]
+    (when (or include-hidden? (= (:status_id post) PUBLIC))
+      post)))
 
-(defn posts-with-category [title]
-  (filter #(= title (-> % :category :url))
-          (posts)))
-
-
-(defn post [x]
-  (with-db
-    (oyako/fetch-one :posts
-                     includes [:tags :category :comments]
-                     where (if (string? x)
-                             ["url = ?" x]
-                             ["id = ?" x])
-                     limit 1)))
-
-(defn comments []
+(defn comments [& {:keys [include-hidden?]}]
   (with-db
     (oyako/fetch-all :comments
                      includes [:post :status]
+                     where (when-not include-hidden?
+                             public-only)
                      order :date_created)))
 
 (defn comment [x]
@@ -97,13 +106,17 @@
                      includes :posts
                      order :title)))
 
-(defn category [x]
+(defn category [x & {:keys [include-hidden?]}]
   (with-db
     (oyako/fetch-one :categories
-                     includes :posts
-                     where (if (string? x)
-                             ["url = ?" x]
-                             ["id = ?" x])
+                     includes {:posts [:status :tags :category :comments]}
+                     where {:categories (if (string? x)
+                                          ["url = ?" x]
+                                          ["id = ?" x])
+                            :posts {:posts (when-not include-hidden?
+                                             public-only)
+                                    :comments (when-not include-hidden?
+                                                public-only)}}
                      limit 1)))
 
 (defn tags []
@@ -112,13 +125,17 @@
                      includes :posts
                      order :title)))
 
-(defn tag [x]
+(defn tag [x & {:keys [include-hidden?]}]
   (with-db
     (oyako/fetch-one :tags
-                     includes :posts
-                     where (if (string? x)
-                             ["url = ?" x]
-                             ["id = ?" x]))))
+                     includes {:posts [:status :tags :category :comments]}
+                     where {:tags (if (string? x)
+                                    ["url = ?" x]
+                                    ["id = ?" x])
+                            :posts {:posts (when-not include-hidden?
+                                             public-only)
+                                    :comments (when-not include-hidden?
+                                                public-only)}})))
 
 (defn post_tags [post_id tag_id]
   (with-db
@@ -127,9 +144,6 @@
 
 (defn users []
   (with-db (oyako/fetch-all :users)))
-
-(defn statuses []
-  (with-db (oyako/fetch-all :statuses)))
 
 (defn types []
   (with-db (oyako/fetch-all :types)))
@@ -152,7 +166,7 @@
                      limit 1)))
 
 (defn tag-from-title [title]
-  (let [s (map #(if (re-matches config/VALID-TAG-REGEX (str %))
+  (let [s (map #(if (re-matches config/TAG-CATEGORY-REGEX (str %))
                   (str %) "-")
                (seq title))
         url (s/lower-case

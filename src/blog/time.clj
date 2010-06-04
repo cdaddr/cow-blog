@@ -13,6 +13,9 @@
 (defmethod to-joda java.sql.Timestamp [d]
   (org.joda.time.DateTime. (.getTime d) TIME-ZONE))
 
+(defmethod to-joda :default [x]
+  nil)
+
 (defn- fmt [x]
   (.withZone (org.joda.time.format.DateTimeFormat/forPattern x)
              TIME-ZONE))

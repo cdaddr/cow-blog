@@ -60,8 +60,10 @@
                 (when post (hidden-field "id" (:id post)))
                 (form-row "Title" "title"          #(text-field % (:title post)))
                 (form-row "URL" "url"              #(text-field % (:url post)))
-                (form-row "Status" "status_id"     #(drop-down % (opts (db/statuses))))
-                (form-row "Type" "type_id"         #(drop-down % (opts (db/types))))
+                (form-row "Status" "status_id"     #(drop-down % (opts (db/statuses))
+                                                               (:status_id post)))
+                (form-row "Type" "type_id"         #(drop-down % (opts (db/types))
+                                                               (:type_id post)))
                 (form-row "Category" "category_id" #(drop-down % (opts (db/categories))
                                                                (:category_id post)))
                 (when (:tags post)
@@ -100,7 +102,7 @@
    {:title "Edit Posts"
     :body [:div
            [:h3 "Edit Posts (sorted by date)"]
-           (layout/render-paginated render page-number (db/posts))]}))
+           (layout/render-paginated render page-number (db/posts :include-hidden? true))]}))
 
 (defn- post-from-params [user title url status_id type_id category_id markdown]
   {:title title
@@ -116,7 +118,6 @@
    uri
    (s/blank? (:title post)) "Title must not be blank."
    (s/blank? (:url post))   "Url must not be blank."
-   (db/post (:url post))    "Post with that URL already exists, can't add another."
    (s/blank? (:markdown post)) "You forgot to type a post body."
    (and (not (empty? tags))
         (some #(not (re-matches config/TAG-CATEGORY-REGEX %)) tags))
@@ -135,6 +136,9 @@
                                                    markdown))
            tags (split-tagstring tags)]
        (or (validate-post "/admin" new-post tags)
+           (when (db/post (:url new-post))
+             (error/redirect-and-error
+              "/admin" "A post with that URL already exists, can't add another."))
            (do
              (try
               (error/with-err-str (db/insert new-post))
@@ -170,6 +174,7 @@
                  [:li "#" (:id comment) " "
                   "[" (link-to (link/url comment) "view") "]"
                   "[" (link-to (str "/admin/edit-comment/" (:id comment)) "edit") "]"
+                  "[" (:title (:status comment)) "]"
                   [:div "Posted by " (:author comment)
                    (when (:email comment)
                      [:span " &lt;" (:email comment) "&gt;"])
@@ -208,12 +213,15 @@
             ]}))
 
 (defn do-add-tag-category [which title url]
-  (let [table (get {:tag :tags
-                    :category :categories}
-                   which)]
-    (db/insert (db/in-table table {:title title :url url}))
-    (merge (response/redirect "/admin")
-           (flash/message "Added successfully."))))
+  (let [[table f] (get {:tag [:tags db/tag]
+                        :category [:categories db/category]}
+                     which)]
+    (or (error/redirecting-to "/admin"
+                              (f url) (str "A " (name which) " with that url already exists.  Can't add another."))
+        (do 
+         (db/insert (db/in-table table {:title title :url url}))
+         (merge (response/redirect "/admin")
+                (flash/message "Added successfully."))))))
 
 (defn edit-tag-category-page [which id]
   (let [[f edit delete title message]
@@ -221,7 +229,7 @@
                     "/admin/delete-tag" "Tag"
                     ""]
               :category [db/category "/admin/edit-category"
-                         "/admin/delete-tag" "Category"
+                         "/admin/delete-category" "Category"
                          "Posts in this category will revert to 'Uncategorized'."]}
              which)
         id (util/safe-int id)
