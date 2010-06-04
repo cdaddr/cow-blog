@@ -54,37 +54,41 @@
 (defn status [title]
   (with-db (oyako/fetch-one :statuses where ["title = ?" title])))
 
-(def PUBLIC (:id (status "Public")))
-(def public-only ["status_id = ?" PUBLIC])
+(defn public-only []  ["status_id = ?" (:id (status "Public"))])
 
 (defn posts [& {:keys [include-hidden?]}]
-  (with-db
-    (oyako/fetch-all :posts
-                     includes [:tags :category :comments :status :type :user]
-                     where (when-not include-hidden?
-                             {:posts public-only
-                              :comments public-only})
-                     :order "date_created desc")))
+  (let [public (public-only)]
+   (with-db
+     (oyako/fetch-all :posts
+                      includes [:tags :category :comments :status :type :user]
+                      where (when-not include-hidden?
+                              {:posts public
+                               :comments public})
+                      :order "date_created desc"))))
 
 (defn post [x & {:keys [include-hidden?]}]
-  (let [post (with-db
-               (oyako/fetch-one :posts
-                                includes [:tags :category {:comments :status} :status]
-                                where {:posts (if (string? x)
-                                                ["url = ?" x]
-                                                ["id = ?" x])
-                                       :comments (when-not include-hidden?
-                                                   public-only)}
-                                limit 1))]
-    (when (or include-hidden? (= (:status_id post) PUBLIC))
-      post)))
+  (let [clause (if (string? x) "url = ?" "id = ?")
+        clause (if-not include-hidden?
+                 (str clause " and status_id = ?")
+                 clause)
+        public (public-only)
+        public_id (second public)]
+   (with-db
+     (oyako/fetch-one :posts
+                      includes [:tags :category {:comments :status} :status]
+                      where {:posts (if-not include-hidden?
+                                      [clause [x public_id]]
+                                      [clause x])
+                             :comments (when-not include-hidden?
+                                         public)}
+                      limit 1))))
 
 (defn comments [& {:keys [include-hidden?]}]
   (with-db
     (oyako/fetch-all :comments
                      includes [:post :status]
                      where (when-not include-hidden?
-                             public-only)
+                             (public-only))
                      order :date_created)))
 
 (defn comment [x]
@@ -114,9 +118,9 @@
                                           ["url = ?" x]
                                           ["id = ?" x])
                             :posts {:posts (when-not include-hidden?
-                                             public-only)
+                                             (public-only))
                                     :comments (when-not include-hidden?
-                                                public-only)}}
+                                                (public-only))}}
                      limit 1)))
 
 (defn tags []
@@ -133,9 +137,9 @@
                                     ["url = ?" x]
                                     ["id = ?" x])
                             :posts {:posts (when-not include-hidden?
-                                             public-only)
+                                             (public-only))
                                     :comments (when-not include-hidden?
-                                                public-only)}})))
+                                                (public-only))}})))
 
 (defn post_tags [post_id tag_id]
   (with-db

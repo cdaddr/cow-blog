@@ -11,6 +11,13 @@
 
 (defn- nav [user]
   [:ul
+   [:li
+    (if user
+      [:ul "Hello, " (:username user)
+       [:li (link-to "/admin" "Control Panel")]
+       [:li (link-to "/logout" "Log out")]]
+      [:ul "Log in"
+       [:li (link-to "/login" "Log in")]])]
    [:li "Categories"
     [:ul
      (map #(vector :li (link/link %)) (db/categories))]]
@@ -20,13 +27,7 @@
    [:li "Meta"
     [:ul
      [:li (link-to "/rss.xml" "RSS")]]]
-   [:li
-    (if user
-      [:ul "Hello, " (:username user)
-       [:li (link-to "/admin" "Control Panel")]
-       [:li (link-to "/logout" "Log out")]]
-      [:ul "Log in"
-       [:li (link-to "/login" "Log in")]])]])
+   ])
 
 (defn wrap-in-layout [title body user message error]
   (html

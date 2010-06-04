@@ -93,8 +93,9 @@
   (let [render (fn [post]
                  [:div
                   [:h4 "#" (:id post) " " (:title post)
+                   (layout/status-span post)
                    " [" (link-to (link/url post) "view") "]"
-                   " [" (link-to (str "/admin/edit-post/" (:id post)) "edit") "]"]
+                   (link/edit-link post)]
                   [:div.meta (time/datestr :pretty (:date_created post))
                    " - " (count (:comments post)) " comment(s)"]
                   [:p [:em (s/take 250 (:markdown post)) "..."]]
@@ -172,9 +173,9 @@
 (defn edit-comments-page [& {:keys [page-number]}]
   (let [render (fn [comment]
                  [:li "#" (:id comment) " "
+                  (layout/status-span comment)
                   "[" (link-to (link/url comment) "view") "]"
-                  "[" (link-to (str "/admin/edit-comment/" (:id comment)) "edit") "]"
-                  "[" (:title (:status comment)) "]"
+                  (link/edit-link comment)
                   [:div "Posted by " (:author comment)
                    (when (:email comment)
                      [:span " &lt;" (:email comment) "&gt;"])
@@ -187,7 +188,7 @@
    {:title "Edit Comments"
     :body [:div
            [:h3 "Edit Comments (sorted by date)"]
-           [:ul (layout/render-paginated render page-number (db/comments))]]}))
+           [:ul (layout/render-paginated render page-number (db/comments :include-hidden? true))]]}))
 
 (defn edit-comment-page [id]
   (let [comment (db/comment id)]))
