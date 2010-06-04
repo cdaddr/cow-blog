@@ -17,6 +17,9 @@
   (or (get-in request [:headers "x-forwarded-for"])
       (request :remote-addr)))
 
+(defn- strs [xs] (map name xs))
+(defn user [] (session/session-get :user))
+
 (defroutes blog-routes
   (GET "/" []                        (pages/index-page :page-number layout/PAGE-NUMBER))
   (GET ["/post/:title"] [title]      (pages/post-page title))
@@ -30,45 +33,57 @@
   (POST "/comment" {{:strs [post-id author email homepage markdown]} :form-params
                     {referer "referer"} :headers
                     :as request}
-        (pages/do-add-comment post-id (ip request) author email homepage markdown referer))
+        (pages/do-add-comment post-id (ip request)
+                              author email homepage
+                              markdown referer))
   (POST ["/login"] {{:strs [username password]} :form-params}
-        (admin/do-login username password))
-  )
+        (admin/do-login username password)))
 
 (defroutes admin-routes
   (GET "/admin" [] (admin/admin-page))
   
   (GET "/admin/add-post" [] (admin/add-post-page))
   
-  (POST "/admin/add-post" {{:strs [title url status_id
-                                   type_id category_id
-                                   tags markdown]} :form-params}
-        (admin/do-add-post (session/session-get :user)
-                           title url status_id
-                           type_id category_id
-                           tags markdown))
+  (POST "/admin/add-post" {form-params :form-params}
+        (apply admin/do-add-post (user)
+               (map form-params (strs '[title url status_id
+                                        type_id category_id
+                                        tags markdown]))))
 
   (GET "/admin/edit-posts" []      (admin/edit-posts-page :page-number layout/PAGE-NUMBER))
   (GET "/admin/edit-post/:id" [id] (admin/edit-post-page id))
-  (POST "/admin/edit-post" {{removetags "removetags[]"
-                             :strs [id title url status_id type_id category_id tags markdown]} :form-params}
-        (admin/do-edit-post id (session/session-get :user)
-                            title url status_id type_id category_id tags removetags markdown))
+  (POST "/admin/edit-post" {form-params :form-params}
+        (apply admin/do-edit-post (user)
+               (map form-params (strs '[id title url
+                                        status_id type_id category_id
+                                        tags markdown "removetags[]"]))))
 
   (GET "/admin/edit-comments" [] (admin/edit-comments-page :page-number layout/PAGE-NUMBER))
   #_(GET "/admin/edit-comment/:id" [id] (admin/edit-comment-page id))
-  #_(POST "/admin/edit-comment" {{:strs [id post_id status_id author email homepage ip markdown]} :form-params}
-        (admin/do-edit-comment id post_id status_id author email homepage ip markdown))
+  #_(POST "/admin/edit-comment" {form-params :form-params}
+          (apply admin/do-edit-comment
+                 (map form-params (strs '[id post_id status_id
+                                          author email homepage
+                                          ip markdown]))))
 
-  (GET ["/admin/edit-:xs" :xs #"tags|categories"] [xs]
-       (admin/edit-tags-categories-page (keyword xs) :page-number layout/PAGE-NUMBER))
-  (GET ["/admin/edit-:x/:id" :x #"tag|category"] [x id] (admin/edit-tag-category-page (keyword x) id))
-  (POST ["/admin/edit-:x" :x #"tag|category"] {{:strs [xid title url]} :form-params
-                                               {x "x"} :route-params}
-        (admin/do-edit-tag-category (keyword x) xid title url))
+  ;; Posts and categories are so similar they can share edit forms
+  (GET ["/admin/edit-:which" :which #"tags|categories"] [which]
+       (admin/edit-tags-categories-page (keyword which) :page-number layout/PAGE-NUMBER))
+  (GET ["/admin/edit-:which/:id" :which #"tag|category"] [which id]
+       (admin/edit-tag-category-page (keyword which) id))
+  (POST ["/admin/edit-:which" :which #"tag|category"] {{:strs [xid title url]} :form-params
+                                                       {which "which"} :route-params}
+        (admin/do-edit-tag-category (keyword which) xid title url))
+  (POST ["/admin/add-:which" :which #"tag|category"] {{:strs [title url]} :form-params
+                                                      {which "which"} :route-params}
+        (admin/do-add-tag-category (keyword which) title url))
 
-  (GET "/admin/*" [])
-  )
+  (POST ["/admin/delete-:which" :which #"tag|category"] {{:strs [xid]} :form-params
+                                                         {which "which"} :route-params}
+        (admin/do-delete-tag-category (keyword which) xid))
+
+  ;; Catch all routes under /admin
+  (GET "/admin/*" []))
 
 (defroutes static-routes
   (GET "/js/combined.js" [] (pages/combined-js))
@@ -77,7 +92,8 @@
 
 (defroutes error-routes
   (ANY "*" [] (error/error 404 "Page not found."
-                           "You tried to access a page that doesn't exist.  One of us screwed up here.  Not pointing any fingers, but, well, it was probably you.")))
+                           "You tried to access a page that doesn't exist.  One of us screwed up here.
+                            Not pointing any fingers, but, well, it was probably you.")))
 
 (wrap! admin-routes middleware/wrap-admin)
 

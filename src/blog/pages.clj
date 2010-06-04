@@ -62,10 +62,10 @@
    [:div#add-comment
     (form-to [:post (str "/comment")]
              (hidden-field "post-id" (:id post))
-             (layout/form-row text-field "author" "Author")
-             (layout/form-row text-field "email" "Email")
-             (layout/form-row text-field "homepage" "URL")
-             (layout/form-row text-area "markdown" "Comment")
+             (layout/form-row "Author" "author" text-field)
+             (layout/form-row "Email" "email" text-field)
+             (layout/form-row "URL" "homepage" text-field)
+             (layout/form-row "Comment" "markdown" text-area)
              (layout/submit-row "Submit"))
     [:div.feedback "You can use " [:a {:href "http://daringfireball.net/projects/markdown/"} "Markdown"] " in your comment."]
     (layout/preview-div)]])
@@ -102,7 +102,9 @@
      {:title title
       :body [:div
              [:h3.info subtitle]
-             (layout/render-paginated render-post page-number posts)]}))
+             (if (empty? posts)
+               "No posts found."
+               (layout/render-paginated render-post page-number posts))]}))
 
 (defn tag-page
   "Page to render all posts with some tag name."

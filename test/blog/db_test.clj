@@ -24,7 +24,7 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
         {:title "bar" :url "bar" :user_id 1
          :markdown "This is some text.  *foo* __bar__ `baz`" :html "WRONG"
          :status_id 1 :type_id 1 :date_created (time/str-to-dbdate :edit "2010-05-26 12:23:00 -07:00")}]
-       #_(for [x (range 100) :let [name (str "test" x)]]
+       (for [x (range 100) :let [name (str "test" x)]]
          {:title name :url name :user_id 1
           :markdown (str "Some text... " name) :html (str "<p>Some text... " name "</p>")
           :status_id 1 :type_id 1 :date_created (time/str-to-dbdate :edit "2010-05-27 14:00:00 -07:00")}))

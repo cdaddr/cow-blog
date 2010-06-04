@@ -2,7 +2,8 @@
   (:use (hiccup [core :only [escape-html]]
                 [page-helpers :only [link-to]]
                 [form-helpers :only [form-to text-field check-box text-area
-                                     password-field drop-down label hidden-field]]))
+                                     password-field drop-down label hidden-field]])
+        (blog [layout :only [form-row submit-row]]))
   (:require (blog [layout :as layout]
                   [db :as db]
                   [flash :as flash]
@@ -20,9 +21,9 @@
   {:title "Login"
    :body [:div [:h3 "Log in"]
           (form-to [:post "/login"]
-                   (layout/form-row text-field "username" "Username")
-                   (layout/form-row password-field "password" "Password")
-                   (layout/submit-row "Log in"))]})
+                   (form-row "Username" "username" text-field)
+                   (form-row "Password" "password" password-field)
+                   (submit-row "Log in"))]})
 
 (defn do-login [username password]
   (if-let [user (db/user username password)]
@@ -45,39 +46,35 @@
            [:li (link-to "/admin/add-post" "New Post")]]
           [:ul
            [:h4 "Edit stuff"]
-           [:li (link-to "/admin/edit-posts" "Edit Posts")]
-           [:li (link-to "/admin/edit-comments" "Edit Comments")]
-           [:li (link-to "/admin/edit-categories" "Edit Categories")]
-           [:li (link-to "/admin/edit-tags" "Edit Tags")]]]})
+           [:li (link-to "/admin/edit-posts" "Posts")]
+           [:li (link-to "/admin/edit-comments" "Comments")]
+           [:li (link-to "/admin/edit-categories" "Categories")]
+           [:li (link-to "/admin/edit-tags" "Tags")]]]})
 
 (defn- post-form
   ([target] (post-form target {}))
   ([target post]
      (let [opts (fn [xs] (map #(map % [:title :id]) xs))]
       [:div.add-post.markdown
-       
        (form-to [:post target]
                 (when post (hidden-field "id" (:id post)))
-                (layout/form-row text-field "title" "Title" (:title post))
-                (layout/form-row text-field "url" "URL" (:url post))
-                (layout/form-row drop-down "status_id" "Status"
-                                 nil
-                                 (opts (db/statuses)))
-                (layout/form-row drop-down "type_id" "Type"
-                                 nil
-                                 (opts (db/types)))
-                (layout/form-row drop-down "category_id" "Category"
-                                 (:category_id post)
-                                 (opts (db/categories)))
+                (form-row "Title" "title"          #(text-field % (:title post)))
+                (form-row "URL" "url"              #(text-field % (:url post)))
+                (form-row "Status" "status_id"     #(drop-down % (opts (db/statuses))))
+                (form-row "Type" "type_id"         #(drop-down % (opts (db/types))))
+                (form-row "Category" "category_id" #(drop-down % (opts (db/categories))
+                                                               (:category_id post)))
                 (when (:tags post)
-                 (layout/form-row #(for [tag %2] [:span (check-box %1 false (:url tag)) (:url tag)])
-                                  "removetags[]" "Remove Tags" (:tags post)))
-                (layout/form-row text-field "tags"
-                                 (if (:tags post) "Add Tags" "Tags"))
+                  (form-row "Remove Tags" "removetags[]"
+                                                   #(for [tag (:tags post)]
+                                                      [:span (check-box % false (:url tag))
+                                                       (:url tag)])))
+                (form-row (if (:tags post) "Add Tags" "Tags") "tags"
+                                                   #(text-field %))
                 [:div.info "Tags should be comma-separated and match /"
                  [:code config/TAG-CATEGORY-REGEX] "/"]
-                (layout/form-row text-area "markdown" "Body" (:markdown post))
-                (layout/submit-row "Submit"))
+                (form-row "Body" "markdown"        #(text-area % (:markdown post)))
+                (submit-row "Submit"))
        (layout/preview-div)])))
 
 (defn add-post-page []
@@ -149,7 +146,7 @@
               (catch java.sql.SQLException e
                 (error/redirect-and-error "/admin/add-post" (str e))))))))))
 
-(defn do-edit-post [id user title url status_id type_id category_id addtags removetags markdown]
+(defn do-edit-post [user id title url status_id type_id category_id addtags markdown removetags]
   (db/with-db
     (sql/transaction
      (let [post (db/bare :posts (util/safe-int id))
@@ -170,13 +167,16 @@
 
 (defn edit-comments-page [& {:keys [page-number]}]
   (let [render (fn [comment]
-                 [:li "#" (:id comment)
+                 [:li "#" (:id comment) " "
                   "[" (link-to (link/url comment) "view") "]"
                   "[" (link-to (str "/admin/edit-comment/" (:id comment)) "edit") "]"
                   [:div "Posted by " (:author comment)
-                   " [" (:email comment) "]"
-                   " (" (:homepage comment) ")"
-                   " on " (time/datestr :pretty (:date_created comment))]
+                   (when (:email comment)
+                     [:span " &lt;" (:email comment) "&gt;"])
+                   (when (:homepage comment)
+                     [:span " (" (:homepage comment) ")"])]
+                  [:div "Date: " (time/datestr :pretty (:date_created comment))]
+                  [:div "IP: " (:ip comment)]
                   [:p [:em (s/take 150 (:markdown comment))]]
                   ])]
    {:title "Edit Comments"
@@ -184,33 +184,63 @@
            [:h3 "Edit Comments (sorted by date)"]
            [:ul (layout/render-paginated render page-number (db/comments))]]}))
 
+(defn edit-comment-page [id]
+  (let [comment (db/comment id)]))
+
 
 (defn edit-tags-categories-page [which & {:keys [page-number]}]
-  (let [[f uri title] (get {:tags [db/tags "/admin/edit-tag/" "Edit Tags"]
-                       :categories [db/categories "/admin/edit-category/" "Edit Categories"]}
+  (let [[f edit add title] (get {:tags [db/tags "/admin/edit-tag/"
+                                        "/admin/add-tag" "Tags"]
+                                 :categories [db/categories "/admin/edit-category/"
+                                              "/admin/add-category" "Categories"]}
                             which)
         xs (f)]
     {:title title
-     :body [:div
-            [:h3 title]
-            [:ul
-             (for [x xs]
-               [:li (link-to (str uri (:id x))
-                             (str (:title x) "(" (:url x) ")"))])]]}))
+     :body [:div [:h3 "Edit " title]
+            [:ul (for [x xs]
+                   [:li (link-to (str edit (:id x))
+                                 (str (:title x) "(" (:url x) ")"))])]
+            [:h3 "Create New " title]
+            (form-to [:post add]
+                     (form-row "Title" "title" #(text-field %))
+                     (form-row "URL" "url" #(text-field %))
+                     (submit-row "Create"))
+            ]}))
+
+(defn do-add-tag-category [which title url]
+  (let [table (get {:tag :tags
+                    :category :categories}
+                   which)]
+    (db/insert (db/in-table table {:title title :url url}))
+    (merge (response/redirect "/admin")
+           (flash/message "Added successfully."))))
 
 (defn edit-tag-category-page [which id]
-  (let [[f uri title] (get {:tag [db/tag "/admin/edit-tag" "Edit Tag"]
-                            :category [db/category "/admin/edit-category" "Edit Category"]}
-                          which)
-        x (f (util/safe-int id))]
+  (let [[f edit delete title message]
+        (get {:tag [db/tag "/admin/edit-tag"
+                    "/admin/delete-tag" "Tag"
+                    ""]
+              :category [db/category "/admin/edit-category"
+                         "/admin/delete-tag" "Category"
+                         "Posts in this category will revert to 'Uncategorized'."]}
+             which)
+        id (util/safe-int id)
+        x (f id)]
     {:title title
      :body [:div
-            [:h3 title]
-            (form-to [:post uri]
+            [:h3 "Edit " title]
+            (form-to [:post edit]
                      (hidden-field "xid" (:id x))
-                     (layout/form-row text-field "title" "Title" (:title x))
-                     (layout/form-row text-field "url" "URL" (:url x))
-                     (layout/submit-row "Submit"))]}))
+                     (form-row "Title" "title" #(text-field %(:title x)))
+                     (form-row "URL" "url"     #(text-field % (:url x)))
+                     (submit-row "Edit"))
+            (when-not (and (= which :category) (= id 1))
+              (list
+               [:h3 "Delete " title]
+               [:p "Are you really, really sure you want to do this?  " message]
+               (form-to [:post delete]
+                        (hidden-field "xid" (:id x))
+                        (submit-row "DELETE IRREVOCABLY"))))]}))
 
 (defn validate-tag-category [uri x]
   (error/redirecting-to
@@ -232,3 +262,11 @@
           (error/with-err-str (db/update x))
           (merge (response/redirect (link/url x))
                  (flash/message "Edit successful."))))))
+
+(defn do-delete-tag-category [which id]
+  (let [table (get {:tag :tags :category :categories}
+                   which)
+        x (db/bare table (util/safe-int id))]
+    (db/delete x)
+    (merge (response/redirect "/admin")
+           (flash/message "Delete successful."))))

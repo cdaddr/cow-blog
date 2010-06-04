@@ -69,6 +69,10 @@
       (label name (str lab ":"))
       (f name args val)]))
 
+(defn form-row [lab name el]
+  [:div (label name (str lab ":"))
+   (el name)])
+
 (defn submit-row [lab]
   [:div.submit
    (submit-button lab)])
@@ -84,7 +88,7 @@
                               (range (- page-number 5)
                                      (+ page-number 5)))]
        [:div.pagenav
-        [:span "Page " page-number " of " last-page-number]
+        [:span "Page " page-number " of " (if (zero? last-page-number) 1 last-page-number)]
         (if (> page-number 1)
           (list
            (link-to (f 1) "&laquo; First")

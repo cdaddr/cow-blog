@@ -78,11 +78,13 @@
                      includes [:post :status]
                      order :date_created)))
 
-(defn comment [id]
+(defn comment [x]
   (with-db
     (oyako/fetch-one :comments
                      includes [:post :status]
-                     where ["id = ?" id]
+                     where (if (string? x)
+                             ["url = ?" x]
+                             ["id = ?" x])
                      limit 1)))
 
 (defn gravatar [comment]
