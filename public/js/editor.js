@@ -23,13 +23,13 @@ $(document).ready(function() {
         updatePreview();
 
        $("input#test").focus(function() {
-           if($(this).val() == "<= Type this word") {
+           if($(this).val() == "Type this word =>") {
                $(this).val('');
            }
        });
        $("input#test").blur(function() {
            if($(this).val() == "") {
-               $(this).val("<= Type this word");
+               $(this).val("Type this word =>");
            }
            });
 

@@ -58,7 +58,7 @@
   "Render an HTML form suitable for creating a new comment, plus preview div."
   [post]
   [:div.comment-form
-   [:h3 "Add Comment"]
+   [:h3 "Speak your Mind"]
    [:div#add-comment
     (form-to [:post (str "/comment")]
              (hidden-field "post-id" (:id post))
@@ -66,8 +66,12 @@
              (layout/form-row "Email" "email" text-field)
              (layout/form-row "URL" "homepage" text-field)
              (layout/form-row "Comment" "markdown" text-area)
+             [:div.test
+              (text-field "test" "Type this word =>")
+              [:img {:src "/img/test.jpg"}]]
              (layout/submit-row "Submit"))
     [:div.feedback "You can use " [:a {:href "http://daringfireball.net/projects/markdown/"} "Markdown"] " in your comment."]
+    [:div.feedback "Email/URL are optional.  Email is only used for " (link-to "http://www.gravatar.com/" "Gravatar") "."]
     (layout/preview-div)]])
 
 ;; PAGES
@@ -138,32 +142,35 @@
 (defn do-add-comment
   "Handles POST request to add a new comment.  This is suitable for public /
    anonymous users to use."
-  [post-id ip author email homepage markdown uri]
+  [post-id ip author email homepage markdown uri captcha]
   (let [post-id (util/safe-int post-id)]
     (if-let [post (db/bare :posts post-id)]
-      (cond
-       (not post)        (error/redirect-and-error uri "Tried to add a comment for a post that doesn't exist.")
-       (empty? ip)       (error/redirect-and-error uri "Missing IP?  That shouldn't happen.")
-       (empty? markdown) (error/redirect-and-error uri "You forgot to type words in your comment.  Please type some words.")
-       (and (not (empty? homepage))
-            (try (java.net.URL. homepage) nil
-                 (catch java.net.MalformedURLException _ :failed)))
-       (error/redirect-and-error uri "Invalid homepage.  Please provide a URL starting with 'http[s]://'.  Or leave it blank.")
-       :else (try
-               (db/insert
-                (db/in-table :comments
-                             {:post_id post-id
-                              :status_id 1
-                              :author (or (escape-html author) config/DEFAULT-COMMENT-AUTHOR)
-                              :email (escape-html email)
-                              :homepage (when (not (empty? homepage))
-                                          (escape-html homepage))
-                              :markdown markdown
-                              :ip ip}))
-               (merge (response/redirect uri)
-                      (flash/message "Comment added."))
-               (catch Exception e
-                 (error/redirect-and-error uri "There was some kind of database error and
+      (or (error/redirecting-to
+           uri
+           (not post)        "Tried to add a comment for a post that doesn't exist."
+           (empty? ip)       "Missing IP?  That shouldn't happen."
+           (empty? markdown) "You forgot to type words in your comment.  Please type some words."
+           (and (not (empty? homepage))
+                (try (java.net.URL. homepage) nil
+                     (catch java.net.MalformedURLException _ :failed)))
+           "Invalid homepage.  Please provide a URL starting with 'http[s]://'.  Or leave it blank."
+           (not (re-matches config/CAPTCHA captcha))
+           "Anti-robot defense system activated.  Please look closely at the comment form.")
+          (try
+            (db/insert
+             (db/in-table :comments
+                          {:post_id post-id
+                           :status_id 1
+                           :author (or (escape-html author) config/DEFAULT-COMMENT-AUTHOR)
+                           :email (escape-html email)
+                           :homepage (when (not (empty? homepage))
+                                       (escape-html homepage))
+                           :markdown markdown
+                           :ip ip}))
+            (merge (response/redirect uri)
+                   (flash/message "Comment added.  Thanks!"))
+            (catch Exception e
+              (error/redirect-and-error uri "There was some kind of database error and
                                           the computer ate your comment.  Sorry.  :(")))))))
 
 

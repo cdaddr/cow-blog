@@ -30,6 +30,8 @@
 (def TAG-CATEGORY-REGEX #"^[-A-Za-z0-9_. ]+$")
 (def TAG-CATEGORY-URL-REGEX #"^[a-z0-9_-]+$")
 
+(def CAPTCHA #"(?i)^\s*moo\s*$")
+
 (def DB nil)
 
 (def DB (pg/postgres-pool {:database "blogtest"

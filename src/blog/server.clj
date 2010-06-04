@@ -30,12 +30,12 @@
 
 (defroutes form-routes
   (POST "/post/:id" [id])
-  (POST "/comment" {{:strs [post-id author email homepage markdown]} :form-params
+  (POST "/comment" {{:strs [post-id author email homepage markdown test]} :form-params
                     {referer "referer"} :headers
                     :as request}
         (pages/do-add-comment post-id (ip request)
                               author email homepage
-                              markdown referer))
+                              markdown referer test))
   (POST ["/login"] {{:strs [username password]} :form-params}
         (admin/do-login username password)))
 
