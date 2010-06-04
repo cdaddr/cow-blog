@@ -64,11 +64,13 @@
       (assoc-in response [:headers] {"Cache-Control" "max-age=3600;must-revalidate"
                                      "Expires" (time/datestr :http (time/expire-date))}))))
 
-(defn wrap-admin [handler]
+(defn wrap-admin
+  "If the user is logged in, display the page.  Otherwise skip this route
+  (probably ends up giving a 404 error)."
+  [handler]
   (fn [request]
     (if-let [user (session/session-get :user)]
-      (handler request)
-      (error/error 401 "Access Denied" "Access denied."))))
+      (handler request))))
 
 (defn wrap-page-number [handler]
   (fn [request]
