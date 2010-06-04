@@ -87,12 +87,13 @@
   "Main index page."
   [& {:keys [user page-number]}]
   (let [posts (db/posts :include-hidden? user)]
-    (if-not (empty? posts)
+    (if (empty? posts)
+      {:body [:div [:h3 "There's nothing here."]
+              [:p "No posts have been written yet.  Start writing!"]]}
       {:body [:div
               (layout/render-paginated #(render-post % :front-page? true :user user)
                                        page-number posts)]}
-      (error/error 404 "There's nothing here!"
-                   "There are no posts that meet your search criteria.  :("))))
+      )))
 
 (defn post-page
   "Page to display a single post, given the title of the post."
@@ -122,7 +123,7 @@
   [tag-name & {:keys [user page-number]}]
   (if-let [tag (db/tag (escape-html tag-name) :include-hidden? user)]
     (let [title (str "All Posts Tagged '" (:title tag) "'")
-          header (html "All Posts Tagged '" (link/link tag) "'")]
+          header [:div (count (:posts tag)) " Posts Tagged '" (link/link tag) "'"]]
       (post-list-page title header (:posts tag) page-number))
     (error/error 404 "Invalid Tag"
                  (str "There's no tag named '" (escape-html tag-name) "'."))))
@@ -132,7 +133,7 @@
   [category-name & {:keys [user page-number] :or {page-number 1}}]
   (if-let [category (db/category (escape-html category-name) :include-hidden? user)]
    (let [title (str "All Posts in Category '" (:title category) "'")
-         header (html "All Posts in Category '" (link/link category) "'")]
+         header [:div (count (:posts category)) " Posts in Category '" (link/link category) "'"]]
      (post-list-page title header (:posts category) page-number))
    (error/error 404 "Invalid Category"
                 (str "There's no category named '" (escape-html category-name) "'."))))

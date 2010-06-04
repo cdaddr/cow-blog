@@ -81,6 +81,7 @@
                                       [clause x])
                              :comments (when-not include-hidden?
                                          public)}
+                      order {:comments "date_created asc"}
                       limit 1))))
 
 (defn comments [& {:keys [include-hidden?]}]
@@ -191,14 +192,16 @@
 (defn- where-id [x]
   ["id = ?" (:id x)])
 
-(defn insert [x]
-  (with-table [table x]
-    (sql/insert-records table (run-hooks x))))
+(defn insert [x & {:keys [run-hooks?] :or {run-hooks? true}}]
+  (let [x (if run-hooks? (run-hooks x) x)]
+   (with-table [table x]
+     (sql/insert-records table x))))
 
 (defn insert-or-select [x where]
-  (or (oyako/fetch-one (table-meta x) :where where)
-      (do (insert (run-hooks x))
-          (oyako/fetch-one (table-meta x) :where where))))
+  (with-table [table x]
+   (or (oyako/fetch-one table :where where)
+       (do (insert (run-hooks x))
+           (oyako/fetch-one table :where where)))))
 
 (defn update [x]
   (with-table [table x]

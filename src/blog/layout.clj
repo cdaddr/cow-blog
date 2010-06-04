@@ -23,7 +23,9 @@
      (map #(vector :li (link/link %)) (db/categories))]]
    [:li "Tags"
     [:ul
-     (map #(vector :li (link/link %)) (db/tags))]]
+     (map #(identity [:li (link-to (link/url %)
+                                   (str (:title %) " (" (count (:posts %)) ")"))])
+          (db/tags))]]
    [:li "Meta"
     [:ul
      [:li (link-to "/rss.xml" "RSS")]]]
