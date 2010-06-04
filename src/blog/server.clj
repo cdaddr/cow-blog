@@ -17,14 +17,13 @@
   (or (get-in request [:headers "x-forwarded-for"])
       (request :remote-addr)))
 
-(defn- strs [xs] (map name xs))
-(defn user [] (session/session-get :user))
+(defmacro strs [& xs] `(map name (quote ~xs)))
 
 (defroutes blog-routes
-  (GET "/" []                        (pages/index-page :user (user) :page-number layout/PAGE-NUMBER))
-  (GET ["/post/:title"] [title]      (pages/post-page title :user (user)))
-  (GET ["/category/:title"] [title]  (pages/category-page title :user (user) :page-number layout/PAGE-NUMBER))
-  (GET ["/tag/:title"] [title]       (pages/tag-page title :user (user) :page-number layout/PAGE-NUMBER))
+  (GET "/" []                        (pages/index-page :user middleware/USER :page-number middleware/PAGE-NUMBER))
+  (GET ["/post/:title"] [title]      (pages/post-page title :user middleware/USER))
+  (GET ["/category/:title"] [title]  (pages/category-page title :user  middleware/USER :page-number middleware/PAGE-NUMBER))
+  (GET ["/tag/:title"] [title]       (pages/tag-page title :user middleware/USER :page-number middleware/PAGE-NUMBER))
   (GET "/login" []                   (admin/login-page))
   (GET "/logout" []                  (admin/do-logout)))
 
@@ -45,35 +44,39 @@
   (GET "/admin/add-post" [] (admin/add-post-page))
   
   (POST "/admin/add-post" {form-params :form-params}
-        (apply admin/do-add-post (user)
-               (map form-params (strs '[title url status_id
-                                        type_id category_id
-                                        tags markdown]))))
+        (apply admin/do-add-post middleware/USER
+               (map form-params (strs title url status_id
+                                      type_id category_id
+                                      tags markdown))))
 
-  (GET "/admin/edit-posts" []      (admin/edit-posts-page :page-number layout/PAGE-NUMBER))
+  (GET "/admin/edit-posts" []      (admin/edit-posts-page :page-number middleware/PAGE-NUMBER))
   (GET "/admin/edit-post/:id" [id] (admin/edit-post-page id))
+  
   (POST "/admin/edit-post" {form-params :form-params}
-        (apply admin/do-edit-post (user)
-               (map form-params (strs '[id title url
-                                        status_id type_id category_id
-                                        tags markdown "removetags[]"]))))
+        (apply admin/do-edit-post middleware/USER
+               (map form-params (strs id title url
+                                      status_id type_id category_id
+                                      tags markdown "removetags[]"))))
 
-  (GET "/admin/edit-comments" [] (admin/edit-comments-page :page-number layout/PAGE-NUMBER))
+  (GET "/admin/edit-comments" [] (admin/edit-comments-page :page-number middleware/PAGE-NUMBER))
   #_(GET "/admin/edit-comment/:id" [id] (admin/edit-comment-page id))
   #_(POST "/admin/edit-comment" {form-params :form-params}
           (apply admin/do-edit-comment
-                 (map form-params (strs '[id post_id status_id
-                                          author email homepage
-                                          ip markdown]))))
+                 (map form-params (strs id post_id status_id
+                                        author email homepage
+                                        ip markdown))))
 
   ;; Posts and categories are so similar they can share edit forms
   (GET ["/admin/edit-:which" :which #"tags|categories"] [which]
-       (admin/edit-tags-categories-page (keyword which) :page-number layout/PAGE-NUMBER))
+       (admin/edit-tags-categories-page (keyword which) :page-number middleware/PAGE-NUMBER))
+  
   (GET ["/admin/edit-:which/:id" :which #"tag|category"] [which id]
        (admin/edit-tag-category-page (keyword which) id))
+  
   (POST ["/admin/edit-:which" :which #"tag|category"] {{:strs [xid title url]} :form-params
                                                        {which "which"} :route-params}
         (admin/do-edit-tag-category (keyword which) xid title url))
+  
   (POST ["/admin/add-:which" :which #"tag|category"] {{:strs [title url]} :form-params
                                                       {which "which"} :route-params}
         (admin/do-add-tag-category (keyword which) title url))
@@ -101,6 +104,7 @@
 
 (wrap! dynamic-routes
        middleware/wrap-page-number
+       middleware/wrap-user
        middleware/wrap-layout
        session/wrap-stateful-session
        middleware/catching-errors

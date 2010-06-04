@@ -59,17 +59,6 @@
    [:h4 "Preview"]
    [:div#preview]])
 
-(defn form-row
-  ([f name lab] (form-row f name lab nil))
-  ([f name lab val]
-     [:div
-      (label name (str lab ":"))
-      (f name val)])
-  ([f name lab val args]
-     [:div
-      (label name (str lab ":"))
-      (f name args val)]))
-
 (defn form-row [lab name el]
   [:div (label name (str lab ":"))
    (el name)])
@@ -77,8 +66,6 @@
 (defn submit-row [lab]
   [:div.submit
    (submit-button lab)])
-
-(declare PAGE-NUMBER)
 
 (defn pagenav
   ([xs page-number] (pagenav xs page-number (fn [p] (str "?p=" p))))

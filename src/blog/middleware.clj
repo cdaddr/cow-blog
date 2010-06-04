@@ -72,8 +72,17 @@
     (if-let [user (session/session-get :user)]
       (handler request))))
 
+(declare PAGE-NUMBER)
+
 (defn wrap-page-number [handler]
   (fn [request]
     (let [{{page-number "p"} :query-params} request]
-      (binding [layout/PAGE-NUMBER (or (util/safe-int page-number) 1)]
+      (binding [PAGE-NUMBER (or (util/safe-int page-number) 1)]
         (handler request)))))
+
+(declare USER)
+
+(defn wrap-user [handler]
+  (fn [request]
+    (binding [USER (session/session-get :user)]
+      (handler request))))
