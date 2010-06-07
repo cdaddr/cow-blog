@@ -19,15 +19,15 @@
   renders 'comments' links.  When false, doesn't."
   ([post & {:keys [user front-page?]}]
      [:div.post
-      [:h3.storytitle (link/link post)
+      [:h3 (link/link post)
        (when user
          [:span.admin
           (layout/status-span post)
           (link/edit-link post)])]
       [:div.meta
-       [:div "Category: " (link/link (:category post))]
-       [:div "Posted by " (:username (:user post)) " on " (time/datestr :pretty (post :date_created))]]
-      [:div.storycontent (post :html)]
+       (link/link (:category post)) " \u2014 "
+       " by " (:username (:user post)) " on " (time/datestr :pretty (post :date_created))]
+      [:div.body (post :html)]
       [:div.feedback
        (when (post :tags)
         [:div.post-tags "Tags: " (interpose ", " (map link/link (post :tags)))])
@@ -86,12 +86,15 @@
 (defn index-page
   "Main index page."
   [& {:keys [user page-number]}]
-  (let [posts (db/posts :include-hidden? user)]
+  (let [posts (db/posts :include-hidden? user
+                        :limit config/POSTS-PER-PAGE
+                        :offset (* (dec page-number) config/POSTS-PER-PAGE))]
     (if (empty? posts)
       {:body [:div [:h3 "There's nothing here."]
               [:p "No posts have been written yet.  Start writing!"]]}
       {:body [:div
-              (layout/render-paginated #(render-post % :front-page? true :user user)
+              (map #(render-post % :front-page? true :user user) posts)
+              #_(layout/render-paginated #(render-post % :front-page? true :user user)
                                        page-number posts)]}
       )))
 

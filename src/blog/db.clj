@@ -56,7 +56,7 @@
 
 (defn public-only []  ["status_id = ?" (:id (status "Public"))])
 
-(defn posts [& {:keys [include-hidden?]}]
+(defn posts [& {:keys [include-hidden? limit offset]}]
   (let [public (public-only)]
    (with-db
      (oyako/fetch-all :posts
@@ -64,7 +64,9 @@
                       where (when-not include-hidden?
                               {:posts public
                                :comments public})
-                      :order "date_created desc"))))
+                      order "date_created desc"
+                      limit limit
+                      offset offset))))
 
 (defn post [x & {:keys [include-hidden?]}]
   (let [clause (if (string? x) "url = ?" "id = ?")
@@ -75,7 +77,7 @@
         public_id (second public)]
    (with-db
      (oyako/fetch-one :posts
-                      includes [:tags :category {:comments :status} :status]
+                      includes [:tags :category {:comments :status} :status :user]
                       where {:posts (if-not include-hidden?
                                       [clause [x public_id]]
                                       [clause x])
@@ -107,9 +109,7 @@
 
 (defn categories []
   (with-db
-    (oyako/fetch-all :categories
-                     includes :posts
-                     order :title)))
+    (oyako/fetch-all :categories order :title)))
 
 (defn category [x & {:keys [include-hidden?]}]
   (with-db
@@ -127,7 +127,6 @@
 (defn tags []
   (with-db
     (oyako/fetch-all :tags
-                     includes :posts
                      order :title)))
 
 (defn tag [x & {:keys [include-hidden?]}]

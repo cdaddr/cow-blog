@@ -24,7 +24,7 @@
    [:li "Tags"
     [:ul
      (map #(identity [:li (link-to (link/url %)
-                                   (str (:title %) " (" (count (:posts %)) ")"))])
+                                   (:title %))])
           (db/tags))]]
    [:li "Meta"
     [:ul
@@ -39,16 +39,15 @@
      (include-css "/css/style.css")
      (include-js "/js/combined.js")] ;; magic
     [:body
-     [:div#rap
+     [:div#wrapper
       (when message [:div.message message])
       (when error [:div.error error])
-      [:div#headwrap
-       [:div#header (link-to config/SITE-URL config/SITE-TITLE)]
-       [:div#desc (link-to config/SITE-URL config/SITE-DESCRIPTION)]]
+      [:div#header
+       [:h1 (link-to config/SITE-URL config/SITE-TITLE)]
+       [:div.desc (link-to config/SITE-URL config/SITE-DESCRIPTION)]]
       [:div#sidebar (nav user)]
-      [:div#content.body
-       [:div.storycontent body]]
-      [:div.credit
+      [:div#content body]
+      [:div#footer
        [:div
         "Powered by "
         (link-to "http://clojure.org" "Clojure") " and "
@@ -78,19 +77,19 @@
                               (range (- page-number 5)
                                      (+ page-number 5)))]
        [:div.pagenav
-        [:span "Page " page-number " of " (if (zero? last-page-number) 1 last-page-number)]
+        [:span.navtext "Page " page-number " of " (if (zero? last-page-number) 1 last-page-number)]
         (if (> page-number 1)
-          (list
+          [:span.navnext
            (link-to (f 1) "&laquo; First")
-           (link-to (f (dec page-number)) "&lt; Prev")))
+           (link-to (f (dec page-number)) "&lt; Prev")])
         (for [p page-range]
           (if (= p page-number)
             [:span.num p]
             (link-to (f p) p)))
         (if (< page-number last-page-number)
-          (list
+          [:span.navnext
            (link-to (f (inc page-number)) "Next &raquo;")
-           (link-to (f last-page-number) "Last &gt;")))])))
+           (link-to (f last-page-number) "Last &gt;")])])))
 
 (defn paginate [xs page-number]
   (take config/POSTS-PER-PAGE

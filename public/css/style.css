@@ -115,16 +115,22 @@ ul.post-meta span.post-meta-key {
 	font-weight: bold;
 }
 
-.credit {
+#footer {
+    width: 600px;
+    font-style: italic;
 	clear:both;
 	color: #666;
 	font-size: 10px;
-	padding: 50px 0 0 0;
+	padding: 25px 0 0 0;
 	margin: 0 0 20px 0;
 	text-align: center;
 }
 
-.credit a:hover {
+#footer a {
+    text-decoration: none;
+}
+
+#footer a:hover {
 	color: #666;
 }
 
@@ -179,44 +185,53 @@ ul.post-meta span.post-meta-key {
 .meta a {
 }
 
-.storytitle {
-	margin: 0;
-}
-
-.storytitle a {
-	text-decoration: none;
-}
-
-.storycontent a {
+#content a {
 	text-decoration: none;
 	border-bottom: 1px dotted #888;
 }
 
-.storycontent a:hover {
+#content a:hover {
 	text-decoration: none;
 	border-bottom: 1px solid #888;
 }
 
-.storycontent h3 a {
+#content h3 {
+        margin: 0;
+}
+
+#content h3 a {
     text-decoration: none;
     border: none;
 }
 
-.storycontent {
+#content h3 a:hover {
+    border: none;
+}
+
+#content {
 	margin-bottom:-10px;
 }
 
-.storycontent ul {
+#content ul {
     list-style-type: circle;
 }
 
-.storycontent li {
+#content li {
     list-style-type: circle;
+}
+
+#content h1 {
+    	font-family: Verdana, Arial, Helvetica, sans-serif;
+	margin-top: 0;
+	font-size: 12px;
+        color: #888;
 }
 
 
 .post {
-	margin-bottom:18px;
+    padding-bottom:15px;
+    margin-bottom: 15px;
+    border-bottom: 1px dotted #ccc;
 }
 
 
@@ -236,37 +251,56 @@ ul.post-meta span.post-meta-key {
 	color: #666;
 }
 
-
-
-
 #content {
 	float: left;
 	width:600px;
 }
 
-
+/* Header */
 
 #header {
+    padding:12px 0 16px 0;
+    margin: 24px 0;
+}
+
+#header h1 {
 	font-family: Georgia, "Times New Roman", Times, serif;
 	font-size: 34px;
 	color: black;
-	font-weight: normal;	
+	font-weight: normal;
+	padding: 0;
+        margin: 0;
 }
 
-#headwrap {
-	padding:12px 0 16px 0;
-	margin:24px 0 48px 0;
-}
-
-
-#header a {
+#header h1 a {
 	color: black;
 	text-decoration: none;
 }
 
-#header a:hover {
+#header h1 a:hover {
 	text-decoration: none;
 }
+
+
+#header .desc {
+	float:left;
+	font-size: 12px;
+}
+
+#header .desc a {
+    font-style: italic;
+    text-decoration: none;
+}
+
+#header .desc a:hover {
+	background-color: #eee;
+	color: #666;
+}
+#header .desc a:active {
+	background-color: #fff;
+}
+
+/* Sidebar */
 
 #sidebar {
 	background: #fff;
@@ -398,7 +432,7 @@ ul.post-meta span.post-meta-key {
 		
 }
 
-#rap {
+#wrapper {
 	background-color: #FFFFFF;
 	margin-right:auto;
 	margin-left:auto;
@@ -406,24 +440,6 @@ ul.post-meta span.post-meta-key {
 	padding: 6px;
 }
 
-#desc {
-	float:left;
-	font-size: 12px;
-	margin-top:3px;	
-}
-
-#desc a {
-    font-style: italic;
-    text-decoration: none;
-}
-
-#desc a:hover {
-	background-color: #eee;
-	color: #666;
-}
-#desc a:active {
-	background-color: #fff;
-}
 #himage {
 	border:0;
 	margin:0;
@@ -443,8 +459,8 @@ div.submit {
 }
 
 textarea {
-    width: 390px;
-    height: 200px;
+    width: 450px;
+    height: 650px;
 }
 
 div#preview {
@@ -455,20 +471,21 @@ div#preview {
 } 
 
 pre {
-    background: #ddd;
+    background: #eee;
     font-family: DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+    font-size: 12px;
 
     margin: 15px 20px;
     padding: 5px 5px;
-    border: 1px grey solid;
-    border-left: 10px grey solid;
+    border: 1px #ccc solid;
+    border-left: 10px #ccc solid;
     overflow: auto;
 }
     
 code {
     /* border: 1px #999 dotted; */
     background: #eee;
-    color: #000;
+    color: #333;
     padding: 0 2px;
 }
 
@@ -535,15 +552,24 @@ input[type=text], textarea {
 
 .pagenav {
     font: 11px Verdana,Arial,Helvetica,sans-serif;
-    border-top: 1px dotted #ccc;
+    margin-top: 0;
 }
 
 
-.pagenav a, .pagenav span, .pagenav .num {
+#content .pagenav a, .pagenav .navtext, .pagenav .num {
     display: block;
     float: left;
     padding: 3px;
     margin: 2px;
+    border: 0;
+}
+
+.pagenav .num {
+    color: #888;
+}
+
+#content .navnext a {
+    border: 0;
 }
 
 .test {
@@ -576,4 +602,8 @@ input#test {
 .admin {
     font-weight: normal;
     font-size: 10px;
+}
+
+.body {
+    padding-left: 5px;
 }

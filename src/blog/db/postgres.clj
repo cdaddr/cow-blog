@@ -39,8 +39,8 @@
                    [:markdown text]
                    [:html text]]
                   [:post_tags id
-                   [:post_id "bigint references posts (id) on delete cascade"]
-                   [:tag_id "bigint references tags (id) on delete cascade"]]]]
+                   [:post_id "bigint not null references posts (id) on delete cascade"]
+                   [:tag_id "bigint not null references tags (id) on delete cascade"]]]]
       (doseq [[table & _] (reverse tables)]
         (sql/do-commands (str "drop table if exists " (name table)))
         (println "Dropped" table "(if it existed)."))
