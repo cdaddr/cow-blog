@@ -142,7 +142,7 @@
               "/admin" "A post with that URL already exists, can't add another."))
            (do
              (try
-              (error/with-err-str (db/insert new-post))
+               (error/with-err-str (db/insert new-post))
               (let [post (db/post url)]
                 (when tags
                   (db/add-tags-to-post post tags))

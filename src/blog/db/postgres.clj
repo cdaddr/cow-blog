@@ -12,8 +12,10 @@
           desc [:title varchar]
           url [:url  varchar]
           timestamp [:date_created "timestamp default localtimestamp"]
-          tables [[:categories id desc url]
-                  [:tags id desc url]
+          tables [[:categories id desc url
+                   [:num_posts "bigint default 0"]]
+                  [:tags id desc url
+                   [:num_posts "bigint default 0"]]
                   [:statuses id desc]
                   [:types id desc]
                   [:users id

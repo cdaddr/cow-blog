@@ -18,17 +18,18 @@
        [:li (link-to "/logout" "Log out")]]
       [:ul "Log in"
        [:li (link-to "/login" "Log in")]])]
+   [:li "Meta"
+    [:ul
+     [:li (link-to "/rss.xml" "RSS")]]]
    [:li "Categories"
     [:ul
      (map #(vector :li (link/link %)) (db/categories))]]
    [:li "Tags"
     [:ul
      (map #(identity [:li (link-to (link/url %)
-                                   (:title %))])
+                                   (str (:title %) " (" (:num_posts %) ")"))])
           (db/tags))]]
-   [:li "Meta"
-    [:ul
-     [:li (link-to "/rss.xml" "RSS")]]]
+   
    ])
 
 (defn wrap-in-layout [title body user message error]
@@ -69,9 +70,9 @@
    (submit-button lab)])
 
 (defn pagenav
-  ([xs page-number] (pagenav xs page-number (fn [p] (str "?p=" p))))
-  ([xs page-number f]
-     (let [last-page-number (math/ceil (/ (count xs)
+  ([xs num-xs page-number] (pagenav xs num-xs page-number (fn [p] (str "?p=" p))))
+  ([xs num-xs page-number f]
+     (let [last-page-number (math/ceil (/ num-xs
                                           config/POSTS-PER-PAGE))
            page-range (filter #(and (> % 0) (<= % last-page-number))
                               (range (- page-number 5)
@@ -95,11 +96,10 @@
   (take config/POSTS-PER-PAGE
         (drop (* config/POSTS-PER-PAGE (dec page-number)) xs)))
 
-(defn render-paginated [render-fn page-number xs & args]
-  (let [paginated-xs (paginate xs page-number)]
-    (list
-     (map #(apply render-fn % args) paginated-xs)
-     (pagenav xs page-number))))
+(defn render-paginated [render-fn xs num-xs page-number & args]
+  (list
+   (map #(apply render-fn % args) xs)
+   (pagenav xs num-xs page-number)))
 
 (defn status-span [x]
   (let [status (:title (:status x))]

@@ -88,14 +88,14 @@
   [& {:keys [user page-number]}]
   (let [posts (db/posts :include-hidden? user
                         :limit config/POSTS-PER-PAGE
-                        :offset (* (dec page-number) config/POSTS-PER-PAGE))]
+                        :offset (* (dec page-number) config/POSTS-PER-PAGE))
+        posts-count (db/count-rows :posts)]
     (if (empty? posts)
       {:body [:div [:h3 "There's nothing here."]
               [:p "No posts have been written yet.  Start writing!"]]}
       {:body [:div
-              (map #(render-post % :front-page? true :user user) posts)
-              #_(layout/render-paginated #(render-post % :front-page? true :user user)
-                                       page-number posts)]}
+              (layout/render-paginated #(render-post % :front-page? true :user user)
+                                       posts posts-count page-number)]}
       )))
 
 (defn post-page
@@ -112,22 +112,26 @@
 
 (defn- post-list-page
   "Page to render a list of posts."
-  ([title subtitle posts page-number & {:keys [user]}]
+  ([title subtitle posts num-posts page-number & {:keys [user]}]
      {:title title
       :body [:div
              [:h3.info subtitle]
              (if (empty? posts)
                "No posts found."
                (layout/render-paginated #(render-post % :front-page? true)
-                                        page-number posts))]}))
+                                        posts num-posts page-number))]}))
 
 (defn tag-page
   "Page to render all posts with some tag url."
   [tag-name & {:keys [user page-number]}]
-  (if-let [tag (db/tag (escape-html tag-name) :include-hidden? user)]
-    (let [title (str "All Posts Tagged '" (:title tag) "'")
-          header [:div (count (:posts tag)) " Posts Tagged '" (link/link tag) "'"]]
-      (post-list-page title header (:posts tag) page-number))
+  (if-let [tag (db/tag (escape-html tag-name)
+                       :include-hidden? user
+                       :limit {:posts config/POSTS-PER-PAGE}
+                       :offset {:posts (* (dec page-number) config/POSTS-PER-PAGE)})]
+    (let [num-posts 0
+          title (str "All Posts Tagged '" (:title tag) "'")
+          header [:div num-posts " Posts Tagged '" (link/link tag) "'"]]
+      (post-list-page title header (:posts tag) num-posts page-number :user user))
     (error/error 404 "Invalid Tag"
                  (str "There's no tag named '" (escape-html tag-name) "'."))))
 
@@ -137,7 +141,7 @@
   (if-let [category (db/category (escape-html category-name) :include-hidden? user)]
    (let [title (str "All Posts in Category '" (:title category) "'")
          header [:div (count (:posts category)) " Posts in Category '" (link/link category) "'"]]
-     (post-list-page title header (:posts category) page-number))
+     (post-list-page title header (:posts category) (count (:posts category)) page-number))
    (error/error 404 "Invalid Category"
                 (str "There's no category named '" (escape-html category-name) "'."))))
 

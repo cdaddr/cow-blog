@@ -20,7 +20,7 @@
      (let [x# ~x]
        (if-let [~table (:table (meta x#))]
          (do ~@body)
-         (util/die "Can't determine the table for " x#)))))
+         (util/die "Can't determine the table for " (pr-str x#))))))
 
 (defn sha-256 [s]
   (let [md (java.security.MessageDigest/getInstance "SHA-256")]
@@ -127,9 +127,9 @@
 (defn tags []
   (with-db
     (oyako/fetch-all :tags
-                     order :title)))
+                     order "num_posts desc")))
 
-(defn tag [x & {:keys [include-hidden?]}]
+(defn tag [x & {:keys [include-hidden? limit offset]}]
   (with-db
     (oyako/fetch-one :tags
                      includes {:posts [:status :tags :category :comments]}
@@ -139,7 +139,9 @@
                             :posts {:posts (when-not include-hidden?
                                              (public-only))
                                     :comments (when-not include-hidden?
-                                                (public-only))}})))
+                                                (public-only))}}
+                     limit limit
+                     offset offset)))
 
 (defn post_tags [post_id tag_id]
   (with-db
@@ -159,6 +161,13 @@
           (= (:password %)
              (sha-256 (str password (:salt %)))))
     (users))))
+
+(defn count-rows [table & {:keys [where]}]
+  (with-db
+    (sql/with-query-results r
+      [(str "SELECT COUNT(*) AS count FROM " (name table)
+            (when where (str "WHERE " where)))]
+      (:count (first r)))))
 
 (defn bare
   "Returns an object from table without any `includes`, suitable
@@ -191,26 +200,41 @@
 (defn- where-id [x]
   ["id = ?" (:id x)])
 
+(defn- update-counts []
+  (with-db
+   (doseq [xs [(oyako/fetch-all :categories includes :posts)
+               (oyako/fetch-all :tags includes :posts)]
+           x xs
+           :let [c (count (:posts x))]]
+     (when (not= (:num_posts x) c)
+       (update (-> x
+                   (assoc :num_posts c)
+                   (dissoc :posts)))))))
+
 (defn insert [x & {:keys [run-hooks?] :or {run-hooks? true}}]
   (let [x (if run-hooks? (run-hooks x) x)]
    (with-table [table x]
-     (sql/insert-records table x))))
-
-(defn insert-or-select [x where]
-  (with-table [table x]
-   (or (oyako/fetch-one table :where where)
-       (do (insert (run-hooks x))
-           (oyako/fetch-one table :where where)))))
+     (sql/insert-records table x)
+     (update-counts))))
 
 (defn update [x]
   (with-table [table x]
     (when-not (bare table (:id x))
       (util/die "Can't update: record not found"))
-    (sql/update-values table (where-id x) (run-hooks x))))
+    (sql/update-values table (where-id x) (run-hooks x))
+    (update-counts)))
 
 (defn delete [x]
   (with-table [table x]
-    (sql/delete-rows table (where-id x))))
+    (sql/delete-rows table (where-id x))
+    (update-counts)))
+
+(defn insert-or-select [x where]
+  (with-table [table x]
+    (or (oyako/fetch-one table :where where)
+        (do (insert (run-hooks x))
+            (oyako/fetch-one table :where where)))))
+
 
 (defn create-user [username password]
   (let [salt (sha-256 (str (java.util.UUID/randomUUID)))
