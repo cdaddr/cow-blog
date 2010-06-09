@@ -7,7 +7,7 @@
                   [gravatar :as gravatar]
                   [time :as time]
                   [markdown :as markdown]))
-  (:refer-clojure :exclude [comment]))
+  (:refer-clojure :exclude [comment type]))
 
 (defn- table-meta [x]
   (:table (meta x)))
@@ -54,37 +54,57 @@
 (defn status [title]
   (with-db (oyako/fetch-one :statuses where ["title = ?" title])))
 
-(defn public-only []  ["status_id = ?" (:id (status "Public"))])
+(defn types []
+  (with-db (oyako/fetch-all :types)))
 
-(defn posts [& {:keys [include-hidden? limit offset]}]
+(defn type [title]
+  (if-let [t (with-db (oyako/fetch-one :types where ["title = ?" title]))]
+    t
+    (util/die "Invalid type '" title "'")))
+
+(def TYPE (let [ts (types)]
+            (zipmap  (map :title ts) (map :id ts))))
+
+(def STATUS (let [ss (statuses)]
+              (zipmap (map :title ss) (map :id ss))))
+
+(defn public-only []  [(str "status_id = " (STATUS "Public")) ])
+(defn type-only [title] [(str "type_id = " (TYPE title))])
+
+(defn posts [& {:keys [include-hidden? type limit offset]}]
   (let [public (public-only)]
    (with-db
      (oyako/fetch-all :posts
                       includes [:tags :category :comments :status :type :user]
-                      where (when-not include-hidden?
-                              {:posts public
-                               :comments public})
+                      where {:posts [(when-not include-hidden?
+                                       public)
+                                     (when type
+                                       (type-only type))]
+                             :comments (when-not include-hidden?
+                                         public)} 
                       order "date_created desc"
                       limit limit
                       offset offset))))
 
 (defn post [x & {:keys [include-hidden?]}]
-  (let [clause (if (string? x) "url = ?" "id = ?")
-        clause (if-not include-hidden?
-                 (str clause " and status_id = ?")
-                 clause)
-        public (public-only)
-        public_id (second public)]
-   (with-db
-     (oyako/fetch-one :posts
-                      includes [:tags :category {:comments :status} :status :user]
-                      where {:posts (if-not include-hidden?
-                                      [clause [x public_id]]
-                                      [clause x])
-                             :comments (when-not include-hidden?
-                                         public)}
-                      order {:comments "date_created asc"}
-                      limit 1))))
+  (with-db
+    (oyako/fetch-one :posts
+                     includes [:tags :category {:comments :status} :status :user :type]
+                     where {:posts [[(if (string? x) "url = ?" "id = ?") x]
+                                    (when-not include-hidden?
+                                      (public-only))]
+                            :comments (when-not include-hidden?
+                                        (public-only))}
+                     order {:comments "date_created asc"}
+                     limit 1)))
+
+(defn sidebar-pages [& {:keys [include-hidden?]}]
+  (with-db
+    (oyako/fetch-all :posts
+                     where [[(str "type_id = " (TYPE "Toplevel Page"))]
+                            (when-not include-hidden?
+                              (public-only))]
+                     order :title)))
 
 (defn comments [& {:keys [include-hidden?]}]
   (with-db
@@ -111,10 +131,10 @@
   (with-db
     (oyako/fetch-all :categories order :title)))
 
-(defn category [x & {:keys [include-hidden?]}]
+(defn category [x & {:keys [include-hidden? limit offset]}]
   (with-db
     (oyako/fetch-one :categories
-                     includes {:posts [:status :tags :category :comments]}
+                     includes {:posts [:status :tags :category :comments :type]}
                      where {:categories (if (string? x)
                                           ["url = ?" x]
                                           ["id = ?" x])
@@ -122,17 +142,19 @@
                                              (public-only))
                                     :comments (when-not include-hidden?
                                                 (public-only))}}
-                     limit 1)))
+                     order {:posts "date_created desc"}
+                     limit limit
+                     offset offset)))
 
 (defn tags []
   (with-db
     (oyako/fetch-all :tags
-                     order "num_posts desc")))
+                     order {:tags "num_posts desc"})))
 
 (defn tag [x & {:keys [include-hidden? limit offset]}]
   (with-db
     (oyako/fetch-one :tags
-                     includes {:posts [:status :tags :category :comments]}
+                     includes {:posts [:status :tags :category :comments :type]}
                      where {:tags (if (string? x)
                                     ["url = ?" x]
                                     ["id = ?" x])
@@ -140,6 +162,7 @@
                                              (public-only))
                                     :comments (when-not include-hidden?
                                                 (public-only))}}
+                     order {:posts "date_created desc"}
                      limit limit
                      offset offset)))
 
@@ -151,9 +174,6 @@
 (defn users []
   (with-db (oyako/fetch-all :users)))
 
-(defn types []
-  (with-db (oyako/fetch-all :types)))
-
 (defn user [username password]
   (first
    (filter
@@ -162,11 +182,11 @@
              (sha-256 (str password (:salt %)))))
     (users))))
 
-(defn count-rows [table & {:keys [where]}]
+(defn count-rows [table & {:keys [blog-only?]}]
   (with-db
     (sql/with-query-results r
       [(str "SELECT COUNT(*) AS count FROM " (name table)
-            (when where (str "WHERE " where)))]
+            (when blog-only? (str " WHERE type_id = " (:id (type "Blog")))))]
       (:count (first r)))))
 
 (defn bare
@@ -200,17 +220,7 @@
 (defn- where-id [x]
   ["id = ?" (:id x)])
 
-(defn- update-counts []
-  (with-db
-   (doseq [xs [(oyako/fetch-all :categories includes :posts)
-               (oyako/fetch-all :tags includes :posts)]
-           x xs
-           :let [c (count (:posts x))]]
-     (when (not= (:num_posts x) c)
-       (update (-> x
-                   (assoc :num_posts c)
-                   (dissoc :posts)))))))
-
+(declare update-counts)
 (defn insert [x & {:keys [run-hooks?] :or {run-hooks? true}}]
   (let [x (if run-hooks? (run-hooks x) x)]
    (with-table [table x]
@@ -228,6 +238,17 @@
   (with-table [table x]
     (sql/delete-rows table (where-id x))
     (update-counts)))
+
+(defn- update-counts []
+  (with-db
+    (doseq [xs [(oyako/fetch-all :categories includes :posts)
+                (oyako/fetch-all :tags includes :posts)]
+            x xs
+            :let [c (count (:posts x))]]
+      (when (not= (:num_posts x) c)
+        (update (-> x
+                    (assoc :num_posts c)
+                    (dissoc :posts)))))))
 
 (defn insert-or-select [x where]
   (with-table [table x]

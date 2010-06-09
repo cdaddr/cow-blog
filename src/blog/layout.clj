@@ -21,6 +21,10 @@
    [:li "Meta"
     [:ul
      [:li (link-to "/rss.xml" "RSS")]]]
+   [:li "Pages"
+    [:ul
+     (map #(vector :li (link/link %))
+          (db/sidebar-pages :include-hidden? user))]]
    [:li "Categories"
     [:ul
      (map #(vector :li (link/link %)) (db/categories))]]
@@ -28,9 +32,7 @@
     [:ul
      (map #(identity [:li (link-to (link/url %)
                                    (str (:title %) " (" (:num_posts %) ")"))])
-          (db/tags))]]
-   
-   ])
+          (db/tags))]]])
 
 (defn wrap-in-layout [title body user message error]
   (html

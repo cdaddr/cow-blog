@@ -20,12 +20,13 @@
 (defmacro strs [& xs] `(map name (quote ~xs)))
 
 (defroutes blog-routes
-  (GET "/" []                        (pages/index-page :user middleware/USER :page-number middleware/PAGE-NUMBER))
-  (GET ["/post/:title"] [title]      (pages/post-page title :user middleware/USER))
-  (GET ["/category/:title"] [title]  (pages/category-page title :user  middleware/USER :page-number middleware/PAGE-NUMBER))
-  (GET ["/tag/:title"] [title]       (pages/tag-page title :user middleware/USER :page-number middleware/PAGE-NUMBER))
-  (GET "/login" []                   (admin/login-page))
-  (GET "/logout" []                  (admin/do-logout)))
+  (GET "/" []                          (pages/index-page :user middleware/USER :page-number middleware/PAGE-NUMBER))
+  (GET ["/blog/:title"] [title]        (pages/post-page title :user middleware/USER))
+  (GET ["/page/:title"] [title]        (pages/post-page title :user middleware/USER))
+  (GET ["/category/:title"] [title]    (pages/category-page title :user  middleware/USER :page-number middleware/PAGE-NUMBER))
+  (GET ["/tag/:title"] [title]         (pages/tag-page title :user middleware/USER :page-number middleware/PAGE-NUMBER))
+  (GET "/login" []                     (admin/login-page))
+  (GET "/logout" []                    (admin/do-logout)))
 
 (defroutes form-routes
   (POST "/post/:id" [id])

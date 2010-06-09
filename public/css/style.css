@@ -460,7 +460,8 @@ div.submit {
 
 textarea {
     width: 450px;
-    height: 650px;
+    height: 250px;
+    /* height: 650px; */
 }
 
 div#preview {

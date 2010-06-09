@@ -14,7 +14,13 @@
   (url (:post comment)))
 
 (defmethod url :posts [post]
-  (str "/post/" (post :url)))
+  (str "/"
+   (condp = (:title (:type post))
+       "Blog" "blog"
+       "Page" "page"
+       "Toplevel Page" "page"
+       "blog")
+   "/" (:url post)))
 
 (defmethod url :default [x]
   (util/die "Don't know how to make a url out of a " (:table (meta x))))

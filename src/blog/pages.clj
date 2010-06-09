@@ -87,9 +87,10 @@
   "Main index page."
   [& {:keys [user page-number]}]
   (let [posts (db/posts :include-hidden? user
+                        :type "Blog"
                         :limit config/POSTS-PER-PAGE
                         :offset (* (dec page-number) config/POSTS-PER-PAGE))
-        posts-count (db/count-rows :posts)]
+        posts-count (db/count-rows :posts :blog-only? true)]
     (if (empty? posts)
       {:body [:div [:h3 "There's nothing here."]
               [:p "No posts have been written yet.  Start writing!"]]}
@@ -118,7 +119,7 @@
              [:h3.info subtitle]
              (if (empty? posts)
                "No posts found."
-               (layout/render-paginated #(render-post % :front-page? true)
+               (layout/render-paginated #(render-post % :front-page? true :user user)
                                         posts num-posts page-number))]}))
 
 (defn tag-page
@@ -128,7 +129,7 @@
                        :include-hidden? user
                        :limit {:posts config/POSTS-PER-PAGE}
                        :offset {:posts (* (dec page-number) config/POSTS-PER-PAGE)})]
-    (let [num-posts 0
+    (let [num-posts (:num_posts tag)
           title (str "All Posts Tagged '" (:title tag) "'")
           header [:div num-posts " Posts Tagged '" (link/link tag) "'"]]
       (post-list-page title header (:posts tag) num-posts page-number :user user))
@@ -138,10 +139,14 @@
 (defn category-page
   "Page to render all posts in category with some category name."
   [category-name & {:keys [user page-number] :or {page-number 1}}]
-  (if-let [category (db/category (escape-html category-name) :include-hidden? user)]
-   (let [title (str "All Posts in Category '" (:title category) "'")
-         header [:div (count (:posts category)) " Posts in Category '" (link/link category) "'"]]
-     (post-list-page title header (:posts category) (count (:posts category)) page-number))
+  (if-let [category (db/category (escape-html category-name)
+                                 :include-hidden? user
+                                 :limit {:posts config/POSTS-PER-PAGE}
+                                 :offset {:posts (* (dec page-number) config/POSTS-PER-PAGE)})]
+    (let [num-posts (:num_posts category)
+          title (str "All Posts in Category '" (:title category) "'")
+         header [:div num-posts " Posts in Category '" (link/link category) "'"]]
+     (post-list-page title header (:posts category) num-posts page-number :user user))
    (error/error 404 "Invalid Category"
                 (str "There's no category named '" (escape-html category-name) "'."))))
 
