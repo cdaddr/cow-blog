@@ -12,4 +12,5 @@
                  [postgres-pool "1.1.0"]
                  [joda-time "1.6"]
                  [rhino/js "1.7R2"]
-                 [sandbar/sandbar "0.2.3"]])
+                 [sandbar/sandbar "0.2.3"]]
+  :dev-dependencies [[swank-clojure "1.2.1"]])
