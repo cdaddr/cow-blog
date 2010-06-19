@@ -4,7 +4,7 @@
 (def DEBUG true)
 
 (def SITE-TITLE "A Clojure Blog (\u03bb)")
-(def SITE-URL "http://localhost:8080")
+(def SITE-URL "http://localhost:8080/")  ; SHOULD END WITH A SLASH
 (def SITE-DESCRIPTION "Some guy's blog about Clojure.")
 
 (def PUBLIC-DIR "public")  ;;CS/JS/images live here.  Relative path.

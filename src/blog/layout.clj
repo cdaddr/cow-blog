@@ -3,7 +3,8 @@
                   [util :as util]
                   [db :as db]
                   [link :as link])
-            (clojure.contrib [math :as math])
+            (clojure.contrib [math :as math]
+                             [string :as s])
             (sandbar [stateful-session :as session]))
   (:use (hiccup [core :only [html]]
                 [page-helpers :only [link-to include-css include-js]]
@@ -20,7 +21,7 @@
        [:li (link-to "/login" "Log in")]])]
    [:li "Meta"
     [:ul
-     [:li (link-to "/rss.xml" "RSS")]]]
+     [:li (link-to "/feed" "RSS")]]]
    [:li "Pages"
     [:ul
      (map #(vector :li (link/link %))
@@ -106,3 +107,17 @@
 (defn status-span [x]
   (let [status (:title (:status x))]
     [:span " [" [:span {:class status} status] "]"]))
+
+(defn post-body [post & {:keys [front-page?]}]
+  (if front-page?
+    (let [[before -more- after] (s/partition #"<!--more[^>]*-->" (:html post))
+          message (when -more-
+                    (str (or (-> (re-seq #"<!--more\s*(.*?)\s*-->" -more-)
+                                 first second)
+                             "Read more")
+                         "... &raquo;"))]
+      (list before
+            (when after
+              [:div.center
+               (link-to (link/url post) message)])))
+    (post :html)))

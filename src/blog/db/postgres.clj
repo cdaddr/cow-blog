@@ -28,7 +28,7 @@
                    [:status_id "bigint references statuses (id)"]
                    [:type_id "bigint references types (id)"]
                    [:title varchar]
-                   [:parent "bigint references posts (id)"]
+                   [:parent_id "bigint references posts (id)"]
                    [:markdown text]
                    [:html text]]
                   [:comments id timestamp

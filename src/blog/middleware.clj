@@ -61,8 +61,9 @@
 (defn wrap-expires-header [handler]
   (fn [request]
     (when-let [response (handler request)]
-      (assoc-in response [:headers] {"Cache-Control" "max-age=3600;must-revalidate"
-                                     "Expires" (time/datestr :http (time/expire-date))}))))
+      (update-in response [:headers]
+                 conj {"Cache-Control" "max-age=3600;must-revalidate"
+                       "Expires" (time/datestr :http (time/expire-date))}))))
 
 (defn wrap-admin
   "If the user is logged in, display the page.  Otherwise skip this route

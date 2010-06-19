@@ -84,7 +84,7 @@
    :body (post-form "/admin/add-post")})
 
 (defn edit-post-page [id]
-  (if-let [post (db/post (util/safe-int id))]
+  (if-let [post (db/post (util/safe-int id) :include-hidden? true)]
     {:title "Edit Post"
      :body (post-form "/admin/edit-post" post)}))
 
@@ -103,7 +103,8 @@
    {:title "Edit Posts"
     :body [:div
            [:h3 "Edit Posts (sorted by date)"]
-           (layout/render-paginated render page-number (db/posts :include-hidden? true))]}))
+           (let [posts (db/posts :include-hidden? true)]
+            (layout/render-paginated render posts (count posts) page-number))]}))
 
 (defn- post-from-params [user title url status_id type_id category_id markdown]
   {:title title

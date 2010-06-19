@@ -6,7 +6,8 @@
                   [util :as util]
                   [config :as config]
                   [error :as error]
-                  [admin :as admin])
+                  [admin :as admin]
+                  [rss :as rss])
             (ring.adapter [jetty :as jetty])
             (ring.util [response :as response])
             (sandbar [stateful-session :as session])
@@ -17,27 +18,24 @@
   (or (get-in request [:headers "x-forwarded-for"])
       (request :remote-addr)))
 
-(defmacro strs [& xs] `(map name (quote ~xs)))
+(defmacro strs [m & xs] `(map ~m (map name (quote ~xs))))
 
-(defroutes blog-routes
+(defroutes public-routes
   (GET "/" []                          (pages/index-page :user middleware/USER :page-number middleware/PAGE-NUMBER))
   (GET ["/blog/:title"] [title]        (pages/post-page title :user middleware/USER))
   (GET ["/page/:title"] [title]        (pages/post-page title :user middleware/USER))
   (GET ["/category/:title"] [title]    (pages/category-page title :user  middleware/USER :page-number middleware/PAGE-NUMBER))
   (GET ["/tag/:title"] [title]         (pages/tag-page title :user middleware/USER :page-number middleware/PAGE-NUMBER))
   (GET "/login" []                     (admin/login-page))
-  (GET "/logout" []                    (admin/do-logout)))
-
-(defroutes form-routes
-  (POST "/post/:id" [id])
-  (POST "/comment" {{:strs [post-id author email homepage markdown test]} :form-params
+  (GET "/logout" []                    (admin/do-logout))
+  (POST "/comment" {form-params :form-params
                     {referer "referer"} :headers
                     :as request}
-        (pages/do-add-comment post-id (ip request)
-                              author email homepage
-                              markdown referer test))
+    (apply pages/do-add-comment
+           (ip request) referer
+           (strs form-params post-id author email homepage markdown test)))
   (POST ["/login"] {{:strs [username password]} :form-params}
-        (admin/do-login username password)))
+    (admin/do-login username password)))
 
 (defroutes admin-routes
   (GET "/admin" [] (admin/admin-page))
@@ -45,27 +43,27 @@
   (GET "/admin/add-post" [] (admin/add-post-page))
   
   (POST "/admin/add-post" {form-params :form-params}
-        (apply admin/do-add-post middleware/USER
-               (map form-params (strs title url status_id
-                                      type_id category_id
-                                      tags markdown))))
+    (apply admin/do-add-post middleware/USER
+           (strs form-params strs title url status_id
+                 type_id category_id
+                 tags markdown)))
 
   (GET "/admin/edit-posts" []      (admin/edit-posts-page :page-number middleware/PAGE-NUMBER))
   (GET "/admin/edit-post/:id" [id] (admin/edit-post-page id))
   
   (POST "/admin/edit-post" {form-params :form-params}
-        (apply admin/do-edit-post middleware/USER
-               (map form-params (strs id title url
-                                      status_id type_id category_id
-                                      tags markdown "removetags[]"))))
+    (apply admin/do-edit-post middleware/USER
+           (strs form-params id title url
+                 status_id type_id category_id
+                 tags markdown "removetags[]")))
 
   (GET "/admin/edit-comments" [] (admin/edit-comments-page :page-number middleware/PAGE-NUMBER))
   #_(GET "/admin/edit-comment/:id" [id] (admin/edit-comment-page id))
   #_(POST "/admin/edit-comment" {form-params :form-params}
-          (apply admin/do-edit-comment
-                 (map form-params (strs id post_id status_id
-                                        author email homepage
-                                        ip markdown))))
+      (apply admin/do-edit-comment
+             (strs form-params id post_id status_id
+                   author email homepage
+                   ip markdown)))
 
   ;; Posts and categories are so similar they can share edit forms
   (GET ["/admin/edit-:which" :which #"tags|categories"] [which]
@@ -89,6 +87,9 @@
   )
 
 (defroutes static-routes
+  (GET ["/feed"] [] (rss/posts))
+  (GET ["/feed/tag/:tag"] [tag] (rss/tag tag))
+  (GET ["/feed/category/:category"] [category] (rss/category category))
   (GET "/js/combined.js" [] (pages/combined-js))
   (GET ["/:filename" :filename #".*"] [filename]
        (response/file-response filename {:root config/PUBLIC-DIR})))
@@ -101,7 +102,7 @@
 (wrap! admin-routes middleware/wrap-admin)
 
 (defroutes dynamic-routes
-  blog-routes form-routes admin-routes error-routes)
+  public-routes admin-routes error-routes)
 
 (wrap! dynamic-routes
        middleware/wrap-page-number

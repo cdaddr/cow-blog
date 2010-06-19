@@ -27,7 +27,10 @@
       [:div.meta
        (link/link (:category post)) " \u2014 "
        " by " (:username (:user post)) " on " (time/datestr :pretty (post :date_created))]
-      [:div.body (post :html)]
+      [:div.body
+       (layout/post-body post)
+       (when-let [parent (:parent post)]
+         [:div.parent "This post is related to " (link/link parent)])]
       [:div.feedback
        (when (post :tags)
         [:div.post-tags "Tags: " (interpose ", " (map link/link (post :tags)))])
@@ -35,31 +38,6 @@
          [:div.post-comments-link
           (link/comments-link post)])
        ]]))
-
-(defn- render-comment
-  "Render a comment as HTML, including metadata and avatar etc."
-  [comment & {:keys [user]}]
-  [:div
-   [:div.gravatar [:img {:src (db/gravatar comment) :alt (:author comment)}]]
-   [:div.comment
-    [:div.commentby "Quoth "
-     [:span.author (if (comment :homepage)
-                     [:a {:href (comment :homepage)} (comment :author)]
-                     (comment :author))]
-     " on " (time/datestr :pretty (comment :date_created))
-     (when user
-       [:span.admin
-        (layout/status-span comment)
-        (link/edit-link comment)])]
-    [:div.comment-body (comment :html)]]
-   [:div.clear]])
-
-(defn- render-comments
-  "Render a group of comments, with a header specifying comment count."
-  [post & {:keys [user]}]
-  [:div#comments
-   [:h3 (pprint/cl-format nil "~d Comment~:p" (count (post :comments)))]
-   (map #(render-comment % :user user) (post :comments))])
 
 (defn- comment-form
   "Render an HTML form suitable for creating a new comment, plus preview div."
@@ -80,6 +58,31 @@
     [:div.feedback "You can use " [:a {:href "http://daringfireball.net/projects/markdown/"} "Markdown"] " in your comment."]
     [:div.feedback "Email/URL are optional.  Email is only used for " (link-to "http://www.gravatar.com/" "Gravatar") "."]
     (layout/preview-div)]])
+
+(defn- render-comment
+  "Render a comment as HTML, including metadata and avatar etc."
+  [comment & {:keys [user even-odd]}]
+  [:div {:class (str "comment " even-odd)}
+   [:div.gravatar [:img {:src (db/gravatar comment) :alt (:author comment)}]]
+   [:div.commentby "Quoth "
+    [:span.author (if (comment :homepage)
+                    [:a {:href (comment :homepage)} (comment :author)]
+                    (comment :author))]
+    " on " (time/datestr :pretty (comment :date_created))
+    (when user
+      [:span.admin
+       (layout/status-span comment)
+       (link/edit-link comment)])]
+   [:div.comment-body (comment :html)]
+   [:div.clear]])
+
+(defn- render-comments
+  "Render a group of comments, with a header specifying comment count."
+  [post & {:keys [user]}]
+  [:div#comments
+   [:h3 (pprint/cl-format nil "~d Comment~:p" (count (post :comments)))]
+   (map #(render-comment %1 :user user :even-odd %2) (post :comments) (cycle ["even" "odd"]))
+   (comment-form post)])
 
 ;; PAGES
 
@@ -106,8 +109,7 @@
     {:title (post :title)
      :body (list
             (render-post post :front-page? false :user user)
-            (render-comments post :user user)
-            (comment-form post))}
+            (render-comments post :user user))}
     (error/error 404 "No such post"
                  (str "There's no post named '" (escape-html title) "'."))))
 
@@ -162,7 +164,7 @@
 (defn do-add-comment
   "Handles POST request to add a new comment.  This is suitable for public /
    anonymous users to use."
-  [post-id ip author email homepage markdown uri captcha]
+  [ip uri post-id author email homepage markdown captcha]
   (let [post-id (util/safe-int post-id)
         spam? (not (re-matches config/CAPTCHA captcha))]
     (if-let [post (db/bare :posts post-id)]

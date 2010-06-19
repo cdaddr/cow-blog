@@ -37,7 +37,8 @@
        [belongs-to :types as :type]
        [belongs-to :users as :user]
        [has-many :comments]
-       [habtm :tags via :post_tags]]
+       [habtm :tags via :post_tags]
+       [belongs-to :posts as :parent parent-key :parent_id]]
       [:comments
        [belongs-to :posts as :post]
        [belongs-to :statuses as :status]]
@@ -75,7 +76,7 @@
   (let [public (public-only)]
    (with-db
      (oyako/fetch-all :posts
-                      includes [:tags :category :comments :status :type :user]
+                      includes [:tags :category :comments :status :type :user {:parent :type}]
                       where {:posts [(when-not include-hidden?
                                        public)
                                      (when type
@@ -83,20 +84,26 @@
                              :comments (when-not include-hidden?
                                          public)} 
                       order "date_created desc"
+                      columns {:parent [:id :title :url :type_id]}
                       limit limit
                       offset offset))))
 
 (defn post [x & {:keys [include-hidden?]}]
   (with-db
     (oyako/fetch-one :posts
-                     includes [:tags :category {:comments :status} :status :user :type]
+                     includes [:tags :category {:comments :status} :status :user :type {:parent :type}]
                      where {:posts [[(if (string? x) "url = ?" "id = ?") x]
                                     (when-not include-hidden?
                                       (public-only))]
                             :comments (when-not include-hidden?
                                         (public-only))}
+                     columns {:parent [:id :title :url :type_id]}
                      order {:comments "date_created asc"}
                      limit 1)))
+
+(defn post-list []
+  (with-db
+      (oyako/fetch-all :posts columns [:id :url])))
 
 (defn sidebar-pages [& {:keys [include-hidden?]}]
   (with-db
