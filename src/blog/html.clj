@@ -97,26 +97,28 @@
           (link/comments-link post)])
        ]]))
 
-(defn render-index [posts & {:keys [user page-number]}]
+(defn render-index [posts & {:keys [user page-number count]}]
   (layout/render-paginated #(render-post* % :front-page? true :user user)
                            posts
-                           (count posts)
+                           count
                            page-number))
 
 (defn render-post [post & {:keys [user]}]
   (list (render-post* post :front-page? false :user user)
         (render-comments post :user user)))
 
-(defn render-tag [tag & {:keys [user page-number]}]
+(defn render-tag [tag & {:keys [user page-number count]}]
   [:div
-   [:h3.info "Posts Tagged '" (:title tag) "'"]
+   [:h3.info count " Posts Tagged '" (:title tag) "'"]
    (render-index (:posts tag)
                  :page-number page-number
+                 :count count
                  :user user)])
 
-(defn render-category [cat & {:keys [user page-number]}]
+(defn render-category [cat & {:keys [user page-number count]}]
   [:div
-   [:h3.info "Posts in Category '" (:title cat) "'"]
+   [:h3.info count " Posts in Category '" (:title cat) "'"]
    (render-index (:posts cat)
+                 :count count
                  :page-number page-number
                  :user user)])

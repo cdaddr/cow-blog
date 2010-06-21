@@ -10,6 +10,15 @@ function title_to_id(title) {
     return title.toLowerCase().replace(/\s/g, '-').replace(/[^-A-Za-z0-9_]/g, '');
 }
 
+function updatePermalink() {
+    var title = $("input#title").val();
+    $("input#url").val(title
+                       .toLowerCase()
+                       .replace(/\s/g, '-')
+                       .replace(/[^-A-Za-z0-9_]/g, '')
+                      );
+}
+
 var hidden = true;
 $(document).ready(function() {
         var options = {
@@ -19,6 +28,15 @@ $(document).ready(function() {
             enterkey:false,     // allow "Enter" to submit data on INPUTs
         };
         $("textarea#markdown").typeWatch( options );
+
+            options = {
+            callback: updatePermalink,
+            wait: 250,
+            highlight: false,
+            enterkey: false,
+        };
+
+        $("input#title").typeWatch(options);
         
         updatePreview();
 
@@ -33,9 +51,5 @@ $(document).ready(function() {
            }
            });
 
-       $("input#title").blur(function() {
-               var title = $(this).val();
-               $("input#id").val(title_to_id(title));
-           });
     });
 

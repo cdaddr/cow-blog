@@ -6,7 +6,7 @@
                   [util :as util]
                   [config :as config]
                   [error :as error]
-                  ;;[admin :as admin]
+                  [admin :as admin]
                   [rss :as rss])
             (ring.adapter [jetty :as jetty])
             (ring.util [response :as response])
@@ -31,46 +31,44 @@
     (pages/category-page id :user mw/USER :page-number mw/PAGE-NUMBER))
   (GET ["/tag/:id:etc" :etc #"/?[^/]*"] [id]
     (pages/tag-page id :user mw/USER :page-number mw/PAGE-NUMBER))
-  ;;(GET "/login" []                     (admin/login-page))
-  ;;(GET "/logout" []                    (admin/do-logout))
+  (GET "/login" []                     (admin/login-page))
+  (GET "/logout" []                    (admin/do-logout))
   (POST "/comment" {form-params :form-params
                     {referer "referer"} :headers
                     :as request}
     (apply pages/do-add-comment
            (ip request) referer
            (strs form-params post-id author email homepage markdown test)))
-  ;;(POST ["/login"] {{:strs [username password]} :form-params}
-  ;;  (admin/do-login username password))
-  )
+  (POST ["/login"] {{:strs [username password]} :form-params}
+    (admin/do-login username password)))
+
+(defroutes admin-routes
+  (GET "/admin" [] (admin/admin-page))
+  (GET "/admin/add-post" [] (admin/add-post-page))
+  (GET "/admin/edit-posts" []      (admin/edit-posts-page :page-number mw/PAGE-NUMBER))
+  (GET "/admin/edit-post/:id" [id] (admin/edit-post-page id))
+  (GET "/admin/edit-comments" [] (admin/edit-comments-page :page-number mw/PAGE-NUMBER))
+  (GET "/admin/edit-comment/:id" [id] (admin/edit-comment-page id))
+
+  (POST "/admin/add-post" {form-params :form-params}
+    (apply admin/do-add-post mw/USER
+           (strs form-params title url
+                 status type category_id
+                 tags markdown)))
+  
+  (POST "/admin/edit-post" {form-params :form-params}
+    (apply admin/do-edit-post mw/USER
+           (strs form-params id title url
+                 status type category_id
+                 tags markdown "removetags[]")))
+  
+  (POST "/admin/edit-comment" {form-params :form-params}
+    (apply admin/do-edit-comment
+           (strs form-params id post_id status
+                 author email homepage markdown))))
 
 (comment
  (defroutes admin-routes
-   (GET "/admin" [] (admin/admin-page))
-  
-   (GET "/admin/add-post" [] (admin/add-post-page))
-  
-   (POST "/admin/add-post" {form-params :form-params}
-     (apply admin/do-add-post mw/USER
-            (strs form-params strs title url status_id
-                  type_id category_id
-                  tags markdown)))
-
-   (GET "/admin/edit-posts" []      (admin/edit-posts-page :page-number mw/PAGE-NUMBER))
-   (GET "/admin/edit-post/:id" [id] (admin/edit-post-page id))
-  
-   (POST "/admin/edit-post" {form-params :form-params}
-     (apply admin/do-edit-post mw/USER
-            (strs form-params id title url
-                  status_id type_id category_id
-                  tags markdown "removetags[]")))
-
-   (GET "/admin/edit-comments" [] (admin/edit-comments-page :page-number mw/PAGE-NUMBER))
-   #_(GET "/admin/edit-comment/:id" [id] (admin/edit-comment-page id))
-   #_(POST "/admin/edit-comment" {form-params :form-params}
-       (apply admin/do-edit-comment
-              (strs form-params id post_id status_id
-                    author email homepage
-                    ip markdown)))
 
    ;; Posts and categories are so similar they can share edit forms
    (GET ["/admin/edit-:which" :which #"tags|categories"] [which]
@@ -105,12 +103,12 @@
   (ANY "*" [] (error/error 404 "Page not found."
                            "You tried to access a page that doesn't exist.  One of us screwed up here.
                             Not pointing any fingers, but, well, it was probably you.")))
-(comment
- (wrap! admin-routes mw/wrap-admin))
+
+(wrap! admin-routes mw/wrap-admin)
 
 (defroutes dynamic-routes
   public-routes
-  ;;admin-routes
+  admin-routes
   error-routes
   )
 

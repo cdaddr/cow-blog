@@ -143,11 +143,16 @@ ul.post-meta span.post-meta-key {
 	color: #666;
 }
 
-.feedback, .info {
+.feedback, .info, .form-info {
 	color: #666;
 	text-align: right;
 	font-size:10px;
 	clear: both;
+}
+
+.form-info {
+    padding-left: 120px;
+    text-align: left;
 }
 
 .meta {
@@ -335,7 +340,6 @@ ul.post-meta span.post-meta-key {
 	list-style-type: none;
 	margin: 0;
 	padding-left: 3px;
-	text-transform: lowercase;
 }
 
 #sidebar h2 {
@@ -460,6 +464,11 @@ label {
     text-align: right;
     width: 100px;
     padding-right: 5px;
+}
+
+div.form {
+    float: left;
+    min-width: 75%;
 }
 
 div.submit {

@@ -39,14 +39,21 @@
 
 (defn admin? [query admin?]
   (if admin?
-    (query/where query {:status "public"})
-    query))
+    (assoc query :except-columns nil)
+    (query/where query {:status "public"})))
 
 (query/register-query-clause :id id)
 (query/register-query-clause :url url)
 (query/register-query-clause :title title)
 (query/register-query-clause :admin? admin?)
 (query/register-query-clause :post-type post-type)
+
+(defmethod oyako/hook [:before-save :posts] [_ post]
+  (assoc post :html (markdown/markdown-to-html (:markdown post) false)))
+
+(defmethod oyako/hook [:before-save :comments] [_ comment]
+  (assoc comment :html (markdown/markdown-to-html (:markdown comment) false)))
+
 
 (def ^{:private true} parent
      (query/query-> :parent
@@ -79,6 +86,9 @@
   (gravatar/gravatar (or (or (:email comment)
                              (:ip comment)))))
 
+(defn count-rows [table]
+  (query/query-> table :columns ["COUNT(*) AS count"]))
+
 (defn tag-from-title
   "Given a title (human-readable), return a tag object.
   The title is turned into a URL by lowercasing it and
@@ -91,7 +101,7 @@
              (s/replace-re #"\s+" "-" (apply str s)))]
     {:title title :url url}))
 
-(defn- update-counts
+(defn update-counts
   "Iterate over everything in the database and update
   post counts for tags and categories, and comment counts
   for posts."
@@ -100,16 +110,18 @@
                                 :columns [:id :num_comments]
                                 :include (query/query-> :comments
                                                         :columns [:post_id]
-                                                        :admin false))
+                                                        :admin? false))
           :let [c (count (:comments post))]]
     (when (not= c (:num_comments post))
       (oyako/save (assoc post :num_comments c))))
   (doseq [xs [(oyako/fetch-all :categories
                                :include (query/query-> :posts
-                                                       :columns [:id :category_id]))
+                                                       :columns [:id :category_id]
+                                                       :post-type "blog"))
               (oyako/fetch-all :tags
                                :include (query/query-> :posts
-                                                       :columns [:id]))]
+                                                       :columns [:id]
+                                                       :post-type "blog"))]
           x xs
           :let [c (count (:posts x))]]
     (when (not= (:num_posts x) c)
@@ -135,30 +147,30 @@
                           :password password
                           :salt salt})))
 
-(defmethod oyako/hook [:before-save :posts] [_ post]
-  (assoc post :html (markdown/markdown-to-html (:markdown post) false)))
+(defn add-tags-to-post
+  "Given a post and a seq of tag titles, adds tags as appropriate."
+  [post tag-titles] 
+  (doseq [title tag-titles
+          :let [wanted-tag (or (oyako/fetch-one :tags :where {:title title})
+                               (tag-from-title title))
+                tag (oyako/insert-or-select :tags wanted-tag)]]
+    (oyako/insert-or-select :post_tags
+                            {:post_id (:id post)
+                             :tag_id (:id tag)})))
 
-(defmethod oyako/hook [:before-save :comments] [_ comment]
-  (assoc comment :html (markdown/markdown-to-html (:markdown comment) false)))
+(defn remove-tags-from-post [post tag-ids]
+  (doseq [id tag-ids
+          :let [tag (oyako/fetch-one :tags :id id)
+                pt (oyako/fetch-one :post_tags :where {:post_id (:id post)
+                                                       :tag_id  (:id tag)})]]
+    (when pt
+     (oyako/delete pt))))
 
 (clojure.core/comment
 
- (defn add-tags-to-post [post tag-titles] 
-   (doseq [tag-title tag-titles
-           :let [wanted-tag (or (oyako/fetch-one :tags :where ["title = ?" tag-title])
-                                (tag-from-title tag-title))
-                 tag (insert-or-select wanted-tag
-                                       ["url = ?" (:url wanted-tag)])]]
-     (insert-or-select (in-table :post_tags
-                                 {:post_id (:id post)
-                                  :tag_id (:id tag)})
-                       ["post_id = ? and tag_id = ?" [(:id post) (:id tag)]])))
+ 
 
- (defn remove-tags-from-post [post tag-urls]
-   (doseq [tagname tag-urls
-           :let [tag (tag tagname)]
-           pt (post_tags (:id post) (:id tag))]
-     (delete pt)))
+ 
   (defn count-rows [table & {:keys [blog-only?]}]
     (with-db
       (sql/with-query-results r

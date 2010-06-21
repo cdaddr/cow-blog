@@ -31,7 +31,7 @@
       (map #(vector :li (link/link %))
            (oyako/fetch-all :posts
                             :columns [:id :title :url :type :status]
-                            :admin user
+                            :admin? user
                             :post-type "toplevel"
                             :order "title"))]]
     [:li
@@ -75,7 +75,8 @@
 
 (defn form-row [lab name el]
   [:div (label name (str lab ":"))
-   (el name)])
+   [:div.form (el name)]
+   [:div.clear]])
 
 (defn submit-row [lab]
   [:div.submit

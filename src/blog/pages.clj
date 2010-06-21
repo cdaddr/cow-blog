@@ -22,15 +22,19 @@
                                :limit config/POSTS-PER-PAGE
                                :offset (config/page-offset page-number)
                                :admin? user
-                               :post-type "blog")]
+                               :post-type "blog")
+        c (oyako/fetch-one (db/count-rows :posts) :admin? user)]
     (if (seq posts)
       {:body (html/render-index posts
+                                :count (:count c)
                                 :user user
                                 :page-number page-number)}
       (error/error 404 "There's nothing here."
                    "No posts have been written yet.  Blog owner: start writing!"))))
 
-(defn post-page [id & {:keys [user]}]
+(defn post-page
+  "Single-post page."
+  [id & {:keys [user]}]
   (let [post (oyako/fetch-one db/posts
                               :id id
                               :admin? user
@@ -38,35 +42,43 @@
                                                   :admin? user))]
     (if post
       {:title (:title post)
-       :body (html/render-post post)}
+       :body (html/render-post post :user user)}
       (error/error 404 "Post not found"
                    "Whatever post you were looking for isn't here.  Sorry."))))
 
-(defn tag-page [id & {:keys [user page-number] :or {page-number 1}}]
+(defn tag-page
+  "Tag page (posts with some tag)."
+  [id & {:keys [user page-number] :or {page-number 1}}]
   (let [posts-query (q/query-> db/posts
                                :admin? user
                                :limit config/POSTS-PER-PAGE
+                               :post-type "blog"
                                :offset (config/page-offset page-number))]
    (if-let [tag (oyako/fetch-one db/tags
                                  :id id
                                  :include posts-query)]
      {:title (str "Tag " (:title tag))
       :body (html/render-tag tag
+                             :count (:num_posts tag)
                              :user user
                              :page-number page-number)}
      (error/error 404 "No Such Tag"
                   "Whatever tag you're looking for isn't here."))))
 
-(defn category-page [id & {:keys [user page-number] :or {page-number 1}}]
+(defn category-page
+  "Category page (posts in some category)."
+  [id & {:keys [user page-number] :or {page-number 1}}]
   (let [posts-query (q/query-> db/posts
                                :admin? user
                                :limit config/POSTS-PER-PAGE
+                               :post-type "blog"
                                :offset (config/page-offset page-number))]
    (if-let [cat (oyako/fetch-one db/categories
                                  :id id
                                  :include posts-query)]
      {:title (str "Category " (:title cat))
       :body (html/render-category cat
+                                  :count (:num_posts cat)
                                   :user user
                                   :page-number page-number)}
      (error/error 404 "No Such Category"
@@ -107,6 +119,7 @@
                                           (hiccup/escape-html homepage))
                               :markdown markdown
                               :ip ip})
+               (db/update-counts)
                (flash/message (if spam?
                                 "Comment added, awaiting moderation.
                                      (Anti-robot defense systems activated.)"
