@@ -49,47 +49,43 @@
   (GET "/admin/edit-post/:id" [id] (admin/edit-post-page id))
   (GET "/admin/edit-comments" [] (admin/edit-comments-page :page-number mw/PAGE-NUMBER))
   (GET "/admin/edit-comment/:id" [id] (admin/edit-comment-page id))
+  (GET "/admin/edit-tags" [] (admin/edit-tags-page :page-number mw/PAGE-NUMBER))
+  (GET "/admin/edit-tag/:id" [id] (admin/edit-tag-page id))
+  (GET "/admin/edit-categories" [] (admin/edit-categories-page :page-number mw/PAGE-NUMBER))
 
   (POST "/admin/add-post" {form-params :form-params}
     (apply admin/do-add-post mw/USER
            (strs form-params title url
                  status type category_id
                  tags markdown)))
-  
   (POST "/admin/edit-post" {form-params :form-params}
     (apply admin/do-edit-post mw/USER
            (strs form-params id title url
                  status type category_id
                  tags markdown "removetags[]")))
-  
   (POST "/admin/edit-comment" {form-params :form-params}
     (apply admin/do-edit-comment
            (strs form-params id post_id status
-                 author email homepage markdown))))
+                 author email homepage markdown)))
 
-(comment
- (defroutes admin-routes
+  (POST "/admin/edit-tag" {{:strs [id title url]} :form-params}
+    (admin/do-edit-tag id title url))
+  (POST "/admin/add-tag" {{:strs [title url]} :form-params}
+    (admin/do-add-tag title url))
+  (POST "/admin/delete-tag" {{:strs [id]} :form-params}
+    (admin/do-delete-tag id))
+  (POST "/admin/merge-tags" {{:strs [from_id to_id]} :form-params}
+    (admin/do-merge-tags from_id to_id))
 
-   ;; Posts and categories are so similar they can share edit forms
-   (GET ["/admin/edit-:which" :which #"tags|categories"] [which]
-     (admin/edit-tags-categories-page (keyword which) :page-number mw/PAGE-NUMBER))
-  
-   (GET ["/admin/edit-:which/:id" :which #"tag|category"] [which id]
-     (admin/edit-tag-category-page (keyword which) id))
-  
-   (POST ["/admin/edit-:which" :which #"tag|category"] {{:strs [xid title url]} :form-params
-                                                        {which "which"} :route-params}
-     (admin/do-edit-tag-category (keyword which) xid title url))
-  
-   (POST ["/admin/add-:which" :which #"tag|category"] {{:strs [title url]} :form-params
-                                                       {which "which"} :route-params}
-     (admin/do-add-tag-category (keyword which) title url))
-
-   (POST ["/admin/delete-:which" :which #"tag|category"] {{:strs [xid]} :form-params
-                                                          {which "which"} :route-params}
-     (admin/do-delete-tag-category (keyword which) xid))
-
-   ))
+  (POST "/admin/edit-categpru" {{:strs [id title url]} :form-params}
+    (admin/do-edit-category id title url))
+  (POST "/admin/add-category" {{:strs [title url]} :form-params}
+    (admin/do-add-category title url))
+  (POST "/admin/delete-category" {{:strs [id]} :form-params}
+    (admin/do-delete-category id))
+  (POST "/admin/merge-categories" {{:strs [from_id to_id]} :form-params}
+    (admin/do-merge-categories from_id to_id))
+  )
 
 (defroutes static-routes
   (GET ["/feed"] [] (rss/posts))

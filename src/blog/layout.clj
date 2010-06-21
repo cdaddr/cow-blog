@@ -37,11 +37,13 @@
     [:li
      [:ul "Categories"
       (map #(vector :li (link-with-count %))
-           (oyako/fetch-all db/categories))]]
+           (oyako/fetch-all db/categories
+                            :where ["num_posts > 0"]))]]
     [:li
      [:ul "Tags"
       (map #(vector :li (link-with-count %))
            (oyako/fetch-all db/tags
+                            :where ["num_posts > 0"]
                             :order "num_posts desc"))]]]))
 
 (defn wrap-in-layout [title body user message error]

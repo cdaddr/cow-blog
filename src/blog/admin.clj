@@ -45,14 +45,13 @@
   {:title "Admin Control Panel"
    :body [:div
           [:h3 "Admin Control Panel"]
-          [:ul [:h4 "Make new stuff"]
-           [:li (link-to "/admin/add-post" "New Post")]]
-          [:ul
-           [:h4 "Edit stuff"]
-           [:li (link-to "/admin/edit-posts" "Posts")]
-           [:li (link-to "/admin/edit-comments" "Comments")]
-           [:li (link-to "/admin/edit-categories" "Categories")]
-           [:li (link-to "/admin/edit-tags" "Tags")]]]})
+          [:ul [:h4 "New Post"]
+           [:li (link-to "/admin/add-post" "Write a new Post")]]
+          [:ul [:h4 "Manage"]
+           [:li (link-to "/admin/edit-posts" "Posts (Edit / Delete)")]
+           [:li (link-to "/admin/edit-comments" "Comments (Edit / Delete)")]
+           [:li (link-to "/admin/edit-categories" "Categories (Create / Edit / Delete)")]
+           [:li (link-to "/admin/edit-tags" "Tags (Create / Edit / Delete)")]]]})
 
 (defn- post-form
   ([target] (post-form target {}))
@@ -167,6 +166,75 @@
                     [:div.info "IP: " (:ip comment)]
                     (submit-row "Submit")))})
 
+(defn edit-tags-page [& {:keys [page-number]}]
+  (let [tags (oyako/fetch-all :tags :order :title)
+        tag-drop-down #(drop-down % (map vector
+                                     (cons nil (map :title tags))
+                                     (cons nil (map :id tags))))]
+    {:title "Edit Tags"
+     :body [:div
+            [:h3 "Create Tag"]
+            (form-to [:post "/admin/add-tag"]
+                     (form-row "Title" "title" #(text-field %))
+                     (form-row "URL" "url" #(text-field %))
+                     (submit-row "Create"))
+            [:h3 "Delete Tag"]
+            (form-to [:post "/admin/delete-tag"]
+                     (form-row "Delete Tag" "id" tag-drop-down)
+                     (submit-row "!!! Delete IRREVOCABLY !!!"))
+            [:h3 "Merge Tags"]
+            (form-to [:post "/admin/merge-tags"]
+                     (form-row "Delete Tag" "from_id" tag-drop-down)
+                     (form-row "Merge into Tag" "to_id" tag-drop-down)
+                     (submit-row "Merge"))
+            [:h3 "Edit Tags"]
+            [:ul (for [x tags]
+                   [:li (link-to (str "/admin/edit-tag/" (:id x))
+                                 [:strong (:title x)])
+                    " (" (:url x) ")"
+                    " - " (:num_posts x) " posts"])]]}))
+
+(defn edit-categories-page [& {:keys [page-number]}]
+  (let [cats (oyako/fetch-all :categories :order :title)
+        cats2 (remove #(= 1 (:id %)) cats)
+        cat-drop-down #(drop-down % (map vector
+                                         (cons nil (map :title cats2))
+                                         (cons nil (map :id cats2))))]
+    {:title "Edit Categories"
+     :body [:div
+            [:h3 "Create Category"]
+            (form-to [:post "/admin/add-category"]
+                     (form-row "Title" "title" #(text-field %))
+                     (form-row "URL" "url" #(text-field %))
+                     (submit-row "Create"))
+            [:h3 "Delete Category"]
+            [:p "Posts in this category will be moved to Uncategorized."]
+            (form-to [:post "/admin/delete-category"]
+                     (form-row "Delete Category" "id" cat-drop-down)
+                     (submit-row "!!! Delete IRREVOCABLY !!!"))
+            [:h3 "Merge Categories"]
+            (form-to [:post "/admin/merge-categories"]
+                     (form-row "Delete Category" "from_id" cat-drop-down)
+                     (form-row "Merge into Category" "to_id" cat-drop-down)
+                     (submit-row "Merge"))
+            [:h3 "Edit Categories"]
+            [:ul (for [x cats]
+                   [:li (link-to (str "/admin/edit-category/" (:id x))
+                                 [:strong (:title x)])
+                    " (" (:url x) ")"
+                    " - " (:num_posts x) " posts"])]]}))
+
+(defn edit-tag-page [id]
+  (let [x (oyako/fetch-one :tags :id id)]
+   {:title "Edit Tag"
+    :body [:div
+           [:h3 "Edit Tag"]
+           (form-to [:post "/admin/edit-tag"]
+                    (hidden-field "id" (:id x))
+                    (form-row "Title" "title" #(text-field %(:title x)))
+                    (form-row "URL" "url"     #(text-field % (:url x)))
+                    (submit-row "Edit"))]}))
+
 (defn split-tagstring [tagstring]
   (when (re-find #"[^\s]" tagstring)
     (s/split #"\s*,\s*" tagstring)))
@@ -245,65 +313,71 @@
                (flash/message "Comment .")
                (response/redirect (link/url (:post new-comment)))))))
 
+(defn do-add-tag [title url]
+  (error/with-err-str (oyako/insert :tags {:title title :url url}))
+  (flash/message "Tag added.")
+  (response/redirect "/admin"))
+
+(defn do-add-category [title url]
+  (error/with-err-str (oyako/insert :categories {:title title :url url}))
+  (flash/message "Category added.")
+  (response/redirect "/admin"))
+
+(defn do-edit-tag [id title url]
+  (let [tag (oyako/fetch-one :tags :id id)]
+   (error/with-err-str
+     (oyako/save (assoc tag :title title :url url)))
+   (flash/message "Tag edited.")
+   (response/redirect "/admin")))
+
+(defn do-edit-category [id title url]
+  (let [category (oyako/fetch-one :categories :id id)]
+    (error/with-err-str
+      (oyako/save (assoc category :title title :url url)))
+    (flash/message "Category edited.")
+    (response/redirect "/admin")))
+
+(defn do-delete-tag [id]
+  (let [tag (oyako/fetch-one :tags :id id)]
+    (error/with-err-str
+      (oyako/delete tag))
+    (flash/message "Tag deleted.")
+    (response/redirect "/admin")))
+
+(defn do-delete-category [id]
+  (let [category (oyako/fetch-one :categories :id id)]
+    (error/with-err-str
+      (oyako/delete category))
+    (db/update-counts)
+    (flash/message "Category deleted.")
+    (response/redirect "/admin")))
+
+(defn do-merge-tags [from-id to-id]
+  (let [from-tag (oyako/fetch-one :tags :id from-id :include :posts)
+        to-tag   (oyako/fetch-one :tags :id to-id)]
+    (cond (= from-tag to-tag) (flash/error "Can't merge a tag with itself.")
+          :else (do (doseq [post (:posts from-tag)]
+                      (db/remove-tags-from-post post [(:id from-tag)])
+                      (db/add-tags-to-post post [(:title to-tag)]))
+                    (oyako/delete from-tag)
+                    (db/update-counts)
+                    (flash/message "Tags merged.")))
+    (response/redirect "/admin")))
+
+(defn do-merge-categories [from-id to-id]
+  (let [from-cat (oyako/fetch-one :categories :id from-id :include :posts)
+        to-cat   (oyako/fetch-one :categories :id to-id)]
+    (cond (= from-cat to-cat) (flash/error "Can't merge a category with itself.")
+          :else (do (doseq [post (:posts from-cat)]
+                      (oyako/save (assoc post :category_id (:id to-cat))))
+                    (oyako/delete from-cat)
+                    (db/update-counts)
+                    (flash/message "Categories merged.")))
+    (response/redirect "/admin")))
+
 (comment
 
- (defn edit-tags-categories-page [which & {:keys [page-number]}]
-   (let [[f edit add title] (get {:tags [db/tags "/admin/edit-tag/"
-                                         "/admin/add-tag" "Tags"]
-                                  :categories [db/categories "/admin/edit-category/"
-                                               "/admin/add-category" "Categories"]}
-                                 which)
-         xs (f)]
-     {:title title
-      :body [:div [:h3 "Edit " title]
-             [:ul (for [x xs]
-                    [:li (link-to (str edit (:id x))
-                                  (str (:title x) "(" (:url x) ")"))])]
-             [:h3 "Create New " title]
-             (form-to [:post add]
-                      (form-row "Title" "title" #(text-field %))
-                      (form-row "URL" "url" #(text-field %))
-                      (submit-row "Create"))
-             ]}))
-
- (defn do-add-tag-category [which title url]
-   (let [[table f] (get {:tag [:tags db/tag]
-                         :category [:categories db/category]}
-                        which)]
-     (or (error/redirecting-to "/admin"
-                               (f url) (str "A " (name which) " with that url already exists.  Can't add another."))
-         (do 
-           (db/insert (db/in-table table {:title title :url url}))
-           (merge (response/redirect "/admin")
-                  (flash/message "Added successfully."))))))
-
- (defn edit-tag-category-page [which id]
-   (let [[f edit delete title message]
-         (get {:tag [db/tag "/admin/edit-tag"
-                     "/admin/delete-tag" "Tag"
-                     ""]
-               :category [db/category "/admin/edit-category"
-                          "/admin/delete-category" "Category"
-                          "Posts in this category will revert to 'Uncategorized'."]}
-              which)
-         id (util/safe-int id)
-         x (f id)]
-     {:title title
-      :body [:div
-             [:h3 "Edit " title]
-             (form-to [:post edit]
-                      (hidden-field "xid" (:id x))
-                      (form-row "Title" "title" #(text-field %(:title x)))
-                      (form-row "URL" "url"     #(text-field % (:url x)))
-                      (submit-row "Edit"))
-             (when-not (and (= which :category) (= id 1))
-               (list
-                [:h3 "Delete " title]
-                [:p "Are you really, really sure you want to do this?  " message]
-                (form-to [:post delete]
-                         (hidden-field "xid" (:id x))
-                         (submit-row "DELETE IRREVOCABLY"))))]}))
-
+ 
  (defn validate-tag-category [uri x]
    (error/redirecting-to
     uri
@@ -313,23 +387,4 @@
     (not (re-matches config/TAG-CATEGORY-URL-REGEX (:url x)))
     (str "URL should match regex '" (str config/TAG-CATEGORY-URL-REGEX) "'.")))
 
- (defn do-edit-tag-category [which id title url]
-   (let [[f] (get {:tag [:tags]
-                   :category [:categories]}
-                  which)
-         x (merge (db/bare f (util/safe-int id))
-                  {:title title :url url})]
-     (or (validate-tag-category "/admin" x)
-         (do
-           (error/with-err-str (db/update x))
-           (merge (response/redirect (link/url x))
-                  (flash/message "Edit successful."))))))
-
- (defn do-delete-tag-category [which id]
-   (let [table (get {:tag :tags :category :categories}
-                    which)
-         x (db/bare table (util/safe-int id))]
-     (db/delete x)
-     (merge (response/redirect "/admin")
-            (flash/message "Delete successful."))))
 )
