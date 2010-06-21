@@ -26,6 +26,8 @@
 (def DEFAULT-COMMENT-AUTHOR "Anonymous Cow")
 
 (def POSTS-PER-PAGE 10)
+(defn page-offset [page-number]
+  (* (dec page-number) POSTS-PER-PAGE))
 
 (def TAG-CATEGORY-REGEX #"^[-A-Za-z0-9_. ]+$")
 (def TAG-CATEGORY-URL-REGEX #"^[a-z0-9_-]+$")

@@ -4,7 +4,8 @@
                   [flash :as flash]
                   [util :as util]
                   [error :as error]
-                  [time :as time])
+                  [time :as time]
+                  [db :as db])
             (clojure [stacktrace :as trace])
             (clojure.contrib [string :as s])
             (ring.util [response :as response])
@@ -87,3 +88,7 @@
   (fn [request]
     (binding [USER (session/session-get :user)]
       (handler request))))
+
+(defn wrap-db [handler]
+  (fn [request]
+    (db/with-db (handler request))))

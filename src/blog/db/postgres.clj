@@ -1,6 +1,6 @@
 (ns blog.db.postgres
   (:require (clojure.contrib [sql :as sql])
-            (net.briancarper [oyako :as oyako])
+            (oyako [core :as oyako])
             (blog [db :as db])))
 
 (defn init-db-postgres []
@@ -16,8 +16,6 @@
                    [:num_posts "bigint default 0"]]
                   [:tags id desc url
                    [:num_posts "bigint default 0"]]
-                  [:statuses id desc]
-                  [:types id desc]
                   [:users id
                    [:username varchar]
                    [:password varchar]
@@ -25,15 +23,16 @@
                   [:posts id url timestamp
                    [:user_id "bigint default 1 references users(id) on delete set default"]
                    [:category_id "bigint default 1 references categories (id) on delete set default"]
-                   [:status_id "bigint references statuses (id)"]
-                   [:type_id "bigint references types (id)"]
+                   [:status varchar]
+                   [:type varchar]
                    [:title varchar]
                    [:parent_id "bigint references posts (id)"]
                    [:markdown text]
-                   [:html text]]
+                   [:html text]
+                   [:num_comments "bigint default 0"]]
                   [:comments id timestamp
                    [:post_id "bigint references posts (id) on delete cascade"]
-                   [:status_id "bigint references statuses (id)"]
+                   [:status varchar]
                    [:author varchar]
                    [:email nullchar]
                    [:homepage nullchar]
@@ -51,18 +50,13 @@
         (println "Created" table)))
     (doseq [table [:posts :categories :tags]]
       (sql/do-commands (str "alter table " (name table) " add constraint " (name table) "_url unique (url)")))
-    (doseq [[table & cols] [[:posts :category_id :status_id :type_id]
+    (doseq [[table & cols] [[:posts :category_id]
                             [:post_tags :post_id :tag_id]
-                            [:comments :post_id :status_id]]
+                            [:comments :post_id]]
             col cols]
       (sql/do-commands (str "create index " (name table) "_" (name col)
                             " on " (name table) "(" (name col) ")")))
     (println "Added indices")
-    (doseq [[table vals] [[:types ["Blog" "Page" "Toplevel Page"]]
-                          [:statuses ["Hidden" "Public" "Spam"]]]]
-      (apply sql/insert-records table
-             (map #(hash-map :title %) vals))
-      (println "Initialized" table))
     (sql/insert-records :users {:username "Nobody" :password "" :salt ""})
     (sql/insert-records :categories {:title "Uncategorized" :url "uncategorized"})
     (println "Initialized" :categories)))

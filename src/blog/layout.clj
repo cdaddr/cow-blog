@@ -3,6 +3,7 @@
                   [util :as util]
                   [db :as db]
                   [link :as link])
+            (oyako [core :as oyako])
             (clojure.contrib [math :as math]
                              [string :as s])
             (sandbar [stateful-session :as session]))
@@ -11,29 +12,37 @@
                 [form-helpers :only [form-to submit-button label]])))
 
 (defn- nav [user]
-  [:ul
-   [:li
-    (if user
-      [:ul "Hello, " (:username user)
-       [:li (link-to "/admin" "Control Panel")]
-       [:li (link-to "/logout" "Log out")]]
-      [:ul "Log in"
-       [:li (link-to "/login" "Log in")]])]
-   [:li "Meta"
-    [:ul
-     [:li (link-to "/feed" "RSS")]]]
-   [:li "Pages"
-    [:ul
-     (map #(vector :li (link/link %))
-          (db/sidebar-pages :include-hidden? user))]]
-   [:li "Categories"
-    [:ul
-     (map #(vector :li (link/link %)) (db/categories))]]
-   [:li "Tags"
-    [:ul
-     (map #(identity [:li (link-to (link/url %)
-                                   (str (:title %) " (" (:num_posts %) ")"))])
-          (db/tags))]]])
+  (let [link-with-count (fn [x]
+                          (link-to (link/url x)
+                                   (str (:title x) " (" (:num_posts x) ")")))]
+   [:ul
+    [:li
+     (if user
+       [:ul "Hello, " (:username user)
+        [:li (link-to "/admin" "Control Panel")]
+        [:li (link-to "/logout" "Log out")]]
+       [:ul "Log in"
+        [:li (link-to "/login" "Log in")]])]
+    [:li 
+     [:ul "Meta"
+      [:li (link-to "/feed" "RSS")]]]
+    [:li
+     [:ul "Pages"
+      (map #(vector :li (link/link %))
+           (oyako/fetch-all :posts
+                            :columns [:id :title :url :type :status]
+                            :admin user
+                            :post-type "toplevel"
+                            :order "title"))]]
+    [:li
+     [:ul "Categories"
+      (map #(vector :li (link-with-count %))
+           (oyako/fetch-all db/categories))]]
+    [:li
+     [:ul "Tags"
+      (map #(vector :li (link-with-count %))
+           (oyako/fetch-all db/tags
+                            :order "num_posts desc"))]]]))
 
 (defn wrap-in-layout [title body user message error]
   (html
@@ -105,19 +114,7 @@
    (pagenav xs num-xs page-number)))
 
 (defn status-span [x]
-  (let [status (:title (:status x))]
+  (let [status (:status x)]
     [:span " [" [:span {:class status} status] "]"]))
 
-(defn post-body [post & {:keys [front-page?]}]
-  (if front-page?
-    (let [[before -more- after] (s/partition #"<!--more[^>]*-->" (:html post))
-          message (when -more-
-                    (str (or (-> (re-seq #"<!--more\s*(.*?)\s*-->" -more-)
-                                 first second)
-                             "Read more")
-                         "... &raquo;"))]
-      (list before
-            (when after
-              [:div.center
-               (link-to (link/url post) message)])))
-    (post :html)))
+

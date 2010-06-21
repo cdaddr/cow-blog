@@ -5,7 +5,8 @@
                   [util :as util]
                   [layout :as layout]
                   [link :as link]
-                  [time :as time])))
+                  [time :as time]
+                  [html :as html])))
 
 ;; RSS
 
@@ -28,7 +29,7 @@
    [:link (str config/SITE-URL (link/url post))]
    [:guid (str config/SITE-URL (link/url post))]
    [:pubDate (time/datestr :http (:date post))]
-   [:description (escape-html (html (layout/post-body post :front-page? true)))]])
+   [:description (escape-html (html (html/post-body post :front-page? true)))]])
 
 (defn posts []
   (rss
@@ -38,17 +39,19 @@
     (map rss-item (db/posts :limit 25 :offset 0))))
  
 (defn tag [tagname]
-  (if-let [tag (db/tag tagname :limit 25)]
-    (rss
-        (str config/SITE-TITLE " (Tag: " (:title tag) ")")
-        (str config/SITE-URL (link/url tag))
-        config/SITE-DESCRIPTION
-      (map rss-item (:posts tag)))))
+  (comment
+   (if-let [tag (db/tag tagname :limit 25)]
+     (rss
+         (str config/SITE-TITLE " (Tag: " (:title tag) ")")
+         (str config/SITE-URL (link/url tag))
+         config/SITE-DESCRIPTION
+       (map rss-item (:posts tag))))))
 
 (defn category [catname]
-  (if-let [category (db/category catname :limit 25)]
-    (rss
-        (str config/SITE-TITLE " (Category: " (:title category) ")")
-        (str config/SITE-URL (link/url category))
-        config/SITE-DESCRIPTION
-      (map rss-item (:posts category)))))
+  (comment
+   (if-let [category (db/category catname :limit 25)]
+     (rss
+         (str config/SITE-TITLE " (Category: " (:title category) ")")
+         (str config/SITE-URL (link/url category))
+         config/SITE-DESCRIPTION
+       (map rss-item (:posts category))))))

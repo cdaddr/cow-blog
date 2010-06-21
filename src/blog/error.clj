@@ -16,13 +16,14 @@
          (flash/error txt)))
 
 (defmacro redirecting-to [uri & conditions]
-  (let [conditions (partition 2 conditions)
+  (let [xs (partition 2 conditions)
+        [conditions else] [(butlast xs) (last xs)]
         _uri (gensym "uri")]
     `(let [~_uri ~uri]
        (cond ~@(mapcat (fn [[condition text]]
                          (list condition `(redirect-and-error ~_uri (str "FAIL: " ~text))))
                        conditions)
-             :else nil))))
+             ~@else))))
 
 (defmacro with-err-str [& body]
   `(let [s# (java.io.StringWriter.)
