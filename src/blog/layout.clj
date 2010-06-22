@@ -11,6 +11,10 @@
                 [page-helpers :only [link-to include-css include-js]]
                 [form-helpers :only [form-to submit-button label]])))
 
+(def rss-icon
+     (html
+      [:span [:img.rss {:src "/img/rss.png" :alt "RSS"}] " "]))
+
 (defn- nav [user]
   (let [link-with-count (fn [x]
                           (link-to (link/url x)
@@ -38,7 +42,8 @@
      [:ul "Categories"
       (map #(vector :li (link-with-count %))
            (oyako/fetch-all db/categories
-                            :where ["num_posts > 0"]))]]
+                            :where ["num_posts > 0"]
+                            :order "num_posts desc"))]]
     [:li
      [:ul "Tags"
       (map #(vector :li (link-with-count %))
@@ -52,7 +57,8 @@
     [:head
      [:title config/SITE-TITLE (when title (str " - " title))]
      (include-css "/css/style.css")
-     (include-js "/js/combined.js")] ;; magic
+     (include-js "/js/combined.js") ;;magic
+     [:link {:type "application/rss+xml" :rel "alternate" :href "/feed"}]]
     [:body
      [:div#wrapper
       (when message [:div.message message])

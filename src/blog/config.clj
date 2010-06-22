@@ -4,7 +4,7 @@
 (def DEBUG true)
 
 (def SITE-TITLE "A Clojure Blog (\u03bb)")
-(def SITE-URL "http://localhost:8080/")  ; SHOULD END WITH A SLASH
+(def SITE-URL "http://localhost:8080")
 (def SITE-DESCRIPTION "Some guy's blog about Clojure.")
 
 (def PUBLIC-DIR "public")  ;;CS/JS/images live here.  Relative path.
@@ -29,7 +29,7 @@
 (defn page-offset [page-number]
   (* (dec page-number) POSTS-PER-PAGE))
 
-(def TAG-CATEGORY-REGEX #"^[-A-Za-z0-9_. ]+$")
+(def TAG-CATEGORY-TITLE-REGEX #"^[-A-Za-z0-9_. ]+$")
 (def TAG-CATEGORY-URL-REGEX #"^[a-z0-9_-]+$")
 
 (def CAPTCHA #"(?i)^\s*moo\s*$")

@@ -109,7 +109,12 @@
 
 (defn render-tag [tag & {:keys [user page-number count]}]
   [:div
-   [:h3.info count " Posts Tagged '" (:title tag) "'"]
+   [:h3.info count " Posts Tagged '"
+    (link-to (str "/tag/" (:id tag) "/" (:url tag))
+             (:title tag)) "' "
+    (link-to (str "/feed/tag/" (:id tag) "/" (:url tag))
+             layout/rss-icon)
+    ]
    (render-index (:posts tag)
                  :page-number page-number
                  :count count

@@ -61,11 +61,13 @@
 
 (def comments
      (query/query-> :comments
+                    :admin? false
                     :except-columns [:markdown]
                     :order "date_created asc"))
 
 (def posts
      (query/query-> :posts
+                    :admin? false
                     :include [parent :tags :category :user]
                     :except-columns [:markdown]
                     :order "date_created desc"))
@@ -94,7 +96,7 @@
   The title is turned into a URL by lowercasing it and
   replacing special characters."
   [title]
-  (let [s (map #(if (re-matches config/TAG-CATEGORY-REGEX (str %))
+  (let [s (map #(if (re-matches config/TAG-CATEGORY-TITLE-REGEX (str %))
                   (str %) "-")
                (seq title))
         url (s/lower-case

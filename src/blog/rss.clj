@@ -6,7 +6,9 @@
                   [layout :as layout]
                   [link :as link]
                   [time :as time]
-                  [html :as html])))
+                  [html :as html])
+            (oyako [core :as oyako]
+                   [query :as query])))
 
 ;; RSS
 
@@ -36,22 +38,28 @@
       config/SITE-TITLE
       config/SITE-URL
       config/SITE-DESCRIPTION
-    (map rss-item (db/posts :limit 25 :offset 0))))
+    (map rss-item (oyako/fetch-all db/posts :limit 25 :offset 0 :admin? false))))
  
-(defn tag [tagname]
-  (comment
-   (if-let [tag (db/tag tagname :limit 25)]
-     (rss
-         (str config/SITE-TITLE " (Tag: " (:title tag) ")")
-         (str config/SITE-URL (link/url tag))
-         config/SITE-DESCRIPTION
-       (map rss-item (:posts tag))))))
+(defn tag [id]
+  (if-let [tag (oyako/fetch-one db/tags
+                                :id id
+                                :include (query/query-> db/posts
+                                                        :limit 25
+                                                        :offset 0))]
+    (rss
+        (str config/SITE-TITLE " (Tag: " (:title tag) ")")
+        (str config/SITE-URL (link/url tag))
+        config/SITE-DESCRIPTION
+      (map rss-item (:posts tag)))))
 
-(defn category [catname]
-  (comment
-   (if-let [category (db/category catname :limit 25)]
-     (rss
-         (str config/SITE-TITLE " (Category: " (:title category) ")")
-         (str config/SITE-URL (link/url category))
-         config/SITE-DESCRIPTION
-       (map rss-item (:posts category))))))
+(defn category [id]
+  (if-let [category (oyako/fetch-one :categories
+                                     :id id
+                                     :include (query/query-> db/posts
+                                                             :limit 25
+                                                             :offset 0))]
+    (rss
+        (str config/SITE-TITLE " (Category: " (:title category) ")")
+        (str config/SITE-URL (link/url category))
+        config/SITE-DESCRIPTION
+      (map rss-item (:posts category)))))

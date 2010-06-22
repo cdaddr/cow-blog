@@ -2,7 +2,8 @@
   (:use (hiccup [core :only [escape-html]]
                 [page-helpers :only [link-to]]
                 [form-helpers :only [form-to text-field check-box text-area
-                                     password-field drop-down label hidden-field]])
+                                     password-field drop-down label hidden-field
+                                     submit-button]])
         (blog [layout :only [form-row submit-row]]))
   (:require (blog [layout :as layout]
                   [db :as db]
@@ -28,12 +29,16 @@
                    (form-row "Password" "password" password-field)
                    (submit-row "Log in"))]})
 
-(defn do-logout []
+(defn do-logout
+  "Log a user out."
+  []
   (session/session-delete-key! :user)
   (flash/message "Logged out.  Goodbye.")
   (response/redirect "/"))
 
-(defn do-login [username password]
+(defn do-login
+  "Log a user in, if username/pw are OK."
+  [username password]
   (if-let [user (db/check-user username password)]
     (do (session/session-put! :user user) 
         (flash/message (str "Welcome back, " username "."))
@@ -41,7 +46,9 @@
     (do (flash/error (str "Login failed."))
         (response/redirect "/admin/login"))))
 
-(defn admin-page []
+(defn admin-page
+  "Main admin control panel."
+  []
   {:title "Admin Control Panel"
    :body [:div
           [:h3 "Admin Control Panel"]
@@ -54,6 +61,7 @@
            [:li (link-to "/admin/edit-tags" "Tags (Create / Edit / Delete)")]]]})
 
 (defn- post-form
+  "Render a form to add or edit a post."
   ([target] (post-form target {}))
   ([target post]
      (let [opts (fn [xs] (map #(map % [:title :id]) xs))
@@ -81,16 +89,20 @@
                  (form-row (if (:tags post) "Add Tags" "Tags") "tags"
                            #(text-field %))
                  [:div.info "Tags should be comma-separated and match /"
-                  [:code config/TAG-CATEGORY-REGEX] "/"]
+                  [:code config/TAG-CATEGORY-TITLE-REGEX] "/"]
                  (form-row "Body" "markdown"        #(text-area % (:markdown post)))
                  (submit-row "Submit"))
         (layout/preview-div)])))
 
-(defn add-post-page []
+(defn add-post-page
+  "Page to add a new post."
+  []
   {:title "New Post"
    :body (post-form "/admin/add-post")})
 
-(defn edit-posts-page [& {:keys [page-number]}]
+(defn edit-posts-page
+  "Page that lists post summaries and edit links."
+  [& {:keys [page-number]}]
   (let [render (fn [post]
                  [:div
                   [:h4 "#" (:id post) " " (:title post)
@@ -110,12 +122,24 @@
                                          :offset (config/page-offset page-number))]
               (layout/render-paginated render posts (count posts) page-number))]}))
 
-(defn edit-post-page [id]
+(defn edit-post-page
+  "Page to edit a post."
+  [id]
   (if-let [post (oyako/fetch-one db/posts :id id :admin? true)]
     {:title "Edit Post"
-     :body (post-form "/admin/edit-post" post)}))
+     :body
+     [:div [:h3 "Edit Post"]
+      (post-form "/admin/edit-post" post)
+      [:hr]
+      [:h3 "Delete Post"]
+      [:p "Be sure you want to do this, there's no going back.  All comments for this post will also be deleted.  Consider marking the post as 'draft' to hide it instead of deleting."]
+      (form-to [:post "/admin/delete-post"]
+               (hidden-field :id (:id post))
+               (submit-button "!!! Delete IRREVOCABLY !!!"))]}))
 
-(defn edit-comments-page [& {:keys [page-number]}]
+(defn edit-comments-page
+  "Page that lists all comments, with edit links."
+  [& {:keys [page-number]}]
   (let [render (fn [comment]
                  [:div
                   [:h4 "#" (:id comment) " "
@@ -149,22 +173,29 @@
 
 (defn edit-comment-page [id]
   {:title "Edit Comment"
-   :body (let [comment (oyako/fetch-one :comments :id id)
-               posts (oyako/fetch-all :posts :columns [:id :title] :order "date_created desc")]
-           (form-to [:post "/admin/edit-comment"]
-                    (hidden-field "id" (:id comment))
-                    (form-row "Post" "post_id" #(drop-down % (map vector
-                                                                  (map :title posts)
-                                                                  (map :id posts))
-                                                           (:post_id comment)))
-                    (form-row "Status" "status" #(drop-down % ["public" "spam"] (:status comment)))
-                    (form-row "Author" "author" #(text-field % (:author comment)))
-                    (form-row "Email" "email" #(text-field % (:email comment)))
-                    (form-row "URL" "homepage" #(text-field % (:url comment)))
-                    (form-row "Comment" "markdown" #(text-area % (:markdown comment)))
-                    [:div.info "Date: " (:date_created comment)]
-                    [:div.info "IP: " (:ip comment)]
-                    (submit-row "Submit")))})
+   :body [:div
+          (let [comment (oyako/fetch-one :comments :id id)
+                posts (oyako/fetch-all :posts :columns [:id :title] :order "date_created desc")]
+            (form-to [:post "/admin/edit-comment"]
+                     (hidden-field "id" (:id comment))
+                     (form-row "Post" "post_id" #(drop-down % (map vector
+                                                                   (map :title posts)
+                                                                   (map :id posts))
+                                                            (:post_id comment)))
+                     (form-row "Status" "status" #(drop-down % ["public" "spam"] (:status comment)))
+                     (form-row "Author" "author" #(text-field % (:author comment)))
+                     (form-row "Email" "email" #(text-field % (:email comment)))
+                     (form-row "URL" "homepage" #(text-field % (:url comment)))
+                     (form-row "Comment" "markdown" #(text-area % (:markdown comment)))
+                     [:div.info "Date: " (:date_created comment)]
+                     [:div.info "IP: " (:ip comment)]
+                     (submit-row "Submit"))
+            [:hr]
+            [:h3 "Delete Comment"]
+            [:p "Be sure you want to do this, there's no going back.  Consider marking it as spam instead of deleting it, if you want to hide the comment but save it for later (to check the IP address for example)."]
+            (form-to [:post "/admin/delete-comment"]
+                     (hidden-field :id (:id comment))
+                     (submit-button "!!! Delete IRREVOCABLY !!!")))]})
 
 (defn edit-tags-page [& {:keys [page-number]}]
   (let [tags (oyako/fetch-all :tags :order :title)
@@ -255,8 +286,9 @@
    (s/blank? (:url post))   "Url must not be blank."
    (s/blank? (:markdown post)) "You forgot to type a post body."
    (and (not (empty? tags))
-        (some #(not (re-matches config/TAG-CATEGORY-REGEX %)) tags))
-   (str "Invalid tag in '" (escape-html (pr-str tags)) "'.  Tags should match /" config/TAG-CATEGORY-REGEX "/.")
+        (some #(not (re-matches config/TAG-CATEGORY-TITLE-REGEX %)) tags))
+   (str "Invalid tag in '" (escape-html (pr-str tags))
+        "'.  Tags should match /" config/TAG-CATEGORY-TITLE-REGEX "/.")
    :else nil))
 
 (defn do-add-post [user title url status type category_id tags markdown]
@@ -295,6 +327,20 @@
        (flash/message "Post edited.")
        (response/redirect (link/url post))))))
 
+(defn do-delete-post [id]
+  (let [post (oyako/fetch-one :posts :id id)]
+    (error/with-err-str (oyako/delete post))
+    (db/update-counts)
+    (flash/message "Post deleted.")
+    (response/redirect "/admin")))
+
+(defn do-delete-comment [id]
+  (let [comment (oyako/fetch-one :comment :id id)]
+    (error/with-err-str (oyako/delete comment))
+    (db/update-counts)
+    (flash/message "Comment deleted.")
+    (response/redirect "/admin")))
+
 (defn do-edit-comment [id post_id status author email homepage markdown]
   (let [comment (oyako/fetch-one :comments :id id :include :post)
         new-comment (merge comment
@@ -313,29 +359,50 @@
                (flash/message "Comment .")
                (response/redirect (link/url (:post new-comment)))))))
 
+(defn validate-tag-category [uri x]
+  (error/redirecting-to
+   uri
+   (not (re-matches config/TAG-CATEGORY-TITLE-REGEX (:title x)))
+   (str "Title should match regex '" (str config/TAG-CATEGORY-TITLE-REGEX) "'.")
+
+   (not (re-matches config/TAG-CATEGORY-URL-REGEX (:url x)))
+   (str "URL should match regex '" (str config/TAG-CATEGORY-URL-REGEX) "'.")))
+
 (defn do-add-tag [title url]
-  (error/with-err-str (oyako/insert :tags {:title title :url url}))
-  (flash/message "Tag added.")
-  (response/redirect "/admin"))
+  (let [tag {:title title :url url}]
+   (or (validate-tag-category "/admin" tag)
+       (do
+         (error/with-err-str (oyako/insert :tags ))
+         (flash/message "Tag added.")
+         (response/redirect "/admin")))))
 
 (defn do-add-category [title url]
-  (error/with-err-str (oyako/insert :categories {:title title :url url}))
-  (flash/message "Category added.")
-  (response/redirect "/admin"))
+  (let [cat {:title title :url url}]
+    (or (validate-tag-category cat)
+        (do
+         (error/with-err-str (oyako/insert :categories))
+         (flash/message "Category added.")
+         (response/redirect "/admin")))))
 
 (defn do-edit-tag [id title url]
-  (let [tag (oyako/fetch-one :tags :id id)]
-   (error/with-err-str
-     (oyako/save (assoc tag :title title :url url)))
-   (flash/message "Tag edited.")
-   (response/redirect "/admin")))
+  (let [tag (oyako/fetch-one :tags :id id)
+        tag (assoc tag :title title :url url)]
+    (or (validate-tag-category tag)
+        (do
+         (error/with-err-str
+           (oyako/save ))
+         (flash/message "Tag edited.")
+         (response/redirect "/admin")))))
 
 (defn do-edit-category [id title url]
-  (let [category (oyako/fetch-one :categories :id id)]
-    (error/with-err-str
-      (oyako/save (assoc category :title title :url url)))
-    (flash/message "Category edited.")
-    (response/redirect "/admin")))
+  (let [category (oyako/fetch-one :categories :id id)
+        category (assoc category :title title :url url)]
+    (or (validate-tag-category category)
+        (do
+         (error/with-err-str
+           (oyako/save ))
+         (flash/message "Category edited.")
+         (response/redirect "/admin")))))
 
 (defn do-delete-tag [id]
   (let [tag (oyako/fetch-one :tags :id id)]
@@ -375,16 +442,3 @@
                     (flash/message "Categories merged.")))
     (response/redirect "/admin")))
 
-(comment
-
- 
- (defn validate-tag-category [uri x]
-   (error/redirecting-to
-    uri
-    (not (re-matches config/TAG-CATEGORY-REGEX (:title x)))
-    (str "Title should match regex '" (str config/TAG-CATEGORY-REGEX) "'.")
-
-    (not (re-matches config/TAG-CATEGORY-URL-REGEX (:url x)))
-    (str "URL should match regex '" (str config/TAG-CATEGORY-URL-REGEX) "'.")))
-
-)

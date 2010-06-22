@@ -649,3 +649,7 @@ input#test {
     color: #888;
     margin-bottom: 10px;
 }
+
+img.rss {
+    vertical-align: middle;
+}
