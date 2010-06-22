@@ -1,6 +1,6 @@
-(ns ^{:doc "This namespace holds HTML-rendering code for the main meat of
-           our pages (e.g. rendering posts and comments)."}
-  blog.html
+(ns blog.html
+  "This namespace holds HTML-rendering code for the main meat of
+  our pages (e.g. rendering posts and comments)."
   (:use (hiccup [core :only [html escape-html]]
                 [page-helpers :only [link-to]]
                 [form-helpers :only [form-to text-field text-area hidden-field]]))
@@ -88,7 +88,7 @@
        (link/link (:category post)) " \u2014 "
        " by " (:username (:user post)) " on " (time/datestr :pretty (post :date_created))]
       [:div.body
-       (post-body post)
+       (post-body post :front-page? true)
        (when-let [parent (:parent post)]
          [:div.parent "This post is related to " (link/link parent)])]
       [:div.feedback

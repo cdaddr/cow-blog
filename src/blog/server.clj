@@ -1,6 +1,6 @@
-(ns ^{:doc "Everything starts here.  This namespace defines our routes,
-           dispatching GET and POST requests to appropriate handlers."}
-    blog.server
+(ns blog.server
+  "Everything starts here.  This namespace defines our routes,
+  dispatching GET and POST requests to appropriate handlers."
   (:require (compojure [route :as route])
             (blog [middleware :as mw]
                   [pages :as pages]

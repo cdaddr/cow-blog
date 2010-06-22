@@ -1,5 +1,5 @@
-(ns ^{:doc "This is the DB layer, using Oyako."}
-    blog.db
+(ns blog.db
+  "This is the DB layer, using Oyako."
   (:require (clojure.contrib [sql :as sql]
                              [string :as s])
             (oyako [core :as oyako]

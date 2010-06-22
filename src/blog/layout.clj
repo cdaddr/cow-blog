@@ -1,6 +1,6 @@
-(ns ^{:doc "This namespace holds HTML-rendering code for the layout,
-           and for minor bits of pages that had nowhere else to live."}
-  blog.layout
+(ns blog.layout
+  "This namespace holds HTML-rendering code for the layout,
+  and for minor bits of pages that had nowhere else to live."
   (:require (blog [config :as config]
                   [util :as util]
                   [db :as db]

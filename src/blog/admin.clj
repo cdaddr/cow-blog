@@ -1,6 +1,6 @@
-(ns ^{:doc "This namespace contains everything admin-related, including
-           logging in and out."}
-    blog.admin
+(ns blog.admin
+  "This namespace contains everything admin-related, including
+  logging in and out."
   (:use (hiccup [core :only [escape-html]]
                 [page-helpers :only [link-to]]
                 [form-helpers :only [form-to text-field check-box text-area

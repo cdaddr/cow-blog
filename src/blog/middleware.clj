@@ -1,5 +1,5 @@
-(ns ^{:doc "This namespace houses middleware of all sorts."}
-  blog.middleware
+(ns blog.middleware
+  "This namespace houses middleware of all sorts."
   (:require (blog [config :as config]
                   [layout :as layout]
                   [flash :as flash]

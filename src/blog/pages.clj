@@ -1,6 +1,6 @@
-(ns ^{:doc "Functions in this namespace correspond to (public) pages.
-           This namespace is a bridge between the DB and HTML-rendering code"}
-    blog.pages
+(ns blog.pages
+  "Functions in this namespace correspond to (public) pages.
+           This namespace is a bridge between the DB and HTML-rendering code"
   (:require (blog [layout :as layout]
                   [link :as link]
                   [db :as db]

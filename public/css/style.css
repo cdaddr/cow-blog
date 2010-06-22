@@ -50,10 +50,10 @@ acronym, abbr {
 	border:none;
 }
 
-blockquote {
-	border-left: 5px solid #ccc;
-	margin-left: 18px
-	padding-left: 5px;
+blockquote p {
+    font-style: italic;
+    margin-left: 18px
+    padding-left: 5px;
 }
 
 body {
@@ -671,3 +671,4 @@ th.big {
     text-decoration: none;
     border: 0;
 }
+
