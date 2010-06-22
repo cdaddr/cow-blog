@@ -129,3 +129,20 @@
                  :count count
                  :page-number page-number
                  :user user)])
+
+(defn render-post-table
+  ([posts] (render-post-table posts (count posts)))
+  ([posts n]
+     (list
+      [:tr
+       [:th "Date"]
+       [:th "Title"]
+       [:th "Category"]
+       [:th "Comments"]]
+      (for [post posts]
+        [:tr
+         [:td (time/datestr :short (:date_created post))]
+         [:td (link/link post)]
+         [:td (link/link (:category post))]
+         [:td (:num_comments post)]])))
+  )

@@ -42,6 +42,11 @@
     (pages/category-page id :user mw/USER :page-number mw/PAGE-NUMBER))
   (GET ["/tag/:id:etc" :etc #"/?[^/]*"] [id]
     (pages/tag-page id :user mw/USER :page-number mw/PAGE-NUMBER))
+  
+  (GET ["/archives/date"] [] (pages/archives-page-by-date))
+  (GET ["/archives/comments"] [] (pages/archives-page-by-comments))
+  (GET ["/archives/tag-cloud"] [] (pages/tag-cloud-page))
+  
   (GET "/login" []                     (admin/login-page))
   (GET "/logout" []                    (admin/do-logout))
   

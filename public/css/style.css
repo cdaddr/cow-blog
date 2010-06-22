@@ -653,3 +653,21 @@ input#test {
 img.rss {
     vertical-align: middle;
 }
+
+table {
+    font-size: 11px;
+}
+
+td {
+    padding: 3px;
+}
+
+th.big {
+    font-size: 14px;
+    border: 1px dotted #ccc;
+}  
+
+#content a.cloud {
+    text-decoration: none;
+    border: 0;
+}

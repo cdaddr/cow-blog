@@ -86,6 +86,56 @@
      (error/error 404 "No Such Category"
                   "Whatever category you're looking for isn't here."))))
 
+(defn archives-page-by-date []
+  (let [posts (oyako/fetch-all :posts
+                               :admin? false
+                               :include [:category]
+                               :columns [:id :title :num_comments :category_id :date_created]
+                               :post-type "blog"
+                               :order "date_created desc")
+        by-date (reverse
+                 (sort-by first
+                          (group-by #(time/datestr :monthyear (:date_created %))
+                                    posts)))]
+    (prn (map :date_created (take 5 posts)))
+    {:title "Archives"
+     :body [:table
+            (for [[date posts] by-date]
+              (list
+               [:tr [:th.big {:colspan 4} date]]
+               (html/render-post-table posts)))]}))
+
+(defn archives-page-by-comments []
+  (let [posts (oyako/fetch-all :posts
+                               :admin? false
+                               :include [:category]
+                               :post-type "blog"
+                               :order "num_comments desc, date_created desc")]
+    {:title "Archives"
+     :body [:table
+            [:tr [:th {:colspan 4} "Archive (most discussed)"]]
+            (html/render-post-table posts)]}))
+
+(defn tag-cloud-page []
+  {:title "Tag Cloud"
+   :body [:div [:h3 "Gratuitous Tag Cloud"]
+          (let [tags (oyako/fetch-all :tags
+                                      :order "title")
+                min    10.0
+                weight 9.0
+                weight-fn (fn [n]
+                            (if (zero? n)
+                              min
+                              (+ min (* weight (Math/log n)))))]
+            (for [tag tags]
+              [:span
+               [:a {:href (link/url tag)
+                    :class :cloud
+                    :style (str "font-size: " (weight-fn (:num_posts tag))) }
+                (:title tag)]
+               " "])
+            )]})
+
 (defn combined-js
   "Render Javascript files by reading them from disk and concat'ing them
   together into one blob of text.  This saves the user from needed one HTTP

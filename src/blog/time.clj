@@ -27,7 +27,9 @@
   (.plusDays (now) 7))
 
 (def DATE-FORMATS
-     {:pretty (fmt config/TIME-FORMAT)
+     {:short   (fmt "yyyy-MM-dd")
+      :monthyear (fmt "yyyy-MM")
+      :pretty (fmt config/TIME-FORMAT)
       :edit   (fmt "yyyy-MM-dd HH:mm:ss Z")
       :http   (fmt "EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z")})
 

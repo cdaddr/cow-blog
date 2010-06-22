@@ -25,13 +25,18 @@
     [:li
      (if user
        [:ul "Hello, " (:username user)
-        [:li (link-to "/admin" "Control Panel")]
-        [:li (link-to "/logout" "Log out")]]
+        [:li (link-to "/logout" "Log out")]
+        [:li (link-to "/admin" "Control Panel")]]
        [:ul "Log in"
         [:li (link-to "/login" "Log in")]])]
     [:li 
      [:ul "Meta"
       [:li (link-to "/feed" "RSS")]]]
+    [:li
+     [:ul "Archives"
+      [:li (link-to "/archives/date" "By date")]
+      [:li (link-to "/archives/comments" "Most discussed")]
+      [:li (link-to "/archives/tag-cloud" "Tag Cloud")]]]
     [:li
      [:ul "Pages"
       (map #(vector :li (link/link %))
