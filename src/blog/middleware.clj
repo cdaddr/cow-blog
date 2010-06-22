@@ -1,4 +1,5 @@
-(ns blog.middleware
+(ns ^{:doc "This namespace houses middleware of all sorts."}
+  blog.middleware
   (:require (blog [config :as config]
                   [layout :as layout]
                   [flash :as flash]
@@ -59,7 +60,10 @@
           :status (or (response :status) 200)
           :body new-body)))))
 
-(defn wrap-expires-header [handler]
+(defn wrap-expires-header
+  "Run a handler, and wrap the result in Cache-Control and Expires
+  headers, which greatly increase performance for serving static files."
+  [handler]
   (fn [request]
     (when-let [response (handler request)]
       (update-in response [:headers]
@@ -76,7 +80,9 @@
 
 (declare PAGE-NUMBER)
 
-(defn wrap-page-number [handler]
+(defn wrap-page-number
+  "Bind PAGE-NUMBER to the current value of the 'p' query param."
+  [handler]
   (fn [request]
     (let [{{page-number "p"} :query-params} request]
       (binding [PAGE-NUMBER (or (util/safe-int page-number) 1)]
@@ -84,11 +90,15 @@
 
 (declare USER)
 
-(defn wrap-user [handler]
+(defn wrap-user
+  "Bind USER to the current value of the ':user' session key."
+  [handler]
   (fn [request]
     (binding [USER (session/session-get :user)]
       (handler request))))
 
-(defn wrap-db [handler]
+(defn wrap-db
+  "Run handler with an open DB handle."
+  [handler]
   (fn [request]
     (db/with-db (handler request))))

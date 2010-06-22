@@ -1,4 +1,6 @@
-(ns blog.html
+(ns ^{:doc "This namespace holds HTML-rendering code for the main meat of
+           our pages (e.g. rendering posts and comments)."}
+  blog.html
   (:use (hiccup [core :only [html escape-html]]
                 [page-helpers :only [link-to]]
                 [form-helpers :only [form-to text-field text-area hidden-field]]))

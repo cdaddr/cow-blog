@@ -1,4 +1,5 @@
-(ns blog.db
+(ns ^{:doc "This is the DB layer, using Oyako."}
+    blog.db
   (:require (clojure.contrib [sql :as sql]
                              [string :as s])
             (oyako [core :as oyako]
@@ -36,7 +37,6 @@
 (defn url [query url] (query/where query {:url url}))
 (defn title [query title] (query/where query {:title title}))
 (defn post-type [query type] (query/where query {:type type}))
-
 (defn admin? [query admin?]
   (if admin?
     (assoc query :except-columns nil)
@@ -84,11 +84,15 @@
 
 (def post_tags (query/query :post-tags))
 
-(defn gravatar [comment]
+(defn gravatar
+  "Returns the URI for the gravatar for this user."
+  [comment]
   (gravatar/gravatar (or (or (:email comment)
                              (:ip comment)))))
 
-(defn count-rows [table]
+(defn count-rows
+  "Returns a query for table which counts all rows in that table."
+  [table]
   (query/query-> table :columns ["COUNT(*) AS count"]))
 
 (defn tag-from-title
@@ -106,7 +110,8 @@
 (defn update-counts
   "Iterate over everything in the database and update
   post counts for tags and categories, and comment counts
-  for posts."
+  for posts.  DB updates are only run for items that need
+  to be updated."
   []
   (doseq [post (oyako/fetch-all :posts
                                 :columns [:id :num_comments]
@@ -160,7 +165,9 @@
                             {:post_id (:id post)
                              :tag_id (:id tag)})))
 
-(defn remove-tags-from-post [post tag-ids]
+(defn remove-tags-from-post
+  "Give a post and a seq of tag IDs, removes those tags from this post."
+  [post tag-ids]
   (doseq [id tag-ids
           :let [tag (oyako/fetch-one :tags :id id)
                 pt (oyako/fetch-one :post_tags :where {:post_id (:id post)
@@ -168,19 +175,3 @@
     (when pt
      (oyako/delete pt))))
 
-(clojure.core/comment
-
- 
-
- 
-  (defn count-rows [table & {:keys [blog-only?]}]
-    (with-db
-      (sql/with-query-results r
-        [(str "SELECT COUNT(*) AS count FROM " (name table)
-              (when blog-only? (str " WHERE type_id = " (:id (type "Blog")))))]
-        (:count (first r)))))
-
-  
-
-  
-)

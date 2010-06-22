@@ -1,4 +1,6 @@
-(ns blog.server
+(ns ^{:doc "Everything starts here.  This namespace defines our routes,
+           dispatching GET and POST requests to appropriate handlers."}
+    blog.server
   (:require (compojure [route :as route])
             (blog [middleware :as mw]
                   [pages :as pages]
@@ -14,12 +16,21 @@
             (ring.middleware cookies session flash file-info params))
   (:use (compojure [core :only [defroutes GET POST ANY wrap!]])))
 
-(defn- ip [request]
+(defn- ip
+  "Given a request, return the IP.  Looks for an x-forwarded-for
+  header, falls back to :remote-addr on the request."
+  [request]
   (or (get-in request [:headers "x-forwarded-for"])
       (request :remote-addr)))
 
 (defmacro strs [m & xs] `(map ~m (map name (quote ~xs))))
 
+;; We make use of USER and PAGE-NUMBER here.  They're bound via middleware.
+;; This is just a shortcut to avoid destructuring those values out
+;; of the request over and over, since so many pages make use of them.
+;;
+;; No function outside of blog.server directly accesses USER or PAGE-NUMBER.
+;; They could, but it'd get messy.
 (defroutes public-routes
   (GET "/" []
     (pages/index-page :user mw/USER :page-number mw/PAGE-NUMBER))
