@@ -61,18 +61,19 @@
      (query/query-> :parent
                     :columns [:id :title :status :type]))
 
-(def comments
-     (query/query-> :comments
-                    :admin? false
-                    :except-columns [:markdown]
-                    :order "date_created asc"))
-
 (def posts
      (query/query-> :posts
                     :admin? false
                     :include [parent :tags :category :user]
                     :except-columns [:markdown]
                     :order "date_created desc"))
+
+(def comments
+     (query/query-> :comments
+                    :admin? false
+                    :include :post
+                    :except-columns [:markdown]
+                    :order "date_created asc"))
 
 (def categories
      (query/query-> :categories
