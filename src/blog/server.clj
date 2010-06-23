@@ -34,13 +34,13 @@
 (defroutes public-routes
   (GET "/" []
     (pages/index-page :user mw/USER :page-number mw/PAGE-NUMBER))
-  (GET ["/blog/:id:etc" :etc #"/?[^/]*"] [id]
+  (GET ["/blog/:id:etc" :id #"\d+" :etc #"/?[^/]*"] [id]
     (pages/post-page id :user mw/USER))
-  (GET ["/page/:id:etc" :etc #"/?[^/]*"] [id]
+  (GET ["/page/:id:etc" :id #"\d+" :etc #"/?[^/]*"] [id]
     (pages/post-page id :user mw/USER))
-  (GET ["/category/:id:etc" :etc #"/?[^/]*"] [id]
+  (GET ["/category/:id:etc" :id #"\d+" :etc #"/?[^/]*"] [id]
     (pages/category-page id :user mw/USER :page-number mw/PAGE-NUMBER))
-  (GET ["/tag/:id:etc" :etc #"/?[^/]*"] [id]
+  (GET ["/tag/:id:etc" :id #"\d+" :etc #"/?[^/]*"] [id]
     (pages/tag-page id :user mw/USER :page-number mw/PAGE-NUMBER))
   
   (GET ["/archives/date"] [] (pages/archives-page-by-date))
