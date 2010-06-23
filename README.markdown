@@ -31,12 +31,16 @@ Clone this git repo, then cd into the directory and:
 
     lein deps
 
-Then, from a REPL or Emacs:
+Edit `src/blog/config.clj` to your tastes.
 
-    user> (require 'blog.server)
-    user> (blog.server/start)
+Look at (and run) `blog.db.postgres.clj/init-db-postgres` to create the tables in your database.
 
 Use `blog.db/create-user` to create an admin user, or you'll never be able to do anything.
+
+Once your tables are set up, then do this:
+
+    (require 'blog.server)
+    (blog.server/start)
 
 # Deploying
 
