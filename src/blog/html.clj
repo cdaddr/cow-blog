@@ -112,8 +112,7 @@
 (defn render-tag [tag & {:keys [user page-number count]}]
   [:div
    [:h3.info count " Posts Tagged '"
-    (link-to (str "/tag/" (:id tag) "/" (:url tag))
-             (:title tag)) "' "
+    (link/link tag) "' "
     (link-to (str "/feed/tag/" (:id tag) "/" (:url tag))
              layout/rss-icon)
     ]
@@ -124,7 +123,10 @@
 
 (defn render-category [cat & {:keys [user page-number count]}]
   [:div
-   [:h3.info count " Posts in Category '" (:title cat) "'"]
+   [:h3.info count " Posts in Category '"
+    (link/link cat) "' "
+    (link-to (str "/feed/category/" (:id cat) "/" (:url cat))
+             layout/rss-icon)]
    (render-index (:posts cat)
                  :count count
                  :page-number page-number

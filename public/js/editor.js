@@ -6,50 +6,43 @@ function updatePreview() {
     $("div#preview").html(htmltext);
 }
 
-function title_to_id(title) {
-    return title.toLowerCase().replace(/\s/g, '-').replace(/[^-A-Za-z0-9_]/g, '');
-}
-
 function updatePermalink() {
     var title = $("input#title").val();
-    $("input#url").val(title
-                       .toLowerCase()
-                       .replace(/\s/g, '-')
-                       .replace(/[^-A-Za-z0-9_]/g, '')
-                      );
+    if(title) {
+        $("input#url").val(title
+                           .toLowerCase()
+                           .replace(/\s/g, '-')
+                           .replace(/[^-A-Za-z0-9_]/g, '')
+                          );
+    } else {
+        $("input#url").val('');
+    }   
 }
 
-var hidden = true;
+function TypeWatch(updateFn, delay) {
+    var timer;
+    var f = function() {
+        clearTimeout(timer);
+        timer = setTimeout(updateFn, delay);
+    };
+    f();
+    return f
+}
+
 $(document).ready(function() {
-        var options = {
-            callback:updatePreview,
-            wait:250,          // milliseconds
-            highlight:false,     // highlight text on focus
-            enterkey:false,     // allow "Enter" to submit data on INPUTs
-        };
-        $("textarea#markdown").typeWatch( options );
-
-            options = {
-            callback: updatePermalink,
-            wait: 250,
-            highlight: false,
-            enterkey: false,
-        };
-
-        $("input#title").typeWatch(options);
-        
-        updatePreview();
-
-       $("input#test").focus(function() {
-           if($(this).val() == "Type this word =>") {
-               $(this).val('');
-           }
-       });
-       $("input#test").blur(function() {
-           if($(this).val() == "") {
-               $(this).val("Type this word =>");
-           }
-           });
-
+    $("textarea#markdown").keyup(TypeWatch(updatePreview,250));
+    $("input#title").keyup(TypeWatch(updatePermalink, 250));
+     
+    $("input#test").focus(function() {
+        if($(this).val() == "Type this word =>") {
+            $(this).val('');
+        }
     });
+    $("input#test").blur(function() {
+        if($(this).val() == "") {
+            $(this).val("Type this word =>");
+        }
+    });
+
+});
 

@@ -80,7 +80,7 @@ h2 {
 h3 {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	margin-top: 0;
-	font-size: 13px;
+	font-size: 14px;
 }
 
 h4 {
@@ -520,7 +520,7 @@ pre code {
 }
 
 .comment.odd {
-    background: #e0e0e0;
+    background: #f0f0f0;
 }
 
 .gravatar {

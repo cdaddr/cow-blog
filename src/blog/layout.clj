@@ -10,7 +10,7 @@
                              [string :as s])
             (sandbar [stateful-session :as session]))
   (:use (hiccup [core :only [html]]
-                [page-helpers :only [link-to include-css include-js]]
+                [page-helpers :only [link-to include-css include-js doctype]]
                 [form-helpers :only [form-to submit-button label]])))
 
 (def rss-icon
@@ -60,6 +60,7 @@
 
 (defn wrap-in-layout [title body user message error]
   (html
+   (doctype :xhtml-strict)
    [:html
     [:head
      [:title config/SITE-TITLE (when title (str " - " title))]

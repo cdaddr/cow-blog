@@ -1,4 +1,4 @@
-# cow-blog
+# cow-blog 0.2.0
 by [Brian Carper](http://briancarper.net/)
 
 Now featuring thread safety!

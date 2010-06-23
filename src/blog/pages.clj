@@ -1,6 +1,6 @@
 (ns blog.pages
   "Functions in this namespace correspond to (public) pages.
-           This namespace is a bridge between the DB and HTML-rendering code"
+  This namespace is a bridge between the DB and HTML-rendering code"
   (:require (blog [layout :as layout]
                   [link :as link]
                   [db :as db]
@@ -113,7 +113,7 @@
                                :order "num_comments desc, date_created desc")]
     {:title "Archives"
      :body [:table
-            [:tr [:th {:colspan 4} "Archive (most discussed)"]]
+            [:tr [:th.big {:colspan 4} "Archive (most discussed)"]]
             (html/render-post-table posts)]}))
 
 (defn tag-cloud-page []
