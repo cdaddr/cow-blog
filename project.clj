@@ -8,7 +8,7 @@
                  [clout "0.2.0"]
                  [ring/ring-jetty-adapter "0.2.0"]
                  [ring/ring-devel "0.2.0"]
-                 [oyako "0.1.0"]
+                 [oyako "0.1.1"]
                  [postgres-pool "1.1.0"]
                  [joda-time "1.6"]
                  [rhino/js "1.7R2"]
