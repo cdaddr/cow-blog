@@ -48,4 +48,4 @@
   ;; MySQL
   (def DB {:classname "com.mysql.jdbc.Driver"
            :subprotocol "mysql"
-           :subname "//localhost/origami?user=blogtest&password=blogtest"}))
+           :subname "//localhost/blog?user=blogtest&password=blogtest"}))
