@@ -30,7 +30,7 @@
    [:title (:title post)]
    [:link (str config/SITE-URL (link/url post))]
    [:guid (str config/SITE-URL (link/url post))]
-   [:pubDate (time/datestr :http (:date post))]
+   [:pubDate (time/datestr :http (:date_created post))]
    [:description (escape-html (html (html/post-body post :front-page? true)))]])
 
 (defn posts []
