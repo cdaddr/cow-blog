@@ -16,9 +16,9 @@
 (defmethod url :posts [post]
   (str "/"
    (condp = (:title (:type post))
-       "Blog" "blog"
-       "Page" "page"
-       "Toplevel Page" "page"
+       "blog" "blog"
+       "page" "page"
+       "toplevel Page" "page"
        "blog")
    "/" (:id post) "/" (:url post)))
 
