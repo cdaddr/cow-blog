@@ -46,7 +46,7 @@
         (flash/message (str "Welcome back, " username "."))
         (response/redirect "/admin"))
     (do (flash/error (str "Login failed."))
-        (response/redirect "/admin/login"))))
+        (response/redirect "/"))))
 
 (defn admin-page
   "Main admin control panel."
