@@ -39,7 +39,9 @@
 (defn post-type [query type] (query/where query {:type type}))
 (defn admin? [query admin?]
   (if admin?
-    (assoc query :except-columns nil)
+    (assoc query
+      :except-columns nil
+      :where (dissoc (:where query) :status))
     (query/where query {:status "public"})))
 
 (query/register-query-clause :id id)
