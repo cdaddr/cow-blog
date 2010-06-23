@@ -178,26 +178,27 @@
    :body [:div
           (let [comment (oyako/fetch-one :comments :id id)
                 posts (oyako/fetch-all :posts :columns [:id :title] :order "date_created desc")]
-            (form-to [:post "/admin/edit-comment"]
-                     (hidden-field "id" (:id comment))
-                     (form-row "Post" "post_id" #(drop-down % (map vector
-                                                                   (map :title posts)
-                                                                   (map :id posts))
-                                                            (:post_id comment)))
-                     (form-row "Status" "status" #(drop-down % ["public" "spam"] (:status comment)))
-                     (form-row "Author" "author" #(text-field % (:author comment)))
-                     (form-row "Email" "email" #(text-field % (:email comment)))
-                     (form-row "URL" "homepage" #(text-field % (:url comment)))
-                     (form-row "Comment" "markdown" #(text-area % (:markdown comment)))
-                     [:div.info "Date: " (:date_created comment)]
-                     [:div.info "IP: " (:ip comment)]
-                     (submit-row "Submit"))
-            [:hr]
-            [:h3 "Delete Comment"]
-            [:p "Be sure you want to do this, there's no going back.  Consider marking it as spam instead of deleting it, if you want to hide the comment but save it for later (to check the IP address for example)."]
-            (form-to [:post "/admin/delete-comment"]
-                     (hidden-field :id (:id comment))
-                     (submit-button "!!! Delete IRREVOCABLY !!!")))]})
+            [:div
+             (form-to [:post "/admin/edit-comment"]
+                      (hidden-field "id" (:id comment))
+                      (form-row "Post" "post_id" #(drop-down % (map vector
+                                                                    (map :title posts)
+                                                                    (map :id posts))
+                                                             (:post_id comment)))
+                      (form-row "Status" "status" #(drop-down % ["public" "spam"] (:status comment)))
+                      (form-row "Author" "author" #(text-field % (:author comment)))
+                      (form-row "Email" "email" #(text-field % (:email comment)))
+                      (form-row "URL" "homepage" #(text-field % (:url comment)))
+                      (form-row "Comment" "markdown" #(text-area % (:markdown comment)))
+                      [:div.info "Date: " (:date_created comment)]
+                      [:div.info "IP: " (:ip comment)]
+                      (submit-row "Submit"))
+             [:hr]
+             [:h3 "Delete Comment"]
+             [:p "Be sure you want to do this, there's no going back.  Consider marking it as spam instead of deleting it, if you want to hide the comment but save it for later (to check the IP address for example)."]
+             (form-to [:post "/admin/delete-comment"]
+                      (hidden-field :id (:id comment))
+                      (submit-button "!!! Delete IRREVOCABLY !!!"))])]})
 
 (defn edit-tags-page [& {:keys [page-number]}]
   (let [tags (oyako/fetch-all :tags :order :title)
