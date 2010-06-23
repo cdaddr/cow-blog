@@ -119,8 +119,8 @@
 
 (defroutes rss-routes
   (GET ["/feed"] [] (rss/posts))
-  (GET ["/feed/tag/:id:etc" :etc #"/?[^/]*$" ] [id] (rss/tag id))
-  (GET ["/feed/category/:id:etc" :etc #"/?[^/]*$"] [id] (rss/category id)))
+  (GET ["/feed/tag/:id:etc" :id #"\d+" :etc #"/?[^/]*$" ] [id] (rss/tag id))
+  (GET ["/feed/category/:id:etc" :id #"\d+" :etc #"/?[^/]*$"] [id] (rss/category id)))
 
 (defroutes error-routes
   (ANY "*" [] (error/error 404 "Page not found."
