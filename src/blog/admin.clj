@@ -338,7 +338,7 @@
     (response/redirect "/admin")))
 
 (defn do-delete-comment [id]
-  (let [comment (oyako/fetch-one :comment :id id)]
+  (let [comment (oyako/fetch-one :comments :id id)]
     (error/with-err-str (oyako/delete comment))
     (db/update-counts)
     (flash/message "Comment deleted.")
