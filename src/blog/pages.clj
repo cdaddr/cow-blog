@@ -131,7 +131,7 @@
               [:span
                [:a {:href (link/url tag)
                     :class :cloud
-                    :style (str "font-size: " (weight-fn (:num_posts tag))) }
+                    :style (str "font-size: " (weight-fn (:num_posts tag)) "px") }
                 (:title tag)]
                " "])
             )]})
