@@ -15,11 +15,11 @@
 
 (defmethod url :posts [post]
   (str "/"
-   (condp = (:title (:type post))
-       "blog" "blog"
-       "page" "page"
-       "toplevel Page" "page"
-       "blog")
+       (condp = (:type post)
+           "blog" "blog"
+           "page" "page"
+           "toplevel" "page"
+           "blog")
    "/" (:id post) "/" (:url post)))
 
 (defmethod url :default [x]
