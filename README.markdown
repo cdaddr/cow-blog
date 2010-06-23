@@ -1,72 +1,62 @@
 # cow-blog 0.2.0
 by [Brian Carper](http://briancarper.net/)
 
-Now featuring thread safety!
+This is a(nother) complete rewrite of my blog engine, written in Clojure using Compojure and PostgreSQL.
 
-This is a complete rewrite of my blog engine written in Clojure using Compojure and Tokyo Cabinet.  Previous versions of this code were terrible and you should not use them.
+Version 0.1.0 of this code used Tokyo Cabinet.  I ran it that way successfully for a year in hobby-production, but I don't advise you to do the same.  There were issues with thread-safety and stability and it was a huge hack / proof of concept.  Use it at your own risk.
+
+Version 0.2.0 currently depends upon a highly experimental ORM-ish library called [Oyako](http://github.com/briancarper/oyako) which I'm building at the same time I build this blog engine.
 
 ## Purpose
 
-This is intended as a working proof-of-concept of a simple website using Compojure.  This is a clean rewrite that's close (but not identical) to the code I have been using to run my blog for the past year.
+This code runs my hobby-website.  Its purpose is to teach me how to write webapps in Clojure, and to have fun while doing so.
 
-You should **NOT** expect to unpack this code and fire it up and have it work.  This code is meant largely as a learning tool or HOWTO for writing a web app in Clojure.  You should read the code carefully and understand it.  It's only ~700 lines of code and it shouldn't be hard to read through.
+The intended audience for this code is a knowledgeable Clojure programmer.  User-friendliness is almost entirely lacking.  Users posting comments might get semi-helpful error messages when (not if) something breaks, but as an admin, you'll get stacktraces.
 
-Some effort has been made to make this a bit secure but **not much**.  Read and understand (and fix) this code before deploying it publicly.  Use at your own risk.
+Get the picture?  I wouldn't use version even 0.2.0 of this code for anything you make money from.  But it might be fun to play with.
 
 ## Features
 
 * Post tags, categories, comments
+* Archives, with gratuitous tag cloud
 * Markdown
 * Gravatars
 * RSS
-* Add/edit posts via admin interface
+* Lame spam filter
+* Add/edit/delete posts/tags/categories via admin interface
 
-## Dependencies
+# Getting started
 
-* [Clojure](http://github.com/richhickey/clojure), [clojure-contrib](http://github.com/richhickey/clojure-contrib), [Compojure](http://github.com/weavejester/compojure) (duh).
+Clone this git repo, then cd into the directory and:
 
-* [Tokyo Cabinet](http://1978th.net/tokyocabinet/).  You must install the C library (compile it yourself, it's straightforward), then install the Java bindings.  Then you have to tell Java where to find everything via `$CLASSPATH` and possibly `LD_LIBRARY_PATH`.  Follow the [directions](http://1978th.net/tokyocabinet/javadoc/) closely.
+    lein deps
 
-* [Rhino javascript engine](http://www.mozilla.org/rhino/).  Download and install it, all you need is `js.jar`.
+Then, from a REPL or Emacs:
 
-* JQuery and some JQuery plugins (included in `/public/js`).
+    user> (require 'blog.server)
+    user> (blog.server/start)
 
-* [Showdown](http://attacklab.net/showdown/) JS Markdown library (included in `/deps`); I have slightly edited showdown to include a few extra features and integrate better with my blog.  Vanilla Showdown will likely not work.
+Use `blog.db/create-user` to create an admin user, or you'll never be able to do anything.
 
-## TODO
+# Deploying
 
-These features are very simple to implement (like, one or two functions each) but I haven't bothered yet; they will show up in he next version.
+Right now I deploy this by running Emacs in SLIME.  This is less than ideal.  Doing it WAR-style is a possibility in the future.  (Patches welcome.)
 
-* Documentation!
-* Better stylesheet.
-* Editing comments, deleting posts/comments (you can do this from the REPL in the meantime)
-* Spam filtering
-* Archives
-* Tag cloud
-
-## Getting started
-
-Make sure Tokyo Cabinet, Showdown, Compojure, and all of the files in `/blog` are on your $CLASSPATH.
-
-Then edit `blog/config.clj`.  Then run this in a REPL:
-
-    (.start blog.server/blog-server)
-
-Visit http://localhost:8080 in a browser.
-    
-A file `posts.db` will be created to store your data.  Start reading `server.clj` to see what's what.
+I use Apache to proxy to a running Jetty server.  Documentation possibly forthcoming, or read [here](http://briancarper.net/blog/deploying-clojure-websites) for an out-of-date writeup of my general strategy.
 
 ## Bugs
 
 Bugs are a certainty.
 
-For bug reports, feedback, or suggestions, please email me at brian@briancarper.net or open an issue on github.
+For bug reports, feedback, or suggestions, please open an issue on github.
 
 ## LICENSE
 
 See the `LICENSE` file.
 
 ## Changelog
+
+* June 20, 2010 - Rewrite again?  No more Tokyo Cabinet.  Now uses Postgres.  Cows still missing.
 
 * October 22, 2009 - Rewrite from scratch.  No more CRUD.  Tokyo Cabinet.  Removed cows.
 
