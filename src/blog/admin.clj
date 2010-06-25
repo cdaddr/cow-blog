@@ -171,6 +171,7 @@
                    "[" (link-to (link/url comment) "view") "]"
                    (link/edit-link comment)]
                   [:div.meta
+                   [:div "On post " [:strong (:title (:post comment))]]
                    [:div "Posted by " (:author comment)
                     (when (:email comment)
                       [:span " &lt;" (:email comment) "&gt;"])
