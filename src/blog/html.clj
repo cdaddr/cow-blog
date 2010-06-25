@@ -88,7 +88,7 @@
        (link/link (:category post)) " \u2014 "
        " by " (:username (:user post)) " on " (time/datestr :pretty (post :date_created))]
       [:div.body
-       (post-body post :front-page? true)
+       (post-body post :front-page? front-page?)
        (when-let [parent (:parent post)]
          [:div.parent "This post is related to " (link/link parent)])]
       [:div.feedback
