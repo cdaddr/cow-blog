@@ -183,6 +183,29 @@
                  (error/redirect-and-error referer
                                            "There was some kind of database error and
                                           the computer ate your comment.  Sorry.  :(")))))))
-
-
-
+(defn sitemap-page []
+  {:headers {"Content-Type" "text/xml"}
+   :body (hiccup/html
+          "<?xml version='1.0' encoding='UTF-8'?>"
+          [:urlset {:xmlns "http://www.sitemaps.org/schemas/sitemap/0.9"
+                    "xmlns:xsi" "http://www.w3.org/2001/XMLSchema-instance"
+                    "xsi:schemaLocation" "http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"}]
+          (for [post (oyako/fetch-all :posts)]
+            [:url
+             [:loc (str config/SITE-URL (link/url post))]
+             [:lastmod (time/datestr :short (:date_created post))]
+             [:changefreq "hourly"]
+             [:priority 1.0]])
+          (for [cat (oyako/fetch-all :categories)]
+            [:url
+             [:loc (str config/SITE-URL (link/url cat))]
+             [:lastmod (time/datestr :short (:date_created cat))]
+             [:changefreq "hourly"]
+             [:priority 0.75]])
+          (for [tag (oyako/fetch-all :tags)]
+            [:url
+             [:loc (str config/SITE-URL (link/url tag))]
+             [:lastmod (time/datestr :short (:date_created tag))]
+             [:changefreq "hourly"]
+             [:priority 0.5]])
+          )})

@@ -128,6 +128,7 @@
     (response/file-response filename {:root config/PUBLIC-DIR})))
 
 (defroutes rss-routes
+  (GET "/sitemap.xml" [] (pages/sitemap-page))
   (GET ["/feed"] [] (rss/posts))
   (GET ["/feed/"] [] (rss/posts))
   (GET ["/feed/tag/:id" :id #"\d+"] [id] (rss/tag id))
