@@ -64,6 +64,7 @@
             [:li (link-to "/admin/edit-posts?type=page" "Pages")]]
            [:li (link-to "/admin/edit-comments" "Comments (Edit / Delete)")]
            [:ul
+            [:li (link-to "/admin/edit-comments?status=public" "Public only")]
             [:li (link-to "/admin/edit-comments?status=spam" "Spam only")]]
            [:li (link-to "/admin/edit-categories" "Categories (Create / Edit / Delete)")]
            [:li (link-to "/admin/edit-tags" "Tags (Create / Edit / Delete)")]]]})
