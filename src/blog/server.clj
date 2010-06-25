@@ -62,10 +62,12 @@
 (defroutes admin-routes
   (GET "/admin" [] (admin/admin-page))
   (GET "/admin/add-post" [] (admin/add-post-page))
-  (GET "/admin/edit-posts" []      (admin/edit-posts-page :page-number mw/PAGE-NUMBER))
+  (GET "/admin/edit-posts" {{:strs [type status]} :query-params}
+    (admin/edit-posts-page :page-number mw/PAGE-NUMBER :type type :status status))
   (GET "/admin/edit-post/:id" [id] (admin/edit-post-page id))
   
-  (GET "/admin/edit-comments" [] (admin/edit-comments-page :page-number mw/PAGE-NUMBER))
+  (GET "/admin/edit-comments" {{:strs [status]} :query-params}
+    (admin/edit-comments-page :page-number mw/PAGE-NUMBER :status status))
   (GET "/admin/edit-comment/:id" [id] (admin/edit-comment-page id))
   
   (GET "/admin/edit-tags" [] (admin/edit-tags-page :page-number mw/PAGE-NUMBER))

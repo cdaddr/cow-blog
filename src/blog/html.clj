@@ -100,10 +100,10 @@
        ]]))
 
 (defn render-index [posts & {:keys [user page-number count]}]
-  (layout/render-paginated #(render-post* % :front-page? true :user user)
-                           posts
-                           count
-                           page-number))
+  (layout/render-paginated posts
+                           :render-fn #(render-post* % :front-page? true :user user)
+                           :count count
+                           :page-number page-number))
 
 (defn render-post [post & {:keys [user]}]
   (list (render-post* post :front-page? false :user user)

@@ -58,7 +58,13 @@
            [:li (link-to "/admin/add-post" "Write a new Post")]]
           [:ul [:h4 "Manage"]
            [:li (link-to "/admin/edit-posts" "Posts (Edit / Delete)")]
+           [:ul 
+            [:li (link-to "/admin/edit-posts?status=draft" "Drafts")]
+            [:li (link-to "/admin/edit-posts?type=toplevel" "Toplevel Pages")]
+            [:li (link-to "/admin/edit-posts?type=page" "Pages")]]
            [:li (link-to "/admin/edit-comments" "Comments (Edit / Delete)")]
+           [:ul
+            [:li (link-to "/admin/edit-comments?status=spam" "Spam only")]]
            [:li (link-to "/admin/edit-categories" "Categories (Create / Edit / Delete)")]
            [:li (link-to "/admin/edit-tags" "Tags (Create / Edit / Delete)")]]]})
 
@@ -96,6 +102,11 @@
                  (submit-row "Submit"))
         (layout/preview-div)])))
 
+(defn- render-posts-list [posts & {:keys [page-number count]
+                                   :or {count 1 page-number 1}}]
+  (let []
+    ))
+
 (defn add-post-page
   "Page to add a new post."
   []
@@ -104,8 +115,10 @@
 
 (defn edit-posts-page
   "Page that lists post summaries and edit links."
-  [& {:keys [page-number]}]
-  (let [render (fn [post]
+  [& {:keys [page-number type status]}]
+  (let [where {:status (or status [:like "%"])
+               :type (or type [:like "%"])}
+        render (fn [post]
                  [:div
                   [:h4 "#" (:id post) " " (:title post)
                    (layout/status-span post)
@@ -115,14 +128,22 @@
                    " - " (:num_comments post) " comment(s)"]
                   [:p [:em (s/take 250 (:markdown post)) "..."]]
                   [:hr]])]
-    {:title "Edit Posts"
-     :body [:div
-            [:h3 "Edit Posts (sorted by date)"]
-            (let [posts (oyako/fetch-all db/posts
-                                         :admin? true
-                                         :limit config/POSTS-PER-PAGE
-                                         :offset (config/page-offset page-number))]
-              (layout/render-paginated render posts (count posts) page-number))]}))
+   {:title "Edit Posts"
+    :body [:div
+           [:h3 "Edit Posts (sorted by date)"]
+           (let [posts (oyako/fetch-all db/posts
+                                        :admin? true
+                                        :limit config/POSTS-PER-PAGE
+                                        :where where
+                                        :offset (config/page-offset page-number))
+                 c (:count (oyako/fetch-one (db/count-rows :posts) :where where))]
+             (layout/render-paginated posts
+                                      :render-fn render
+                                      :count c
+                                      :page-number page-number
+                                      :query-params (when (or type status)
+                                                      {:status status
+                                                       :type type})))]}))
 
 (defn edit-post-page
   "Page to edit a post."
@@ -141,8 +162,9 @@
 
 (defn edit-comments-page
   "Page that lists all comments, with edit links."
-  [& {:keys [page-number]}]
-  (let [render (fn [comment]
+  [& {:keys [page-number status]}]
+  (let [where {:status (or status [:like "%"])}
+        render (fn [comment]
                  [:div
                   [:h4 "#" (:id comment) " "
                    (layout/status-span comment)
@@ -163,15 +185,17 @@
                                   :admin? true
                                   :limit config/POSTS-PER-PAGE
                                   :offset (config/page-offset page-number)
+                                  :where where
                                   :order "date_created desc")
-        c (oyako/fetch-one (db/count-rows :comments) :admin? true)]
+        c (oyako/fetch-one (db/count-rows :comments) :admin? true :where where)]
     {:title "Edit Comments"
      :body [:div
             [:h3 "Edit Comments (sorted by date)"]
-            (layout/render-paginated render
-                                     comments
-                                     (:count c)
-                                     page-number)]}))
+            (layout/render-paginated comments
+                                     :query-params (when status {:status status})
+                                     :render-fn render
+                                     :count (:count c)
+                                     :page-number page-number)]}))
 
 (defn edit-comment-page [id]
   {:title "Edit Comment"

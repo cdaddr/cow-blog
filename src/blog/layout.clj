@@ -99,13 +99,15 @@
    (submit-button lab)])
 
 (defn pagenav
-  ([xs num-xs page-number] (pagenav xs num-xs page-number (fn [p] (str "?p=" p))))
-  ([xs num-xs page-number f]
-     (let [last-page-number (math/ceil (/ num-xs
+  ([xs count page-number query-params]
+     (let [last-page-number (math/ceil (/ count
                                           config/POSTS-PER-PAGE))
            page-range (filter #(and (> % 0) (<= % last-page-number))
                               (range (- page-number 5)
-                                     (+ page-number 5)))]
+                                     (+ page-number 5)))
+           f (fn [p] (s/join "&" (concat [(str "?p=" p)]
+                                         (map (fn [[k v]] (str (name k) "=" v))
+                                              query-params))))]
        [:div.pagenav
         [:span.navtext "Page " page-number " of " (if (zero? last-page-number) 1 last-page-number)]
         (if (> page-number 1)
@@ -125,10 +127,10 @@
   (take config/POSTS-PER-PAGE
         (drop (* config/POSTS-PER-PAGE (dec page-number)) xs)))
 
-(defn render-paginated [render-fn xs num-xs page-number & args]
+(defn render-paginated [xs & {:keys [render-fn query-params count page-number]}]
   (list
-   (map #(apply render-fn % args) xs)
-   (pagenav xs num-xs page-number)))
+   (map render-fn xs)
+   (pagenav xs count page-number query-params)))
 
 (defn status-span [x]
   (let [status (:status x)]
