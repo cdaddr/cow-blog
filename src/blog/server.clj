@@ -34,13 +34,21 @@
 (defroutes public-routes
   (GET "/" []
     (pages/index-page :user mw/USER :page-number mw/PAGE-NUMBER))
-  (GET ["/blog/:id:etc" :id #"\d+" :etc #"(/[^/]+)?"] [id]
+  (GET ["/blog/:id" :id #"\d+"] [id]
     (pages/post-page id :user mw/USER))
-  (GET ["/page/:id:etc" :id #"\d+" :etc #"(/[^/]+)?"] [id]
+  (GET ["/blog/:id/:etc" :id #"\d+" :etc #"[^/]*$"] [id]
     (pages/post-page id :user mw/USER))
-  (GET ["/category/:id:etc" :id #"\d+" :etc #"(/[^/]+)?"] [id]
+  (GET ["/page/:id" :id #"\d+"] [id]
+    (pages/post-page id :user mw/USER))
+  (GET ["/page/:id/:etc" :id #"\d+" :etc #"[^/]*$"] [id]
+    (pages/post-page id :user mw/USER))
+  (GET ["/category/:id" :id #"\d+"] [id]
     (pages/category-page id :user mw/USER :page-number mw/PAGE-NUMBER))
-  (GET ["/tag/:id:etc" :id #"\d+" :etc #"(/[^/]+)?"] [id]
+  (GET ["/category/:id/:etc" :id #"\d+" :etc #"[^/]*$"] [id]
+    (pages/category-page id :user mw/USER :page-number mw/PAGE-NUMBER))
+  (GET ["/tag/:id" :id #"\d+"] [id]
+    (pages/tag-page id :user mw/USER :page-number mw/PAGE-NUMBER))
+  (GET ["/tag/:id/:etc" :id #"\d+" :etc #"[^/]*$"] [id]
     (pages/tag-page id :user mw/USER :page-number mw/PAGE-NUMBER))
   
   (GET ["/archives/date"] [] (pages/archives-page-by-date))
@@ -121,8 +129,11 @@
 
 (defroutes rss-routes
   (GET ["/feed"] [] (rss/posts))
-  (GET ["/feed/tag/:id:etc" :id #"\d+" :etc #"/?[^/]*$" ] [id] (rss/tag id))
-  (GET ["/feed/category/:id:etc" :id #"\d+" :etc #"/?[^/]*$"] [id] (rss/category id)))
+  (GET ["/feed/"] [] (rss/posts))
+  (GET ["/feed/tag/:id" :id #"\d+"] [id] (rss/tag id))
+  (GET ["/feed/tag/:id/:etc" :id #"\d+" :etc #"[^/]*$"] [id] (rss/tag id))
+  (GET ["/feed/category/:id" :id #"\d+"] [id] (rss/category id))
+  (GET ["/feed/category/:id/:etc" :id #"\d+" :etc #"[^/]*$"] [id] (rss/category id)))
 
 (defroutes error-routes
   (ANY "*" [] (error/error 404 "Page not found."
