@@ -3,6 +3,7 @@
   :url "http://github.com/briancarper/cow-blog"
   :dependencies [[org.clojure/clojure "1.2.0-master-SNAPSHOT"]
                  [org.clojure/clojure-contrib "1.2.0-SNAPSHOT"]
+                 [gaka "0.1.0"]
                  [compojure "0.4.0-RC3"]
                  [hiccup "0.2.4"]
                  [clout "0.2.0"]

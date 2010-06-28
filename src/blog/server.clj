@@ -9,7 +9,8 @@
                   [config :as config]
                   [error :as error]
                   [admin :as admin]
-                  [rss :as rss])
+                  [rss :as rss]
+                  [css :as css])
             (ring.adapter [jetty :as jetty])
             (ring.util [response :as response])
             (sandbar [stateful-session :as session])

@@ -75,7 +75,8 @@
        [:h1 (link-to config/SITE-URL config/SITE-TITLE)]
        [:div.desc (link-to config/SITE-URL config/SITE-DESCRIPTION)]]
       [:div#sidebar (nav user)]
-      [:div#content body]
+      [:div#content
+       [:div.content body]]
       [:div#footer
        [:div
         "Powered by "
@@ -86,7 +87,7 @@
 
 (defn preview-div []
   [:div
-   [:h4 "Preview"]
+   [:h3 "Preview"]
    [:div#preview]])
 
 (defn form-row [lab name el]

@@ -16,7 +16,7 @@
   "Render an HTML form suitable for creating a new comment, plus preview div."
   [post]
   [:div.comment-form
-   [:h3 "Speak your Mind"]
+   [:h2.title "Speak your Mind"]
    [:div#add-comment
     (form-to [:post (str "/comment")]
              (hidden-field "post-id" (:id post))
@@ -28,8 +28,8 @@
               (text-field "test" "Type this word =>")
               [:img {:src "/img/test.jpg"}]]
              (layout/submit-row "Submit"))
-    [:div.feedback "You can use " [:a {:href "http://daringfireball.net/projects/markdown/"} "Markdown"] " in your comment."]
-    [:div.feedback "Email/URL are optional.  Email is only used for " (link-to "http://www.gravatar.com/" "Gravatar") "."]
+    [:div.meta "You can use " [:a {:href "http://daringfireball.net/projects/markdown/"} "Markdown"] " in your comment."]
+    [:div.meta "Email/URL are optional.  Email is only used for " (link-to "http://www.gravatar.com/" "Gravatar") "."]
     (layout/preview-div)]])
 
 (defn- render-comment
@@ -37,23 +37,23 @@
   [comment & {:keys [user even-odd]}]
   [:div {:class (str "comment " even-odd)}
    [:div.gravatar [:img {:src (db/gravatar comment) :alt (:author comment)}]]
-   [:div.commentby "Quoth "
-    [:span.author (if (comment :homepage)
-                    [:a {:href (comment :homepage)} (comment :author)]
-                    (comment :author))]
+   [:div.author "Quoth "
+    [:span.name (if (comment :homepage)
+                  [:a {:href (comment :homepage)} (comment :author)]
+                  (comment :author))]
     " on " (time/datestr :pretty (comment :date_created))
     (when user
       [:span.admin
        (layout/status-span comment)
        (link/edit-link comment)])]
-   [:div.comment-body (comment :html)]
+   [:div.body (comment :html)]
    [:div.clear]])
 
 (defn- render-comments
   "Render a group of comments, with a header specifying comment count."
   [post & {:keys [user]}]
   [:div#comments
-   [:h3 (pprint/cl-format nil "~d Comment~:p" (count (post :comments)))]
+   [:h2.title (pprint/cl-format nil "~d Comment~:p" (count (post :comments)))]
    (map #(render-comment %1 :user user :even-odd %2) (post :comments) (cycle ["even" "odd"]))
    (comment-form post)])
 
@@ -79,23 +79,23 @@
   renders 'comments' links.  When false, doesn't."
   ([post & {:keys [user front-page?]}]
      [:div.post
-      [:h3 (link/link post)
+      [:h2.title (link/link post)
        (when user
          [:span.admin
           (layout/status-span post)
           (link/edit-link post)])]
-      [:div.meta
+      [:div.author
        (link/link (:category post)) " \u2014 "
        " by " (:username (:user post)) " on " (time/datestr :pretty (post :date_created))]
       [:div.body
        (post-body post :front-page? front-page?)
        (when-let [parent (:parent post)]
          [:div.parent "This post is related to " (link/link parent)])]
-      [:div.feedback
+      [:div.meta
        (when (post :tags)
-         [:div.post-tags "Tags: " (interpose ", " (map link/link (post :tags)))])
+         [:div.tags "Tags: " (interpose ", " (map link/link (post :tags)))])
        (when front-page?
-         [:div.post-comments-link
+         [:div.comments-link
           (link/comments-link post)])
        ]]))
 
@@ -111,7 +111,7 @@
 
 (defn render-tag [tag & {:keys [user page-number count]}]
   [:div
-   [:h3.info count " Posts Tagged '"
+   [:h3.meta count " Posts Tagged '"
     (link/link tag) "' "
     (link-to (str "/feed/tag/" (:id tag) "/" (:url tag))
              layout/rss-icon)
@@ -123,7 +123,7 @@
 
 (defn render-category [cat & {:keys [user page-number count]}]
   [:div
-   [:h3.info count " Posts in Category '"
+   [:h3.meta count " Posts in Category '"
     (link/link cat) "' "
     (link-to (str "/feed/category/" (:id cat) "/" (:url cat))
              layout/rss-icon)]

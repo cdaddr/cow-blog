@@ -1,674 +1,391 @@
-/*
-Theme Name: Barecity
-Theme URI: http://shaheeilyas.com/
-Description: Minimal theme with bare essentials
-Version: 1.5
-Author: Shahee Ilyas
-Date: February 2008
-Based on the Classic WordPress by Dave Shea || http://mezzoblue.com & Matthew Mullenweg || http://photomatt.net
-Modified & completely redesigned by Shahee Ilyas || http://shaheeilyas.com
-
-	The CSS, XHTML and design is released under GPL:
-	http://www.opensource.org/licenses/gpl-license.php
-
-*/
-
-/* With some minor modifications by Brian Carper for cow-blog. */
-
-a {
-	text-decoration: underline; 
-	color: #333;
-
-}
-
-a:active {
-}
-
-a:visited {
-}
-
-a:hover {
-	text-decoration: none; 
-}
-
-a img {
-	border: none;
-}
-
-
-acronym, abbr {
-
-}
-
-acronym, abbr, span.caps {
-	font-size: 11px;
-
-}
-
-acronym, abbr {
-	cursor: help;
-	border:none;
-}
-
-blockquote p {
-    font-style: italic;
-    margin-left: 18px
-    padding-left: 5px;
-}
-
 body {
-	background: #fff;
-	color: #000;
-	font-family:  Verdana, Arial, Helvetica, sans-serif;
-	margin: 0;
-	padding: 0;
-	font-size: 12px;
-}
+  color: black;
+  background: #fff;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  font-size: 12px;
+  margin: 0;
+  padding: 0;}
 
-cite {
-	font-size: 11px;
-	font-style: normal;
-	color:#666;
-}
+  body a {
+    color: #333;
+    text-decoration: none;
+    border-bottom: none;}
 
-h2 {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	margin: 15px 0 2px 0;
-	padding-bottom: 2px;
-}
+    body a img {
+      border: none;}
 
-h3 {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	margin-top: 0;
-	font-size: 14px;
-}
+  body a:hover {
+    text-decoration: none;
+    border-bottom: none;}
 
-h4 {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	margin-top: 0;
-	font-size: 11px;
-        margin: 0 0 5px 0;
-        padding: 0;
-}    
-
-h3.info {
-}
-
-ol#comments li p {
-}
-
-#comments h3 {
-    padding-bottom: 5px;
-}
-
-#commentlist li{
-	margin-left:-22px;
-}
-
-p, li, .feedback {
-	font: 11px Verdana, Arial, Helvetica, sans-serif;
-	
-}
-
-p {
-    margin: 0;
-    margin-bottom: 10px;
-}
-
-/* classes used by the_meta() */
-ul.post-meta {
-	list-style: none;
-}
-
-ul.post-meta span.post-meta-key {
-	font-weight: bold;
-}
-
-#footer {
-    width: 600px;
+  body blockquote {
     font-style: italic;
-	clear:both;
-	color: #666;
-	font-size: 10px;
-	padding: 25px 0 0 0;
-	margin: 0 0 20px 0;
-	text-align: center;
-}
+    margin-left: 18px;
+    padding-left: 5px;}
 
-#footer a {
-    text-decoration: none;
-}
-
-#footer a:hover {
-	color: #666;
-}
-
-.feedback, .info, .form-info {
-	color: #666;
-	text-align: right;
-	font-size:10px;
-	clear: both;
-}
-
-.form-info {
-    padding-left: 120px;
-    text-align: left;
-}
-
-.meta {
-	font-size: 10px;
-}
-
-.meta li, ul.post-meta li {
-	display: inline;
-}
-
-.meta ul {
-	display: inline;
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-
-
-#comments{
-    padding-top:18px;
-    padding-bottom: 18px;
-
-}
-
-.commentby {
-    font-size: 10px;
-    padding-bottom:8px;
-    color: #808080;
-}
-
-#postcomment{
-	margin-top:24px;
-
-}
-
-.meta {
-	color: #808080;
-	font-weight: normal;
-	letter-spacing: 0;
-        margin-bottom: 10px;
-}
-
-.meta a {
-}
-
-#content a {
-	text-decoration: none;
-	border-bottom: 1px dotted #888;
-}
-
-#content a:hover {
-	text-decoration: none;
-	border-bottom: 1px solid #888;
-}
-
-#content h3 {
-        margin: 0;
-}
-
-#content h3 a {
-    text-decoration: none;
-    border: none;
-}
-
-#content h3 a:hover {
-    border: none;
-}
-
-#content {
-	margin-bottom:-10px;
-}
-
-#content ul {
-    list-style-type: circle;
-}
-
-#content li {
-    list-style-type: circle;
-}
-
-#content h1 {
-    	font-family: Verdana, Arial, Helvetica, sans-serif;
-	margin-top: 0;
-	font-size: 12px;
-        font-style: italic;
-        color: #444;
-}
-
-
-.post {
-    padding-bottom:15px;
-    margin-bottom: 15px;
-}
-
-
-#commentform #author, #commentform #email, #commentform #url, #commentform textarea {
-	background: #fff;
-	border: 1px solid #333;
-	padding: 3px;
-}
-
-#commentform textarea {
-	width: 100%;
-}
-
-#commentlist li ul {
-	font-size: 12px;
-	list-style-type: none;
-	color: #666;
-}
-
-#content {
-	float: left;
-	width:600px;
-}
-
-/* Header */
-
-#header {
-    padding:12px 0 16px 0;
-    margin: 24px 0;
-}
-
-#header h1 {
-	font-family: Georgia, "Times New Roman", Times, serif;
-	font-size: 34px;
-	color: black;
-	font-weight: normal;
-	padding: 0;
-        margin: 0;
-}
-
-#header h1 a {
-	color: black;
-	text-decoration: none;
-}
-
-#header h1 a:hover {
-	text-decoration: none;
-}
-
-
-#header .desc {
-	float:left;
-	font-size: 12px;
-}
-
-#header .desc a {
-    font-style: italic;
-    text-decoration: none;
-}
-
-#header .desc a:hover {
-	background-color: #eee;
-	color: #666;
-}
-#header .desc a:active {
-	background-color: #fff;
-}
-
-/* Sidebar */
-
-#sidebar {
-	background: #fff;
-	border-left: 1px dotted #ccc;
-	padding: 0px 0 10px 10px;
-	float: right;
-	width: 144px;
-}
-
-#sidebar form {
-	margin: 0 0 0 0px;
-}
-
-#sidebar input#s {
-	width: 60%;
-	background: #eee;
-	border: 1px solid #999;
-	color: #000;
-	
-}
-
-#sidebar ul {
-	color: #808080;
-	list-style-type: none;
-	margin: 0;
-	padding-left: 3px;
-}
-
-#sidebar h2 {
-	font-weight: normal;
-	margin:0;
-	padding:0;
-	font-size: 12px;
-	
-}
-
-#sidebar ul li {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	margin-top: 10px;
-	padding-bottom: 2px;
-}
-
-#sidebar ul ul {
-	font-variant: normal;
-	font-weight: normal;
-	list-style-type: none;
-	margin: 0;
-	padding: 0;
-	text-align: left;
-}
-
-#sidebar ul ul li {
-	border: 0;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	letter-spacing: 0;
-	margin-top: 0;
-	padding: 0;
-	padding-left: 3px;
-}
-
-#sidebar ul ul li a {
-	color: #000;
-	text-decoration: none;
-}
-
-#sidebar ul ul li a:hover {
-	border-bottom: 1px solid #809080;
-}
-
-#sidebar ul ul ul.children {
-	font-size: 17px;
-	padding-left: 4px;
-}
-
-#wp-calendar {
-	empty-cells: show;
-	font-size: 11px;
-	margin: 0;
-	width: 90%;	
-}
-
-#wp-calendar #next a {
-	padding-right: 10px;
-	text-align: right;
-}
-
-#wp-calendar #prev a {
-	padding-left: 10px;
-	text-align: left;
-}
-
-#wp-calendar a {
-	display: block;
-	text-decoration: none;
-}
-
-#wp-calendar a:hover {
-	background: #ccc;
-	color: #333;
-}
-
-#wp-calendar caption {
-	color: #000;
-	text-align: left;
-	font-weight: normal;
-
-}
-
-#wp-calendar td {
-	color: #999;
-	padding: 2px 0;
-	text-align: center;
-}
-
-#wp-calendar td.pad:hover {
-	background: #fff;
-}
-
-#wp-calendar td:hover, #wp-calendar #today {
-	background: #eee;
-	color: #666;
-}
-
-#wp-calendar th {
-	font-weight: normal;
-	text-transform: capitalize;
-	color: #999;
-		
-}
-
-#wrapper {
-	background-color: #FFFFFF;
-	margin-right:auto;
-	margin-left:auto;
-	width:775px;
-	padding: 6px;
-}
-
-#himage {
-	border:0;
-	margin:0;
-	padding:0 0 0 8px;
-}
-
-label {
-    display: block;
-    float: left;
-    text-align: right;
-    width: 100px;
-    padding-right: 5px;
-}
-
-div.form {
-    float: left;
-    min-width: 75%;
-}
-
-div.submit {
-    padding-left: 105px;
-}
-
-textarea {
-    width: 450px;
-    height: 250px;
-    /* height: 650px; */
-}
-
-div#preview {
-    background: #eee;
-    padding: 5px;
-    margin: 5px;
-    border: 1px dotted grey;
-} 
-
-pre {
+  body pre {
     background: #eee;
     font-family: DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
-    font-size: 12px;
-
     margin: 15px 20px;
-    padding: 5px 5px;
+    padding: 5px;
     border: 1px #ccc solid;
     border-left: 10px #ccc solid;
-    overflow: auto;
-}
-    
-code {
-    /* border: 1px #999 dotted; */
+    overflow: auto;}
+
+    body pre code {
+      border: none;}
+
+  body code {
     background: #eee;
     color: #333;
-    padding: 0 2px;
-}
+    padding: 0 2px;}
 
-pre code {
-    border: none;
-}    
-
-.comment {
-    padding: 5px;
-}
-
-.comment.even {
-    background: white;
-}
-
-.comment.odd {
-    background: #f0f0f0;
-}
-
-.gravatar {
-    float: left;
-    padding-bottom: 8px;
-    padding-right: 8px;
-}
-
-.comment-body {
-    margin-left: 70px;
-}
-
-.clear {
-    clear: both;
-    margin-bottom: 4px;
-}
-
-.author {
+  body .error {
     color: black;
-    font-weight: bold;
-}
-
-.message {
-    background: #93d983;
-    color: black;
-    border: 1px #3c5935 solid;
-    text-align: center;
-    padding: 5px 0;
-    margin: auto;
-    font-weight: bold;
-}
-
-.error {
-    background: #d99383;
-    color: black;
-    border: 1px #593c35 solid;
-    text-align: center;
     padding: 5px 0;
     margin: 10px auto;
     font-weight: bold;
+    text-align: center;
+    background: #d99383;
+    border: 1px #593c35 solid;}
+
+  body .message {
+    color: black;
+    padding: 5px 0;
+    margin: 10px auto;
+    font-weight: bold;
+    text-align: center;
+    background: #93d983;
+    border: 1px #3c5935 solid;}
+
+  body #wrapper {
+    background-color: #fff;
+    margin-right: auto;
+    margin-left: auto;
+    width: 775px;
+    padding: 6px;}
+
+  body div.clear {
+    clear: both;}
+
+  body .spam {
+    color: red;}
+
+  body .draft {
+    color: grey;}
+
+  body .public {
+    color: green;}
+
+#header {
+  padding: 12px 0 16px 0;
+  margin: 24px 0;}
+
+  #header .desc {
+    float: left;}
+
+    #header .desc a {
+      font-style: italic;}
+
+  #header h1 {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 34px;
+    color: black;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;}
+
+    #header h1 a {
+      color: black;}
+
+    #header h1 a:hover {
 }
 
-div#preview {
+    #header h1 .desc {
+      float: left;}
+
+      #header h1 .desc a {
+        font-size: italic;}
+
+      #header h1 .desc a:hover {
+        background-color: #eee;
+        color: #666;}
+
+#sidebar {
+  background: #fff;
+  border-left: 1px dotted #ccc;
+  padding: 0 10px;
+  float: right;
+  width: 144px;}
+
+  #sidebar h2 {
+    font-weight: normal;
+    font-size: 12px;
+    margin: 0;
+    padding: 0;}
+
+  #sidebar ul {
+    color: #808080;
+    list-style-type: none;
+    font-size: 11px;
+    margin: 0;
+    padding-left: 3px;}
+
+    #sidebar ul li {
+      margin-top: 10px;
+      padding-bottom: 2px;}
+
+    #sidebar ul ul {
+      font-variant: normal;
+      font-weight: normal;
+      list-style-type: none;
+      text-align: left;
+      margin: 0;
+      padding: 0;}
+
+      #sidebar ul ul li {
+        margin: 0;
+        padding: 0;
+        border: none;
+        padding-left: 3px;}
+
+#content {
+  float: left;
+  width: 600px;
+  margin-bottom: -10px;}
+
+  #content a {
+    text-decoration: none;
+    border-bottom: 1px dotted #808080;}
+
+  #content a:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #808080;}
+
+  #content ul {
+    list-style-type: circle;}
+
+    #content ul ul {
+      list-style-type: disc;}
+
+  #content h1 {
+    font-size: 12px;
+    color: #444;}
+
+  #content h2 {
+    font-size: 12px;
+    margin: 0 0 2px 0;
+    font-style: italic;
+    color: #666;
+    padding-bottom: 2px;}
+
+  #content h3 {
+    margin: 0;
+    padding: 0;
+    margin: 0 0 5px 0;
+    font-size: 12px;
+    color: #888;}
+
+  #content h4 {
+}
+
+  #content p {
+    font-size: 11px;}
+
+  #content li {
+    font-size: 11px;}
+
+  #content .feedback {
+    font-size: 11px;}
+
+  #content p {
+    margin: 0;
+    padding: 0;
+    margin-bottom: 10px;}
+
+  #content img.rss {
+    vertical-align: middle;}
+
+  #content .meta {
+    color: #666;
+    text-align: right;
+    font-size: 10px;
+    clear: both;}
+
+  #content a.cloud {
+    border: none;}
+
+  #content #preview {
     border: 1px grey dashed;
     background: #eee;
     font-size: 93%;
     min-height: 25px;
-    padding: 5px;
+    padding: 5px;}
+
+    #content #preview blockquote {
+      background: #ddd;}
+
+  #content table {
+    font-size: 11px;}
+
+    #content table td {
+      padding: 3px;}
+
+    #content table th.big {
+      font-size: 14px;
+      border: 1px dotted #ccc;}
+
+  #content .post {
+    margin-bottom: 15px;
+    padding-bottom: 15px;}
+
+    #content .post .title {
+      font-weight: bold;
+      font-size: 14px;
+      color: #333;
+      font-style: normal;
+      margin: 0;
+      padding: 0;
+      font-style: normal;}
+
+      #content .post .title a {
+        font-weight: bold;
+        font-size: 14px;
+        text-decoration: none;
+        border-bottom: none;
+        border: none;}
+
+    #content .post .author {
+      margin: 0;
+      padding: 0;
+      font-size: 10px;
+      color: #808080;
+      font-weight: normal;
+      margin-bottom: 10px;}
+
+    #content .post .parent {
+      font-weight: bold;
+      font-style: italic;
+      color: #888;
+      margin-bottom: 10px;}
+
+  #content form {
 }
 
-div#preview blockquote {
-    background: #ddd;
-}
+    #content form label {
+      display: block;
+      float: left;
+      text-align: right;
+      width: 100px;
+      padding-right: 5px;}
 
-input[type=text], textarea {
-    font-size: 100%;
-    min-width: 250px;
-    font-family: "Bitstream Vera Sans Mono", "Courier Sans", monospace;
-}
+    #content form .submit {
+      padding-left: 105px;}
 
-.pagenav {
-    font: 11px Verdana,Arial,Helvetica,sans-serif;
-    margin-top: 0;
-}
+    #content form textarea {
+      width: 450px;
+      height: 250px;}
 
+    #content form input[type=text] {
+      min-width: 250px;
+      font-size: 100%;
+      font-family: DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;}
 
-#content .pagenav a, .pagenav .navtext, .pagenav .num {
-    display: block;
-    float: left;
-    padding: 3px;
-    margin: 2px;
-    border: 0;
-}
+    #content form textarea {
+      min-width: 250px;
+      font-size: 100%;
+      font-family: DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;}
 
-.pagenav .num {
-    color: #888;
-}
+  #content #comments {
+    padding-top: 18px;
+    padding-bottom: 18px;}
 
-#content .navnext a {
-    border: 0;
-}
+    #content #comments .title {
+      font-weight: bold;
+      font-size: 14px;
+      color: #333;
+      font-style: normal;
+      padding-bottom: 5px;}
 
-.test {
-    text-align: right;
-}
+    #content #comments .comment {
+      padding: 5px;}
 
-.test img {
-    vertical-align: middle;
-}
+      #content #comments .comment .author {
+        font-size: 10px;
+        padding-bottom: 8px;
+        color: #808080;}
 
-input#test {
-    min-width: 150px;
-    width: 150px;
-    vertical-align: middle;
-}
+      #content #comments .comment .gravatar {
+        float: left;
+        padding-bottom: 8px;
+        padding-right: 8px;}
 
-.Spam {
-    color: red;
-}
+      #content #comments .comment .body {
+        margin-left: 70px;}
 
-.Hidden {
-    color: grey;
-}
+      #content #comments .comment .name {
+        color: black;
+        font-weight: bold;}
 
-.Public {
-    font-weight: bold;
-    color: green;
-}
+    #content #comments .even {
+      background-color: white;}
 
-.admin {
-    font-weight: normal;
-    font-size: 10px;
-}
+    #content #comments .odd {
+      background-color: #f0f0f0;}
 
-.body {
-    padding-left: 5px;
-}
+    #content #comments .test {
+      text-align: right;}
 
-.center {
-    text-align: center;
-}
+      #content #comments .test img {
+        vertical-align: middle;}
 
-.parent {
-    font-weight: bold;
-    font-style: italic;
-    color: #888;
-    margin-bottom: 10px;
-}
+    #content #comments input#test {
+      min-width: 150px;
+      width: 150px;
+      vertical-align: middle;}
 
-img.rss {
-    vertical-align: middle;
-}
-
-table {
+  #content .pagenav {
     font-size: 11px;
-}
+    margin: 0;
+    padding: 0;}
 
-td {
-    padding: 3px;
-}
+    #content .pagenav a {
+      display: block;
+      float: left;
+      padding: 3px;
+      margin: 2px;
+      border: none;}
 
-th.big {
-    font-size: 14px;
-    border: 1px dotted #ccc;
-}  
+    #content .pagenav .navtext {
+      display: block;
+      float: left;
+      padding: 3px;
+      margin: 2px;
+      border: none;}
 
-#content a.cloud {
+    #content .pagenav .num {
+      display: block;
+      float: left;
+      padding: 3px;
+      margin: 2px;
+      border: none;}
+
+#footer {
+  width: 600px;
+  font-style: italic;
+  clear: both;
+  color: #666;
+  font-size: 10px;
+  padding: 25px 0 0 0;
+  margin: 0 0 20px 0;
+  text-align: center;}
+
+  #footer a {
     text-decoration: none;
-    border: 0;
-}
+    border-bottom: none;
+    color: #333;}
+
+  #footer a:hover {
+    color: #666;}
 
