@@ -97,7 +97,7 @@
                                  (:url tag)])))
                  (form-row (if (:tags post) "Add Tags" "Tags") "tags"
                            #(text-field %))
-                 [:div.info "Tags should be comma-separated and match /"
+                 [:div.meta "Tags should be comma-separated and match /"
                   [:code config/TAG-CATEGORY-TITLE-REGEX] "/"]
                  (form-row "Body" "markdown"        #(text-area % (:markdown post)))
                  (submit-row "Submit"))
@@ -216,8 +216,8 @@
                       (form-row "Email" "email" #(text-field % (:email comment)))
                       (form-row "URL" "homepage" #(text-field % (:url comment)))
                       (form-row "Comment" "markdown" #(text-area % (:markdown comment)))
-                      [:div.info "Date: " (:date_created comment)]
-                      [:div.info "IP: " (:ip comment)]
+                      [:div.meta "Date: " (:date_created comment)]
+                      [:div.meta "IP: " (:ip comment)]
                       (submit-row "Submit"))
              [:hr]
              [:h3 "Delete Comment"]
