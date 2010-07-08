@@ -25,7 +25,7 @@
                                :offset (config/page-offset page-number)
                                :admin? user
                                :post-type "blog")
-        c (oyako/fetch-one (db/count-rows :posts) :admin? user)]
+        c (oyako/fetch-one (db/count-rows :posts) :admin? user :post-type "blog")]
     (if (seq posts)
       {:body (html/render-index posts
                                 :count (:count c)
