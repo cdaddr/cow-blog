@@ -126,10 +126,12 @@
       (oyako/save (assoc post :num_comments c))))
   (doseq [xs [(oyako/fetch-all :categories
                                :include (query/query-> :posts
+                                                       :admin? false
                                                        :columns [:id :category_id]
                                                        :post-type "blog"))
               (oyako/fetch-all :tags
                                :include (query/query-> :posts
+                                                       :admin? false
                                                        :columns [:id]
                                                        :post-type "blog"))]
           x xs
