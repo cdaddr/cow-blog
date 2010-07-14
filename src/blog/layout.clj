@@ -49,12 +49,14 @@
      [:ul "Categories"
       (map #(vector :li (link-with-count %))
            (oyako/fetch-all db/categories
+                            :admin? false
                             :where ["num_posts > 0"]
                             :order "num_posts desc"))]]
     [:li
      [:ul "Tags"
       (map #(vector :li (link-with-count %))
            (oyako/fetch-all db/tags
+                            :admin? false
                             :where ["num_posts > 0"]
                             :order "num_posts desc"))]]]))
 
