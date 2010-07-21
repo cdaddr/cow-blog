@@ -144,6 +144,7 @@
   {:headers {"Content-Type" "text/javascript;charset=UTF-8"}
    :body (apply str (mapcat #(slurp (s/join "/" [config/PUBLIC-DIR "js" (str % ".js")]))
                             ["xregexp" "shCore"
+                             "brushes/shBrushBash"
                              "brushes/shBrushClojure"
                              "brushes/shBrushCss"
                              "brushes/shBrushJava"
