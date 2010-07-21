@@ -45,7 +45,7 @@
        ;:border "1px #ccc solid"
        ;:border-left "10px #ccc solid"
        :overflow "auto"
-       :color "#eee"
+       :color "#c0c0c0"
        :padding "10px"
        :margin "15px 20px"
        :background "#202020"
