@@ -10,6 +10,11 @@
  * Written by Daniel Solano Gómez
  *
  * Version 0.9.1 - 10 Apr 2010
+ *
+ * =================================================================
+ *
+ * This version tweaked by Brian Carper.
+ * http://briancarper.net
  */
 
 function ClojureRegExp(pattern) {
