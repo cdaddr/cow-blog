@@ -50,6 +50,10 @@
        :margin "15px 20px"
        :background "#202020"
        [:code no-border]]
+      [:code
+       :font-weight "bold"
+       :font-family "Consolas, monospace"
+       :font-size "10pt"]
       [:.error
        message-box
        :background "#d99383"

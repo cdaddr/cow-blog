@@ -34,6 +34,11 @@ body {
     body pre code {
       border: none;}
 
+  body code {
+    font-weight: bold;
+    font-family: Consolas, monospace;
+    font-size: 10pt;}
+
   body .error {
     color: black;
     padding: 5px 0;
