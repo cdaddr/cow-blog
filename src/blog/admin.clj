@@ -103,11 +103,6 @@
                  (submit-row "Submit"))
         (layout/preview-div)])))
 
-(defn- render-posts-list [posts & {:keys [page-number count]
-                                   :or {count 1 page-number 1}}]
-  (let []
-    ))
-
 (defn add-post-page
   "Page to add a new post."
   []
@@ -329,7 +324,7 @@
      (validate-post "/admin" new-post tags)
      (try
        (error/with-err-str (oyako/insert :posts new-post))
-       (let [post (oyako/fetch-one db/posts :url url)]
+       (let [post (oyako/fetch-one db/posts :url url :admin? true)]
          (when tags
            (db/add-tags-to-post post tags))
          (db/update-counts)
