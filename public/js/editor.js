@@ -4,6 +4,7 @@ function updatePreview() {
     var mdtext = $("textarea#markdown").val();
     var htmltext = markdown.makeHtml(mdtext, true);
     $("div#preview").html(htmltext);
+    SyntaxHighlighter.all();
 }
 
 function updatePermalink() {
@@ -43,6 +44,7 @@ $(document).ready(function() {
             $(this).val("Type this word =>");
         }
     });
+    SyntaxHighlighter.all();
 
 });
 

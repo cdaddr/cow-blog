@@ -143,7 +143,18 @@
   []
   {:headers {"Content-Type" "text/javascript;charset=UTF-8"}
    :body (apply str (mapcat #(slurp (s/join "/" [config/PUBLIC-DIR "js" (str % ".js")]))
-                            ["jquery" "typewatch" "showdown" "editor"]))})
+                            ["xregexp" "shCore"
+                             "brushes/shBrushClojure"
+                             "brushes/shBrushCss"
+                             "brushes/shBrushJava"
+                             "brushes/shBrushPerl"
+                             "brushes/shBrushPhp"
+                             "brushes/shBrushPython"
+                             "brushes/shBrushRuby"
+                             "brushes/shBrushSql"
+                             "brushes/shBrushXml"
+                             "jquery" "typewatch" "showdown" "editor"]))})
+
 
 (defn do-add-comment
   "Handles POST request to add a new comment.  This is suitable for public /

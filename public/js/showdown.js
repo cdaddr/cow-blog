@@ -886,8 +886,15 @@ var _DoCodeBlocks = function(text) {
 			codeblock = _Detab(codeblock);
 			codeblock = codeblock.replace(/^\n+/g,""); // trim leading newlines
 			codeblock = codeblock.replace(/\n+$/g,""); // trim trailing whitespace
+            var klass = '';
+            var m;
+            var regex = /^~T~T~T(.+)\n/;
+            if(m = codeblock.match(regex)) {
+                klass = ' class="' + m[1] + '"';
+                codeblock = codeblock.replace(regex, '');
+            }
 
-			codeblock = "<pre><code>" + codeblock + "\n</code></pre>";
+			codeblock = "<pre><code" + klass + ">" + codeblock + "\n</code></pre>";
 
 			return hashBlock(codeblock) + nextChar;
 		}

@@ -65,7 +65,9 @@
     [:head
      [:title config/SITE-TITLE (when title (str " - " title))]
      (include-css "/css/style.css")
-     (include-js "/js/combined.js") ;;magic
+     (include-css "/css/shCore.css")
+     (include-css "/css/shThemeCow.css")
+     (include-js "/js/combined.js") ;;magic; look in pages.clj
      [:link {:type "application/rss+xml" :rel "alternate" :href "/feed"}]]
     [:body
      [:div#wrapper

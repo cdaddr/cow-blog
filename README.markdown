@@ -24,6 +24,7 @@ Get the picture?  I wouldn't use version even 0.2.0 of this code for anything yo
 * RSS
 * Lame spam filter
 * Add/edit/delete posts/tags/categories via admin interface
+* SyntaxHighlighter
 
 # Getting started
 

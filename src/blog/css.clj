@@ -38,12 +38,12 @@
        :margin-left "18px"
        :padding-left "5px"]
       [:pre
-       :background "#eee"
-       :font-family "DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace"
-       :margin "15px 20px"
-       :padding "5px"
-       :border "1px #ccc solid"
-       :border-left "10px #ccc solid"
+       ;:background "#eee"
+       ;:font-family "DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace"
+       ;:margin "15px 20px"
+       ;:padding "5px"
+       ;:border "1px #ccc solid"
+       ;:border-left "10px #ccc solid"
        :overflow "auto"
        [:code no-border]]
       [:code
