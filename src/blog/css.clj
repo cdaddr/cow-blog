@@ -45,11 +45,10 @@
        ;:border "1px #ccc solid"
        ;:border-left "10px #ccc solid"
        :overflow "auto"
+       :color "#eee"
+       :padding "10px"
+       :background "#202020"
        [:code no-border]]
-      [:code
-       :background "#eee"
-       :color "#333"
-       :padding "0 2px"]
       [:.error
        message-box
        :background "#d99383"
