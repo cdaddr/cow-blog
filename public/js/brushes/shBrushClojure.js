@@ -122,7 +122,7 @@ SyntaxHighlighter.brushes.Clojure = function () {
 
 	this.regexList = [
 		// comments
-		{ regex: new RegExp(';.*$', 'gm'),
+		{ regex: new RegExp(';;.*$', 'gm'),
 			css: 'comments' },
 		// strings
 		{ regex: SyntaxHighlighter.regexLib.multiLineDoubleQuotedString,
@@ -133,9 +133,6 @@ SyntaxHighlighter.brushes.Clojure = function () {
 		// vectors
 		{ regex: /\[|\]/g,
 			css: 'square' },
-		// amperstands
-		{ regex: /&(amp;)?/g,
-			css: 'keyword' },
 		// sets and maps
 		{ regex: /#?\{|\}/g,
 			css: 'curly' },
