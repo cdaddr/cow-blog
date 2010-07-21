@@ -47,6 +47,7 @@
        :overflow "auto"
        :color "#eee"
        :padding "10px"
+       :margin "15px 20px"
        :background "#202020"
        [:code no-border]]
       [:.error
