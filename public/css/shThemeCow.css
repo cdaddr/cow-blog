@@ -137,6 +137,6 @@
 .syntaxhighlighter table thead,
 .syntaxhighlighter table caption,
 .syntaxhighlighter textarea {
-  font-size: 12pt !important;
+  font-size: 10pt !important;
   line-height: 1.3em !important;
 }
