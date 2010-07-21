@@ -54,7 +54,7 @@
   (assoc post :html (markdown/markdown-to-html (:markdown post) false)))
 
 (defmethod oyako/hook [:before-save :comments] [_ comment]
-  (assoc comment :html (markdown/markdown-to-html (:markdown comment) false)))
+  (assoc comment :html (markdown/markdown-to-html (:markdown comment) true)))
 
 
 (def ^{:private true} parent
