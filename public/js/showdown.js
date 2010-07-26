@@ -80,6 +80,7 @@ Showdown.converter = function() {
 
 // Global hashes, used by various utility routines
 var g_urls;
+var g_footnotes;
 var g_titles;
 var g_html_blocks;
 
@@ -105,6 +106,7 @@ this.makeHtml = function(text,safe) {
 	// one article (e.g. an index page that shows the N most recent
 	// articles):
 	g_urls = new Array();
+	g_footnotes = new Array();
 	g_titles = new Array();
 	g_html_blocks = new Array();
 
@@ -163,6 +165,13 @@ this.makeHtml = function(text,safe) {
 	return text;
 }
 
+// http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+var _UUID = function() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+        return v.toString(16);
+    }).toUpperCase();
+}
 
 var _StripLinkDefinitions = function(text) {
 //
@@ -209,6 +218,12 @@ var _StripLinkDefinitions = function(text) {
 			return "";
 		}
 	);
+    text = text.replace(/^\[\^([A-Za-z0-9]+)\]:\s+([^\n]+)\n?/gm, 
+            function(wholeMatch,m1,m2) {
+                g_footnotes.push( {id: m1, text: m2} );
+                return "";
+            }
+    );
 
 	return text;
 }
@@ -377,10 +392,20 @@ var _RunBlockGamut = function(text) {
 	// <p> tags around block-level tags.
 	text = _HashHTMLBlocks(text);
 	text = _FormParagraphs(text);
+    text = _AddFootnotes(text);
 
 	return text;
 }
 
+var _AddFootnotes = function(text) {
+    text = text + '<div class="footnotes"><ol>';
+    for(var n in g_footnotes) {
+        var o = g_footnotes[n];
+        text = text + '<li id="fn:' + o.id + '"><p>' + _RunSpanGamut(o.text) + ' <a href="#fnref:' + o.id + '">↩</a></p></li>';
+    }
+    text = text + '</ol></div>';
+    return text;
+}
 
 var _RunSpanGamut = function(text) {
 //
@@ -429,10 +454,28 @@ var _EscapeSpecialCharsWithinTagAttributes = function(text) {
 	return text;
 }
 
+var _findFirst = function(arr, f) {
+    for(var x in arr) {
+        if(f(arr[x])) {
+            return x;
+        }
+    }
+}
+
 var _DoAnchors = function(text) {
 //
 // Turn Markdown link shortcuts into XHTML <a> tags.
 //
+
+    text = text.replace(/\[\^([A-Za-z0-9]+)\]/,
+
+            function(wholeMatch, m1) {
+                var id = _findFirst(g_footnotes, function(x){return x.id == m1;});
+                id = parseInt(id);
+                return '<sup id="fnref:' + m1 + '"><a href="#fn:' + m1 + '" rel="footnote">' + (id + 1) + '</a></sup>';;
+            }
+    );
+
 	//
 	// First, handle reference-style links: [link text] [id]
 	//
@@ -459,6 +502,7 @@ var _DoAnchors = function(text) {
 		)()()()()					// pad remaining backreferences
 		/g,_DoAnchors_callback);
 	*/
+
 	text = text.replace(/(\[((?:\[[^\]]*\]|[^\[\]])*)\][ ]?(?:\n[ ]*)?\[(.*?)\])()()()()/g,writeAnchorTag);
 
 	//
