@@ -398,12 +398,14 @@ var _RunBlockGamut = function(text) {
 }
 
 var _AddFootnotes = function(text) {
-    text = text + '<div class="footnotes"><ol>';
-    for(var n in g_footnotes) {
-        var o = g_footnotes[n];
-        text = text + '<li id="fn:' + o.id + '"><p>' + _RunSpanGamut(o.text) + ' <a href="#fnref:' + o.id + '">↩</a></p></li>';
+    if(g_footnotes.length > 0) {
+        text = text + '<div class="footnotes"><ol>';
+        for(var n in g_footnotes) {
+            var o = g_footnotes[n];
+            text = text + '<li id="fn:' + o.id + '"><p>' + _RunSpanGamut(o.text) + ' <a href="#fnref:' + o.id + '">↩</a></p></li>';
+        }
+        text = text + '</ol></div>';
     }
-    text = text + '</ol></div>';
     return text;
 }
 
