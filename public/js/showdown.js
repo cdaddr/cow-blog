@@ -402,7 +402,7 @@ var _AddFootnotes = function(text) {
         text = text + '<div class="footnotes"><ol>';
         for(var n in g_footnotes) {
             var o = g_footnotes[n];
-            text = text + '<li id="fn:' + o.id + '"><p>' + _RunSpanGamut(o.text) + ' <a href="#fnref:' + o.id + '">↩</a></p></li>';
+            text = text + '<li id="fn:' + o.id + '"><p>' + _RunSpanGamut(o.text) + ' <a rev="footnote" href="#fnref:' + o.id + '">↩</a></p></li>';
         }
         text = text + '</ol></div>';
     }
