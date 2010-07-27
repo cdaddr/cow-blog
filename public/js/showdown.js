@@ -469,7 +469,7 @@ var _DoAnchors = function(text) {
 // Turn Markdown link shortcuts into XHTML <a> tags.
 //
 
-    text = text.replace(/\[\^([A-Za-z0-9]+)\]/,
+    text = text.replace(/\[\^([A-Za-z0-9]+)\]/gm,
 
             function(wholeMatch, m1) {
                 var id = _findFirst(g_footnotes, function(x){return x.id == m1;});
