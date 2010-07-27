@@ -86,7 +86,7 @@
   [handler]
   (fn [request]
     (let [{{page-number "p"} :query-params} request]
-      (binding [PAGE-NUMBER (or (util/safe-int page-number) 1)]
+      (binding [PAGE-NUMBER (or (try (util/safe-int page-number) (catch Exception _ 1)) 1)]
         (handler request)))))
 
 (declare USER)
