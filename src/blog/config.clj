@@ -1,7 +1,7 @@
 (ns blog.config
   (:require (net.briancarper [postgres-pool :as pg])))
 
-(def DEBUG true)
+(def DEBUG false)
 
 (def SITE-TITLE "A Clojure Blog (\u03bb)")
 (def SITE-URL "http://localhost:8080")
