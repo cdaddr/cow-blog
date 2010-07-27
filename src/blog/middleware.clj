@@ -25,6 +25,7 @@
       (try (handler request)
            (catch Exception e
              {:status 500
+              :headers {"Content-Type" "text/html"}
               :body (hiccup/html
                      (if config/DEBUG
                        [:div [:h2 "ERROR!"]
